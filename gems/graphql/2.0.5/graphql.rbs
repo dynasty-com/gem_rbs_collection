@@ -1,0 +1,39 @@
+module GraphQL
+  # forwards-compat for argument handling
+  module Ruby2Keywords
+    def ruby2_keywords: () -> nil
+  end
+
+  class Error < StandardError
+  end
+
+  # This error is raised when GraphQL-Ruby encounters a situation
+  # that it *thought* would never happen. Please report this bug!
+  class InvariantError < Error
+    def initialize: (untyped message) -> void
+  end
+
+  class RequiredImplementationMissingError < Error
+  end
+
+  def self.default_parser: () -> untyped
+
+  attr_writer self.default_parser: untyped
+
+  # Turn a query string or schema definition into an AST
+  # @param graphql_string [String] a GraphQL query string or schema definition
+  # @return [GraphQL::Language::Nodes::Document]
+  def self.parse: (untyped graphql_string, ?tracer: untyped tracer) -> untyped
+
+  # Read the contents of `filename` and parse them as GraphQL
+  # @param filename [String] Path to a `.graphql` file containing IDL or query
+  # @return [GraphQL::Language::Nodes::Document]
+  def self.parse_file: (untyped filename) -> untyped
+
+  def self.parse_with_racc: (untyped string, ?filename: untyped? filename, ?tracer: untyped tracer) -> untyped
+
+  # @return [Array<GraphQL::Language::Token>]
+  def self.scan: (untyped graphql_string) -> untyped
+
+  def self.scan_with_ragel: (untyped graphql_string) -> untyped
+end
