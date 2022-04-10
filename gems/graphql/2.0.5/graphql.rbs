@@ -279,10 +279,10 @@ module GraphQL
   end
 end
 
-module GraphQL
-  class Railtie < Rails::Railtie
-  end
-end
+# module GraphQL
+#   class Railtie < Rails::Railtie
+#   end
+# end
 
 module GraphQL
   # Library entry point for performance metric reporting.
@@ -800,7 +800,7 @@ module GraphQL
   class Query
     include Tracing::Traceable
 
-    extend Forwardable
+    # extend Forwardable
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize: (untyped name) -> void
@@ -1332,9 +1332,9 @@ module GraphQL
   #   end
   #
   class Backtrace
-    include Enumerable
+    # include Enumerable
 
-    extend Forwardable
+    # extend Forwardable
 
     def self.use: (untyped schema_defn) -> untyped
 
