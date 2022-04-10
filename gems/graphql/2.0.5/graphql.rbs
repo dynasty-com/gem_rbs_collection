@@ -38,6 +38,115 @@ module GraphQL
   def self.scan_with_ragel: (untyped graphql_string) -> untyped
 
   class Schema
+    class Argument
+      include GraphQL::Schema::Member::HasPath
+
+      include GraphQL::Schema::Member::HasAstNode
+
+      include GraphQL::Schema::Member::HasDirectives
+
+      include GraphQL::Schema::Member::HasDeprecationReason
+
+      include GraphQL::Schema::Member::HasValidators
+
+      include GraphQL::Schema::FindInheritedValue::EmptyObjects
+
+      NO_DEFAULT: :__no_default__
+
+      # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
+      attr_reader name: untyped
+
+      alias graphql_name name
+
+      # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
+      attr_reader owner: untyped
+
+      # @return [Symbol] A method to call to transform this value before sending it to field resolution method
+      attr_reader prepare: untyped
+
+      # @return [Symbol] This argument's name in Ruby keyword arguments
+      attr_reader keyword: untyped
+
+      # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
+      attr_reader loads: untyped
+
+      # @return [Boolean] true if a resolver defined this argument
+      def from_resolver?: () -> untyped
+
+      # @param arg_name [Symbol]
+      # @param type_expr
+      # @param desc [String]
+      # @param required [Boolean, :nullable] if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
+      # @param description [String]
+      # @param default_value [Object]
+      # @param as [Symbol] Override the keyword name when passed to a method
+      # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
+      # @param camelize [Boolean] if true, the name will be camelized when building the schema
+      # @param from_resolver [Boolean] if true, a Resolver class defined this argument
+      # @param directives [Hash{Class => Hash}]
+      # @param deprecation_reason [String]
+      # @param validates [Hash, nil] Options for building validators, if any should be applied
+      # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
+      def initialize: (?untyped? arg_name, ?untyped? type_expr, ?untyped? desc, owner: untyped owner, ?required: bool required, ?type: untyped? `type`, ?name: untyped? name, ?loads: untyped? loads, ?description: untyped? description, ?ast_node: untyped? ast_node, ?default_value: untyped default_value, ?as: untyped? as, ?from_resolver: bool from_resolver, ?camelize: bool camelize, ?prepare: untyped? prepare, ?validates: untyped? validates, ?directives: untyped? directives, ?deprecation_reason: untyped? deprecation_reason, ?replace_null_with_default: bool replace_null_with_default) { () -> untyped } -> void
+
+      def inspect: () -> ::String
+
+      # @return [Object] the value used when the client doesn't provide a value for this argument
+      attr_reader default_value: untyped
+
+      # @return [Boolean] True if this argument has a default value
+      def default_value?: () -> untyped
+
+      def replace_null_with_default?: () -> untyped
+
+      attr_writer description: untyped
+
+      # @return [String] Documentation for this argument
+      def description: (?untyped? text) -> untyped
+
+      # @return [String] Deprecation reason for this argument
+      def deprecation_reason: (?untyped? text) -> untyped
+
+      def deprecation_reason=: (untyped new_reason) -> untyped
+
+      def visible?: (untyped context) -> true
+
+      def accessible?: (untyped context) -> true
+
+      def authorized?: (untyped obj, untyped value, untyped ctx) -> untyped
+
+      def authorized_as_type?: (untyped obj, untyped value, untyped ctx, as_type: untyped as_type) -> (true | false | untyped)
+
+      def type=: (untyped new_type) -> untyped
+
+      def type: () -> untyped
+
+      def statically_coercible?: () -> untyped
+
+      # Apply the {prepare} configuration to `value`, using methods from `obj`.
+      # Used by the runtime.
+      # @api private
+      def prepare_value: (untyped obj, untyped value, ?context: untyped? context) -> untyped
+
+      # @api private
+      def coerce_into_values: (untyped parent_object, untyped values, untyped context, untyped argument_values) -> (nil | untyped)
+
+      def load_and_authorize_value: (untyped load_method_owner, untyped coerced_value, untyped context) -> (nil | untyped)
+
+      # @api private
+      def validate_default_value: () -> untyped
+
+      class InvalidDefaultValueError < GraphQL::Error
+        def initialize: (untyped argument) -> void
+      end
+
+      private
+
+      def validate_input_type: (untyped input_type) -> untyped
+
+      def validate_deprecated_or_optional: (null: untyped null, deprecation_reason: untyped deprecation_reason) -> untyped
+    end
+
     class Object < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasFields
 
@@ -138,6 +247,51 @@ module GraphQL
     end
 
     class Member
+      module HasDeprecationReason
+        # @return [String, nil] Explains why this member was deprecated (if present, this will be marked deprecated in introspection)
+        def deprecation_reason: () -> untyped
+
+        # Set the deprecation reason for this member, or remove it by assigning `nil`
+        # @param text [String, nil]
+        def deprecation_reason=: (untyped text) -> untyped
+      end
+      
+      module HasDirectives
+        # Create an instance of `dir_class` for `self`, using `options`.
+        #
+        # It removes a previously-attached instance of `dir_class`, if there is one.
+        #
+        # @return [void]
+        def directive: (untyped dir_class, **untyped options) -> nil
+
+        # Remove an attached instance of `dir_class`, if there is one
+        # @param dir_class [Class<GraphQL::Schema::Directive>]
+        # @return [viod]
+        def remove_directive: (untyped dir_class) -> nil
+
+        NO_DIRECTIVES: ::Array[untyped]
+
+        def directives: () -> untyped
+
+        def own_directives: () -> untyped
+
+        private
+
+        # Modify `target` by adding items from `dirs` such that:
+        # - Any name conflict is overriden by the incoming member of `dirs`
+        # - Any other member of `dirs` is appended
+        # @param target [Array<GraphQL::Schema::Directive>]
+        # @param dirs [Array<GraphQL::Schema::Directive>]
+        # @return [void]
+        def merge_directives: (untyped target, untyped dirs) -> nil
+      end
+
+      module HasAstNode
+        # If this schema was parsed from a `.graphql` file (or other SDL),
+        # this is the AST node that defined this part of the schema.
+        def ast_node: (?untyped? new_ast_node) -> untyped
+      end
+
       module HasInterfaces
         def implements: (*untyped new_interfaces, **untyped options) -> untyped
 
@@ -148,7 +302,7 @@ module GraphQL
         # param context [Query::Context] If omitted, skip filtering.
         def interfaces: (?untyped context) -> untyped
       end
-      
+
       module HasValidators
         include Schema::FindInheritedValue::EmptyObjects
 
