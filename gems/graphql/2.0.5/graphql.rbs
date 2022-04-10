@@ -38,6 +38,52 @@ module GraphQL
   def self.scan_with_ragel: (untyped graphql_string) -> untyped
 
   class Schema
+    class Object < GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::HasFields
+
+      extend GraphQL::Schema::Member::HasInterfaces
+
+      # @return [Object] the application object this type is wrapping
+      attr_reader object: untyped
+
+      # @return [GraphQL::Query::Context] the context instance for this query
+      attr_reader context: untyped
+
+      # @return [GraphQL::Dataloader]
+      def dataloader: () -> untyped
+
+      # Call this in a field method to return a value that should be returned to the client
+      # without any further handling by GraphQL.
+      def raw_value: (untyped obj) -> untyped
+
+      # Make a new instance of this type _if_ the auth check passes,
+      # otherwise, raise an error.
+      #
+      # Probably only the framework should call this method.
+      #
+      # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
+      # hook returns some lazy value (like a Promise).
+      #
+      # The reason that the auth check is in this wrapper method instead of {.new} is because
+      # of how it might return a Promise. It would be weird if `.new` returned a promise;
+      # It would be a headache to try to maintain Promise-y state inside a {Schema::Object}
+      # instance. So, hopefully this wrapper method will do the job.
+      #
+      # @param object [Object] The thing wrapped by this object
+      # @param context [GraphQL::Query::Context]
+      # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
+      # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
+      def self.authorized_new: (untyped object, untyped context) -> untyped
+
+      def initialize: (untyped object, untyped context) -> void
+
+      # Set up a type-specific invalid null error to use when this object's non-null fields wrongly return `nil`.
+      # It should help with debugging and bug tracker integrations.
+      def self.const_missing: (untyped name) -> untyped
+
+      def self.kind: () -> untyped
+    end
+
     module FindInheritedValue
       module EmptyObjects
         EMPTY_HASH: ::Hash[untyped, untyped]
@@ -92,6 +138,17 @@ module GraphQL
     end
 
     class Member
+      module HasInterfaces
+        def implements: (*untyped new_interfaces, **untyped options) -> untyped
+
+        def own_interface_type_memberships: () -> untyped
+
+        def interface_type_memberships: () -> untyped
+
+        # param context [Query::Context] If omitted, skip filtering.
+        def interfaces: (?untyped context) -> untyped
+      end
+      
       module HasValidators
         include Schema::FindInheritedValue::EmptyObjects
 
