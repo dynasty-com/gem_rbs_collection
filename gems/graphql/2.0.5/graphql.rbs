@@ -38,6 +38,509 @@ module GraphQL
   def self.scan_with_ragel: (untyped graphql_string) -> untyped
 
   class Schema
+    module FindInheritedValue
+      module EmptyObjects
+        EMPTY_HASH: ::Hash[untyped, untyped]
+
+        EMPTY_ARRAY: ::Array[untyped]
+      end
+
+      def self.extended: (untyped child_cls) -> untyped
+
+      def self.included: (untyped child_cls) -> untyped
+
+      private
+
+      def find_inherited_value: (untyped method_name, ?untyped? default_value) -> untyped
+    end
+    
+    class Resolver
+      # Adds `field(...)` helper to resolvers so that they can
+      # generate payload types.
+      #
+      # Or, an already-defined one can be attached with `payload_type(...)`.
+      module HasPayloadType
+        # Call this method to get the derived return type of the mutation,
+        # or use it as a configuration method to assign a return type
+        # instead of generating one.
+        # @param new_payload_type [Class, nil] If a type definition class is provided, it will be used as the return type of the mutation field
+        # @return [Class] The object type which this mutation returns.
+        def payload_type: (?untyped? new_payload_type) -> untyped
+
+        def type: (?untyped? new_type, ?null: untyped? null) -> untyped
+
+        alias type_expr payload_type
+
+        def field_class: (?untyped? new_class) -> untyped
+
+        # An object class to use for deriving return types
+        # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
+        # @return [Class]
+        def object_class: (?untyped? new_class) -> untyped
+
+        NO_INTERFACES: ::Array[untyped]
+
+        def field: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+
+        private
+
+        # Build a subclass of {.object_class} based on `self`.
+        # This value will be cached as `{.payload_type}`.
+        # Override this hook to customize return type generation.
+        def generate_payload_type: () -> untyped
+      end
+    end
+
+    class Member
+      module HasValidators
+        include Schema::FindInheritedValue::EmptyObjects
+
+        # Build {GraphQL::Schema::Validator}s based on the given configuration
+        # and use them for this schema member
+        # @param validation_config [Hash{Symbol => Hash}]
+        # @return [void]
+        def validates: (untyped validation_config) -> nil
+
+        # @return [Array<GraphQL::Schema::Validator>]
+        def validators: () -> untyped
+      end
+
+      module HasArguments
+        def self.included: (untyped cls) -> untyped
+
+        def self.extended: (untyped cls) -> untyped
+
+        # @see {GraphQL::Schema::Argument#initialize} for parameters
+        # @return [GraphQL::Schema::Argument] An instance of {argument_class}, created from `*args`
+        def argument: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+
+        # Register this argument with the class.
+        # @param arg_defn [GraphQL::Schema::Argument]
+        # @return [GraphQL::Schema::Argument]
+        def add_argument: (untyped arg_defn) -> untyped
+
+        def remove_argument: (untyped arg_defn) -> nil
+
+        # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
+        def arguments: (?untyped context) -> untyped
+
+        def all_argument_definitions: () -> untyped
+
+        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
+        def get_argument: (untyped argument_name, ?untyped context) -> untyped
+
+        # @param new_arg_class [Class] A class to use for building argument definitions
+        def argument_class: (?untyped? new_arg_class) -> untyped
+
+        # @api private
+        # If given a block, it will eventually yield the loaded args to the block.
+        #
+        # If no block is given, it will immediately dataload (but might return a Lazy).
+        #
+        # @param values [Hash<String, Object>]
+        # @param context [GraphQL::Query::Context]
+        # @yield [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        def coerce_arguments: (untyped parent_object, untyped values, untyped context) { () -> untyped } -> untyped
+
+        # Usually, this is validated statically by RequiredArgumentsArePresent,
+        # but not for directives.
+        # TODO apply static validations on schema definitions?
+        def validate_directive_argument: (untyped arg_defn, untyped value) -> untyped
+
+        def arguments_statically_coercible?: () -> untyped
+
+        module ArgumentClassAccessor
+          def argument_class: (?untyped? new_arg_class) -> untyped
+        end
+
+        module ArgumentObjectLoader
+          # Look up the corresponding object for a provided ID.
+          # By default, it uses Relay-style {Schema.object_from_id},
+          # override this to find objects another way.
+          #
+          # @param type [Class, Module] A GraphQL type definition
+          # @param id [String] A client-provided to look up
+          # @param context [GraphQL::Query::Context] the current context
+          def object_from_id: (untyped `type`, untyped id, untyped context) -> untyped
+
+          def load_application_object: (untyped argument, untyped id, untyped context) -> (nil | untyped)
+
+          def load_and_authorize_application_object: (untyped argument, untyped id, untyped context) -> untyped
+
+          def authorize_application_object: (untyped argument, untyped id, untyped context, untyped loaded_application_object) -> untyped
+
+          def load_application_object_failed: (untyped err) -> untyped
+        end
+
+        NO_ARGUMENTS: ::Hash[untyped, untyped]
+
+        def own_arguments: () -> untyped
+      end
+
+      # DSL methods shared by lots of things in the GraphQL Schema.
+      # @api private
+      # @see Classes that extend this, eg {GraphQL::Schema::Object}
+      module BaseDSLMethods
+        include GraphQL::Schema::FindInheritedValue
+
+        # Call this with a new name to override the default name for this schema member; OR
+        # call it without an argument to get the name of this schema member
+        #
+        # The default name is implemented in default_graphql_name
+        # @param new_name [String]
+        # @return [String]
+        def graphql_name: (?untyped? new_name) -> untyped
+
+        def overridden_graphql_name: () -> untyped
+
+        # Just a convenience method to point out that people should use graphql_name instead
+        def name: (?untyped? new_name) -> untyped
+
+        # Call this method to provide a new description; OR
+        # call it without an argument to get the description
+        # @param new_description [String]
+        # @return [String]
+        def description: (?untyped? new_description) -> untyped
+
+        # This pushes some configurations _down_ the inheritance tree,
+        # in order to prevent repetitive lookups at runtime.
+        module ConfigurationExtension
+          def inherited: (untyped child_class) -> untyped
+        end
+
+        # @return [Boolean] If true, this object is part of the introspection system
+        def introspection: (?untyped? new_introspection) -> untyped
+
+        def introspection?: () -> untyped
+
+        # The mutation this type was derived from, if it was derived from a mutation
+        # @return [Class]
+        def mutation: (?untyped? mutation_class) -> untyped
+
+        # alias unwrap itself
+
+        # Creates the default name for a schema member.
+        # The default name is the Ruby constant name,
+        # without any namespaces and with any `-Type` suffix removed
+        def default_graphql_name: () -> untyped
+
+        def visible?: (untyped context) -> true
+
+        def accessible?: (untyped context) -> true
+
+        def authorized?: (untyped object, untyped context) -> true
+      end
+
+      # Shared code for Objects, Interfaces, Mutations, Subscriptions
+      module HasFields
+        # Add a field to this object or interface with the given definition
+        # @see {GraphQL::Schema::Field#initialize} for method signature
+        # @return [GraphQL::Schema::Field]
+        def field: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+
+        # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
+        def fields: (?untyped context) -> untyped
+
+        def get_field: (untyped field_name, ?untyped context) -> (untyped | nil)
+
+        # A list of Ruby keywords.
+        #
+        # @api private
+        RUBY_KEYWORDS: ::Array[:class | :module | :def | :undef | :begin | :rescue | :ensure | :end | :if | :unless | :then | :elsif | :else | :case | :when | :while | :until | :for | :break | :next | :redo | :retry | :in | :do | :return | :yield | :super | :self | :nil | :true | :false | :and | :or | :not | :alias | :defined? | :BEGIN | :END | :__LINE__ | :__FILE__]
+
+        # A list of GraphQL-Ruby keywords.
+        #
+        # @api private
+        GRAPHQL_RUBY_KEYWORDS: ::Array[:context | :object | :raw_value]
+
+        # A list of field names that we should advise users to pick a different
+        # resolve method name.
+        #
+        # @api private
+        CONFLICT_FIELD_NAMES: untyped
+
+        # Register this field with the class, overriding a previous one if needed.
+        # @param field_defn [GraphQL::Schema::Field]
+        # @return [void]
+        def add_field: (untyped field_defn, ?method_conflict_warning: untyped method_conflict_warning) -> nil
+
+        # @return [Class] The class to initialize when adding fields to this kind of schema member
+        def field_class: (?untyped? new_field_class) -> untyped
+
+        def global_id_field: (untyped field_name, **untyped kwargs) -> untyped
+
+        # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
+        def own_fields: () -> untyped
+
+        def all_field_definitions: () -> untyped
+
+        private
+
+        # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
+        def visible_interface_implementation?: (untyped `type`, untyped context, untyped warden) -> untyped
+
+        # @param [GraphQL::Schema::Field]
+        # @return [String] A warning to give when this field definition might conflict with a built-in method
+        def conflict_field_name_warning: (untyped field_defn) -> ::String
+      end
+
+      module HasPath
+        # @return [String] A description of this member's place in the GraphQL schema
+        def path: () -> untyped
+      end
+
+      # These constants are interpreted as GraphQL types when defining fields or arguments
+      #
+      # @example
+      #   field :is_draft, Boolean, null: false
+      #   field :id, ID, null: false
+      #   field :score, Int, null: false
+      #
+      # @api private
+      module GraphQLTypeNames
+        Boolean: "Boolean"
+
+        ID: "ID"
+
+        Int: "Int"
+      end
+    end
+
+    # A class-based container for field configuration and resolution logic. It supports:
+    #
+    # - Arguments, via `.argument(...)` helper, which will be applied to the field.
+    # - Return type, via `.type(..., null: ...)`, which will be applied to the field.
+    # - Description, via `.description(...)`, which will be applied to the field
+    # - Resolution, via `#resolve(**args)` method, which will be called to resolve the field.
+    # - `#object` and `#context` accessors for use during `#resolve`.
+    #
+    # Resolvers can be attached with the `resolver:` option in a `field(...)` call.
+    #
+    # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
+    #
+    # @see {GraphQL::Schema::Mutation} for a concrete subclass of `Resolver`.
+    # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
+    class Resolver
+      include Schema::Member::GraphQLTypeNames
+
+      # Really we only need description from here, but:
+      extend Schema::Member::BaseDSLMethods
+
+      extend GraphQL::Schema::Member::HasArguments
+
+      extend GraphQL::Schema::Member::HasValidators
+
+      include Schema::Member::HasPath
+
+      extend Schema::Member::HasPath
+
+      # @param object [Object] The application object that this field is being resolved on
+      # @param context [GraphQL::Query::Context]
+      # @param field [GraphQL::Schema::Field]
+      def initialize: (object: untyped object, context: untyped context, field: untyped field) -> void
+
+      # @return [Object] The application object this field is being resolved on
+      attr_reader object: untyped
+
+      # @return [GraphQL::Query::Context]
+      attr_reader context: untyped
+
+      # @return [GraphQL::Dataloader]
+      def dataloader: () -> untyped
+
+      # @return [GraphQL::Schema::Field]
+      attr_reader field: untyped
+
+      def arguments: () -> untyped
+
+      # This method is _actually_ called by the runtime,
+      # it does some preparation and then eventually calls
+      # the user-defined `#resolve` method.
+      # @api private
+      def resolve_with_support: (**untyped args) -> untyped
+
+      # Do the work. Everything happens here.
+      # @return [Object] An object corresponding to the return type
+      def resolve: (**untyped args) -> untyped
+
+      # Called before arguments are prepared.
+      # Implement this hook to make checks before doing any work.
+      #
+      # If it returns a lazy object (like a promise), it will be synced by GraphQL
+      # (but the resulting value won't be used).
+      #
+      # @param args [Hash] The input arguments, if there are any
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      def ready?: (**untyped args) -> true
+
+      # Called after arguments are loaded, but before resolving.
+      #
+      # Override it to check everything before calling the mutation.
+      # @param inputs [Hash] The input arguments
+      # @raise [GraphQL::ExecutionError] To add an error to the response
+      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
+      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      def authorized?: (**untyped inputs) -> untyped
+
+      # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
+      #
+      # By default, the error is re-raised and passed along to {{Schema.unauthorized_object}}.
+      #
+      # Any value returned here will be used _instead of_ of the loaded object.
+      # @param err [GraphQL::UnauthorizedError]
+      def unauthorized_object: (untyped err) -> untyped
+
+      private
+
+      def authorize_arguments: (untyped args, untyped inputs) -> untyped
+
+      def load_arguments: (untyped args) -> untyped
+
+      def get_argument: (untyped name, ?untyped context) -> untyped
+
+      def self.field_arguments: (?untyped context) -> untyped
+
+      def self.get_field_argument: (untyped name, ?untyped context) -> untyped
+
+      def self.all_field_argument_definitions: () -> untyped
+
+      # Default `:resolve` set below.
+      # @return [Symbol] The method to call on instances of this object to resolve the field
+      def self.resolve_method: (?untyped? new_method) -> untyped
+
+      # Additional info injected into {#resolve}
+      # @see {GraphQL::Schema::Field#extras}
+      def self.extras: (?untyped? new_extras) -> untyped
+
+      # If `true` (default), then the return type for this resolver will be nullable.
+      # If `false`, then the return type is non-null.
+      #
+      # @see #type which sets the return type of this field and accepts a `null:` option
+      # @param allow_null [Boolean] Whether or not the response can be null
+      def self.null: (?untyped? allow_null) -> untyped
+
+      def self.resolver_method: (?untyped? new_method_name) -> untyped
+
+      # Call this method to get the return type of the field,
+      # or use it as a configuration method to assign a return type
+      # instead of generating one.
+      # TODO unify with {#null}
+      # @param new_type [Class, Array<Class>, nil] If a type definition class is provided, it will be used as the return type of the field
+      # @param null [true, false] Whether or not the field may return `nil`
+      # @return [Class] The type which this field returns.
+      def self.type: (?untyped? new_type, ?null: untyped? null) -> untyped
+
+      # Specifies the complexity of the field. Defaults to `1`
+      # @return [Integer, Proc]
+      def self.complexity: (?untyped? new_complexity) -> untyped
+
+      def self.broadcastable: (untyped new_broadcastable) -> untyped
+
+      # @return [Boolean, nil]
+      def self.broadcastable?: () -> untyped
+
+      # Get or set the `max_page_size:` which will be configured for fields using this resolver
+      # (`nil` means "unlimited max page size".)
+      # @param max_page_size [Integer, nil] Set a new value
+      # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
+      def self.max_page_size: (?::Symbol new_max_page_size) -> untyped
+
+      # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
+      def self.has_max_page_size?: () -> untyped
+
+      # A non-normalized type configuration, without `null` applied
+      def self.type_expr: () -> untyped
+
+      # Add an argument to this field's signature, but
+      # also add some preparation hook methods which will be used for this argument
+      # @see {GraphQL::Schema::Argument#initialize} for the signature
+      def self.argument: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+
+      # Registers new extension
+      # @param extension [Class] Extension class
+      # @param options [Hash] Optional extension options
+      def self.extension: (untyped extension, **untyped options) -> untyped
+
+      # @api private
+      def self.extensions: () -> untyped
+
+      def self.own_extensions: () -> untyped
+    end
+
+    # This base class accepts configuration for a mutation root field,
+    # then it can be hooked up to your mutation root object type.
+    #
+    # If you want to customize how this class generates types, in your base class,
+    # override the various `generate_*` methods.
+    #
+    # @see {GraphQL::Schema::RelayClassicMutation} for an extension of this class with some conventions built-in.
+    #
+    # @example Creating a comment
+    #  # Define the mutation:
+    #  class Mutations::CreateComment < GraphQL::Schema::Mutation
+    #    argument :body, String, required: true
+    #    argument :post_id, ID, required: true
+    #
+    #    field :comment, Types::Comment, null: true
+    #    field :errors, [String], null: false
+    #
+    #    def resolve(body:, post_id:)
+    #      post = Post.find(post_id)
+    #      comment = post.comments.build(body: body, author: context[:current_user])
+    #      if comment.save
+    #        # Successful creation, return the created object with no errors
+    #        {
+    #          comment: comment,
+    #          errors: [],
+    #        }
+    #      else
+    #        # Failed save, return the errors to the client
+    #        {
+    #          comment: nil,
+    #          errors: comment.errors.full_messages
+    #        }
+    #      end
+    #    end
+    #  end
+    #
+    #  # Hook it up to your mutation:
+    #  class Types::Mutation < GraphQL::Schema::Object
+    #    field :create_comment, mutation: Mutations::CreateComment
+    #  end
+    #
+    #  # Call it from GraphQL:
+    #  result = MySchema.execute <<-GRAPHQL
+    #  mutation {
+    #    createComment(postId: "1", body: "Nice Post!") {
+    #      errors
+    #      comment {
+    #        body
+    #        author {
+    #          login
+    #        }
+    #      }
+    #    }
+    #  }
+    #  GRAPHQL
+    #
+    class Mutation < GraphQL::Schema::Resolver
+      extend GraphQL::Schema::Member::HasFields
+
+      extend GraphQL::Schema::Resolver::HasPayloadType
+
+      def self.visible?: (untyped context) -> true
+
+      private
+
+      def self.conflict_field_name_warning: (untyped field_defn) -> ::String
+
+      # Override this to attach self as `mutation`
+      def self.generate_payload_type: () -> untyped
+    end
+    
     # Mutations that extend this base class get some conventions added for free:
     #
     # - An argument called `clientMutationId` is _always_ added, but it's not passed
