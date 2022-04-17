@@ -1072,7 +1072,7 @@ class Date
   # <tt>m</tt>, day <tt>d</tt> and Day of Calendar Reform <tt>sg</tt> to Date.
   def self.json_create: (untyped object) -> untyped
 
-  alias start sg
+  # alias start sg
 
   # Returns a hash, that will be turned into a JSON object and represent this
   # object.
@@ -1083,19 +1083,19 @@ class Date
   def to_json: (*untyped args) -> untyped
 end
 
-class Struct
-  # Deserializes JSON string by constructing new Struct object with values
-  # <tt>v</tt> serialized by <tt>to_json</tt>.
-  def self.json_create: (untyped object) -> untyped
+# class Struct
+#   # Deserializes JSON string by constructing new Struct object with values
+#   # <tt>v</tt> serialized by <tt>to_json</tt>.
+#   def self.json_create: (untyped object) -> untyped
 
-  # Returns a hash, that will be turned into a JSON object and represent this
-  # object.
-  def as_json: () -> ::Hash[untyped | ::String, untyped]
+#   # Returns a hash, that will be turned into a JSON object and represent this
+#   # object.
+#   def as_json: () -> ::Hash[untyped | ::String, untyped]
 
-  # Stores class name (Struct) with Struct values <tt>v</tt> as a JSON string.
-  # Only named structs are supported.
-  def to_json: (*untyped args) -> untyped
-end
+#   # Stores class name (Struct) with Struct values <tt>v</tt> as a JSON string.
+#   # Only named structs are supported.
+#   def to_json: (*untyped args) -> untyped
+# end
 
 class BigDecimal
   # Import a JSON Marshalled object.
@@ -1118,7 +1118,7 @@ class DateTime
   # offset <tt>of</tt> and Day of Calendar Reform <tt>sg</tt> to DateTime.
   def self.json_create: (untyped object) -> untyped
 
-  alias start sg
+  # alias start sg
 
   # Returns a hash, that will be turned into a JSON object and represent this
   # object.
@@ -1130,20 +1130,20 @@ class DateTime
   def to_json: (*untyped args) -> untyped
 end
 
-class Set
-  # Import a JSON Marshalled object.
-  #
-  # method used for JSON marshalling support.
-  def self.json_create: (untyped object) -> untyped
+# class Set
+#   # Import a JSON Marshalled object.
+#   #
+#   # method used for JSON marshalling support.
+#   def self.json_create: (untyped object) -> untyped
 
-  # Marshal the object to JSON.
-  #
-  # method used for JSON marshalling support.
-  def as_json: () -> ::Hash[untyped | ::String, untyped]
+#   # Marshal the object to JSON.
+#   #
+#   # method used for JSON marshalling support.
+#   def as_json: () -> ::Hash[untyped | ::String, untyped]
 
-  # return the JSON value
-  def to_json: (*untyped args) -> untyped
-end
+#   # return the JSON value
+#   def to_json: (*untyped args) -> untyped
+# end
 
 class OpenStruct
   # Deserializes JSON string by constructing new Struct object with values
