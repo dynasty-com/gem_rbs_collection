@@ -17,7 +17,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class ParseError < GraphQL::Error
     attr_reader line: untyped
@@ -1083,7 +1082,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class RuntimeTypeError < GraphQL::Error
   end
@@ -1103,7 +1101,7 @@ module GraphQL
   #   end
   #
   class Backtrace
-    include Enumerable
+    # include Enumerable
 
     # extend Forwardable
 
@@ -1154,7 +1152,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     # An untyped JSON scalar that maps to Ruby hashes, arrays, strings, integers, floats, booleans and nils.
@@ -1242,7 +1239,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     class Boolean < GraphQL::Schema::Scalar
@@ -1275,7 +1271,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     # This scalar takes `Date`s and transmits them as strings,
@@ -1301,7 +1296,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     class ID < GraphQL::Schema::Scalar
@@ -1453,7 +1447,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     module Relay
@@ -1526,7 +1519,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     module Relay
@@ -1568,7 +1560,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Types
     module Relay
@@ -1699,7 +1690,7 @@ module GraphQL
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
     # truffle-ruby wasn't doing well with the implementation below
-    def with: (untyped source_class, *untyped batch_args) -> untyped
+    # def with: (untyped source_class, *untyped batch_args) -> untyped
 
     def with: (untyped source_class, *untyped batch_args, **untyped batch_kwargs) -> untyped
 
@@ -1763,7 +1754,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     # Calculate the complexity of a query, using {Field#complexity} values.
@@ -1842,7 +1832,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     # A query reducer for measuring the depth of a given query.
@@ -1881,7 +1870,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST
@@ -1900,7 +1888,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST
@@ -1913,7 +1900,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST
@@ -2009,7 +1995,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST
@@ -2020,7 +2005,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Analysis
     module AST
@@ -2064,7 +2048,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class NameValidator
     VALID_NAME_REGEX: ::Regexp
@@ -2086,7 +2069,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class InterpreterVisitor < BaseVisitor
@@ -2097,7 +2079,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Default rules for {GraphQL::StaticValidation::Validator}
@@ -2109,7 +2090,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # The validation context gets passed to each validator.
@@ -2148,7 +2128,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # - Ride along with `GraphQL::Language::Visitor`
@@ -2254,7 +2233,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentsAreNamed
@@ -2263,7 +2241,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FieldsAreDefinedOnTypeError < StaticValidation::Error
@@ -2281,7 +2258,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class InputObjectNamesAreUniqueError < StaticValidation::Error
@@ -2297,7 +2273,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module VariablesAreInputTypes
@@ -2310,7 +2285,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class OperationNamesAreValidError < StaticValidation::Error
@@ -2326,7 +2300,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class ArgumentLiteralsAreCompatibleError < StaticValidation::Error
@@ -2348,7 +2321,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class DirectivesAreDefinedError < StaticValidation::Error
@@ -2364,7 +2336,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module ArgumentsAreDefined
@@ -2382,7 +2353,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FieldsWillMerge
@@ -2447,7 +2417,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module VariableNamesAreUnique
@@ -2456,7 +2425,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FieldsHaveAppropriateSelectionsError < StaticValidation::Error
@@ -2474,7 +2442,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class RequiredArgumentsArePresentError < StaticValidation::Error
@@ -2494,7 +2461,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module UniqueDirectivesPerLocation
@@ -2507,7 +2473,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class QueryRootExistsError < StaticValidation::Error
@@ -2521,7 +2486,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module RequiredInputObjectAttributesArePresent
@@ -2536,7 +2500,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class UniqueDirectivesPerLocationError < StaticValidation::Error
@@ -2552,7 +2515,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentsAreFinite
@@ -2561,7 +2523,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module MutationRootExists
@@ -2570,7 +2531,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class SubscriptionRootExistsError < StaticValidation::Error
@@ -2584,7 +2544,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class DirectivesAreInValidLocationsError < StaticValidation::Error
@@ -2602,7 +2561,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module VariableUsagesAreAllowed
@@ -2630,7 +2588,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentsAreUsedError < StaticValidation::Error
@@ -2646,7 +2603,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentTypesExist
@@ -2661,7 +2617,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentNamesAreUnique
@@ -2674,7 +2629,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentSpreadsArePossibleError < StaticValidation::Error
@@ -2694,7 +2648,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class ArgumentsAreDefinedError < StaticValidation::Error
@@ -2716,7 +2669,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class VariablesAreUsedAndDefinedError < StaticValidation::Error
@@ -2736,7 +2688,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentTypesExistError < StaticValidation::Error
@@ -2752,7 +2703,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class NoDefinitionsArePresentError < StaticValidation::Error
@@ -2766,7 +2716,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class RequiredInputObjectAttributesArePresentError < StaticValidation::Error
@@ -2786,7 +2735,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class VariablesAreInputTypesError < StaticValidation::Error
@@ -2804,7 +2752,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module OperationNamesAreValid
@@ -2817,7 +2764,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module DirectivesAreInValidLocations
@@ -2840,7 +2786,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentsAreOnCompositeTypes
@@ -2855,7 +2800,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module VariableDefaultValuesAreCorrectlyTyped
@@ -2864,7 +2808,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # The problem is
@@ -2924,7 +2867,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module DirectivesAreDefined
@@ -2935,7 +2877,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FieldsAreDefinedOnType
@@ -2944,7 +2885,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentsAreUsed
@@ -2953,7 +2893,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module NoDefinitionsArePresent
@@ -2998,7 +2937,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class MutationRootExistsError < StaticValidation::Error
@@ -3012,7 +2950,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class ArgumentNamesAreUniqueError < StaticValidation::Error
@@ -3028,7 +2965,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentsAreOnCompositeTypesError < StaticValidation::Error
@@ -3046,7 +2982,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentsAreFiniteError < StaticValidation::Error
@@ -3062,7 +2997,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module InputObjectNamesAreUnique
@@ -3075,7 +3009,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentNamesAreUniqueError < StaticValidation::Error
@@ -3091,7 +3024,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class VariableUsagesAreAllowedError < StaticValidation::Error
@@ -3113,7 +3045,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module ArgumentLiteralsAreCompatible
@@ -3122,7 +3053,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class VariableDefaultValuesAreCorrectlyTypedError < StaticValidation::Error
@@ -3144,7 +3074,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FragmentsAreNamedError < StaticValidation::Error
@@ -3158,7 +3087,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
@@ -3177,7 +3105,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module SubscriptionRootExists
@@ -3186,7 +3113,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module FragmentSpreadsArePossible
@@ -3215,7 +3141,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module ArgumentNamesAreUnique
@@ -3230,7 +3155,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class FieldsWillMergeError < StaticValidation::Error
@@ -3256,7 +3180,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class VariableNamesAreUniqueError < StaticValidation::Error
@@ -3272,7 +3195,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module QueryRootExists
@@ -3281,7 +3203,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     module RequiredArgumentsArePresent
@@ -3296,7 +3217,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Generates GraphQL-compliant validation message.
@@ -3325,7 +3245,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class ValidationTimeoutError < StaticValidation::Error
@@ -3371,7 +3290,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     class BaseVisitor < GraphQL::Language::Visitor
@@ -3437,7 +3355,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Track fragment dependencies for operations
@@ -3498,7 +3415,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module StaticValidation
     # Test whether `ast_value` is a valid input for `type`
@@ -3530,7 +3446,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Backtrace
     # TODO this is not fiber-friendly
@@ -3541,7 +3456,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Backtrace
     # When {Backtrace} is enabled, raised errors are wrapped with {TracedError}.
@@ -3563,7 +3477,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Backtrace
     # A class for turning a context into a human-readable table or array
@@ -3597,7 +3510,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Backtrace
     module InspectResult
@@ -3608,7 +3520,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # This error is raised when `Types::Int` is given an input value outside of 32-bit integer range.
   #
@@ -3623,14 +3534,12 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     def self.query: (?include_deprecated_args: bool include_deprecated_args, ?include_schema_description: bool include_schema_description, ?include_is_repeatable: bool include_is_repeatable, ?include_specified_by_url: bool include_specified_by_url) -> ::String
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # Error raised when the value provided for a field
   # can't be resolved to one of the possible types for the field.
@@ -3654,7 +3563,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # @api private
   class Filter
@@ -3681,7 +3589,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
   # for a non-null field.
@@ -3711,7 +3618,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class CoercionError < GraphQL::Error
     # @return [Hash] Optional custom data for error objects which will be added
@@ -3722,7 +3628,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # Type kinds are the basic categories which a type may belong to (`Object`, `Scalar`, `Union`...)
   module TypeKinds
@@ -3776,7 +3681,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # This error is raised when `Types::Int` is asked to return a value outside of 32-bit integer range.
   #
@@ -3800,7 +3704,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     class Printer
@@ -3903,7 +3806,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     module BlockString
@@ -3920,7 +3822,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     module DefinitionSlice
@@ -3941,7 +3842,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     module Nodes
@@ -4167,7 +4067,7 @@ module GraphQL
 
         # this is so that `children_method_name` of `InputValueDefinition` works properly
         # with `#replace_child`
-        alias fields arguments
+        # alias fields arguments
 
         def merge: (untyped new_options) -> untyped
       end
@@ -4305,7 +4205,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     # @api private
@@ -4407,7 +4306,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     # Depth-first traversal through the tree, calling hooks at each stop.
@@ -4536,7 +4434,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     # A custom printer used to print sanitized queries. It inlines provided variables
@@ -4598,7 +4495,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     # Exposes {.generate}, which turns AST nodes back into query strings.
@@ -4621,7 +4517,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Language
     # Emitted by the lexer and passed to the parser.
@@ -4656,7 +4551,6 @@ end
 
 
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class DirectiveLocationEnum < GraphQL::Schema::Enum
@@ -4664,7 +4558,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class EnumValueType < Introspection::BaseObject
@@ -4675,7 +4568,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class InputValueType < Introspection::BaseObject
@@ -4691,7 +4583,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class FieldType < Introspection::BaseObject
@@ -4702,7 +4593,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class TypeKindEnum < GraphQL::Schema::Enum
@@ -4715,7 +4605,6 @@ end
 # introspection queries will be required to handle this in clients.
 GraphQL::Introspection::INTROSPECTION_QUERY: untyped
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class DynamicFields < Introspection::BaseObject
@@ -4724,7 +4613,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class DirectiveType < Introspection::BaseObject
@@ -4733,7 +4621,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class TypeType < Introspection::BaseObject
@@ -4756,7 +4643,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class EntryPoints < Introspection::BaseObject
@@ -4789,7 +4675,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Introspection
     class BaseObject < GraphQL::Schema::Object
@@ -4798,7 +4683,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Dig
     # implemented using the old activesupport #dig instead of the ruby built-in
@@ -4812,7 +4696,6 @@ module GraphQL
 end
 
 
-# frozen_string_literal: true
 module GraphQL
   class Subscriptions
     class DefaultSubscriptionResolveExtension < GraphQL::Schema::FieldExtension
@@ -4827,7 +4710,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Subscriptions
     # A subscriptions implementation that sends data
@@ -5042,7 +4924,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Subscriptions
     # This thing can be:
@@ -5086,7 +4967,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Subscriptions
     # Wrap the root fields of the subscription type with special logic for:
@@ -5104,7 +4984,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
@@ -5171,7 +5050,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
@@ -5380,7 +5258,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Validator
@@ -5673,7 +5550,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class IntrospectionSystem
@@ -5786,7 +5662,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # @api private
@@ -5963,7 +5838,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # You can use the result of {GraphQL::Introspection::INTROSPECTION_QUERY}
@@ -6079,7 +5953,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Member
@@ -6175,7 +6048,7 @@ module GraphQL
         # @return [Class]
         def mutation: (?untyped? mutation_class) -> untyped
 
-        alias unwrap itself
+        # alias unwrap itself
 
         # Creates the default name for a schema member.
         # The default name is the Ruby constant name,
@@ -6203,7 +6076,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Member
@@ -6349,7 +6221,7 @@ module GraphQL
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
         # @return [GraphQL::Schema::Field]
-        def field: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+        def field: (*untyped args, **untyped kwargs) ?{ () -> untyped } -> untyped
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields: (?untyped context) -> untyped
@@ -6418,7 +6290,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Member
@@ -6443,7 +6314,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Member
@@ -6531,7 +6401,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # Extend this class to make field-level customizations to resolve behavior.
@@ -6647,7 +6516,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # A stand-in for a type which will be resolved in a given schema, by name.
@@ -6825,7 +6693,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -6845,7 +6712,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -6874,7 +6740,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -6885,7 +6750,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -6936,7 +6800,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -6946,7 +6809,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -7070,7 +6932,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     module Interface
@@ -7126,7 +6987,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
@@ -7182,7 +7042,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     # @api private
@@ -7236,7 +7095,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class InvalidTypeError < GraphQL::Error
@@ -7294,14 +7152,12 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     BUILT_IN_TYPES: ::Hash[::String, untyped]
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
@@ -7465,7 +7321,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     class Argument
@@ -7912,7 +7767,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     module FindInheritedValue
@@ -8052,7 +7906,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Schema
     module BuildFromDefinition
@@ -8104,19 +7957,16 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class AnalysisError < GraphQL::ExecutionError
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Railtie < Rails::Railtie
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # This error is raised when `Types::ISO8601Date` is asked to return a value
   # that cannot be parsed to a Ruby Date.
@@ -8239,7 +8089,7 @@ module GraphQL
           def values: () -> untyped
         end
 
-        class GraphQLSelectionSet < Hash
+        class GraphQLSelectionSet < Hash[untyped, untyped]
           attr_accessor graphql_directives: untyped
         end
 
@@ -8490,7 +8340,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Execution
     # Lookahead creates a uniform interface to inspect the forthcoming selections.
@@ -8629,7 +8478,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Execution
     # Execute multiple queries under the same multiplex "umbrella".
@@ -8767,7 +8615,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Execution
     class Lazy
@@ -8806,7 +8653,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Execution
     # Boolean checks for how an AST node's directives should
@@ -8823,7 +8669,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Execution
     module Instrumentation
@@ -8859,7 +8704,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class StringEncodingError < GraphQL::RuntimeTypeError
     attr_reader string: untyped
@@ -9059,7 +8903,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   # If a field's resolve function returns a {ExecutionError},
   # the error will be inserted into the response's `"errors"` key
@@ -9089,13 +8932,11 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   VERSION: "2.0.6"
 end
 
 
-# frozen_string_literal: true
 module GraphQL
   # When an `authorized?` hook returns false, this error is used to communicate the failure.
   # It's passed to {Schema.unauthorized_object}.
@@ -9127,7 +8968,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class UnauthorizedFieldError < GraphQL::UnauthorizedError
     # @return [Field] the field that failed the authorization check
@@ -9137,7 +8977,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class InvalidNameError < GraphQL::ExecutionError
     attr_reader name: untyped
@@ -9148,7 +8987,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   module Relay
     # This provides some isolation from `GraphQL::Relay` internals.
@@ -9364,7 +9202,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     class InputValidationResult
@@ -9421,7 +9258,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
@@ -9555,7 +9391,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     # This object can be `ctx` in places where there is no query
@@ -9616,7 +9451,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.
@@ -9637,7 +9471,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     # Contain the validation pipeline and expose the results.
@@ -9680,7 +9513,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Query
     class VariableValidationError < GraphQL::ExecutionError
@@ -9769,7 +9601,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Dataloader
     # @see Source#request_all which returns an instance of this.
@@ -9804,7 +9635,6 @@ module GraphQL
   end
 end
 
-# frozen_string_literal: true
 module GraphQL
   class Dataloader
     # @see Source#request which returns an instance of this
@@ -9969,7 +9799,6 @@ module Graphql
   end
 end
 
-# frozen_string_literal: true
 module Graphql
   module Generators
     module Relay
