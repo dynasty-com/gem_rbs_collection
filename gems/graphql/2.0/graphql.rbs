@@ -444,15 +444,15 @@ end
 module GraphQL
   module Tracing
     class PrometheusTracing < PlatformTracing
-      class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
-        def initialize: () -> void
+      # class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
+      #   def initialize: () -> void
 
-        def type: () -> "graphql"
+      #   def type: () -> "graphql"
 
-        def collect: (untyped object) -> untyped
+      #   def collect: (untyped object) -> untyped
 
-        def metrics: () -> ::Array[untyped]
-      end
+      #   def metrics: () -> ::Array[untyped]
+      # end
     end
   end
 end
@@ -1105,7 +1105,7 @@ module GraphQL
   class Backtrace
     include Enumerable
 
-    extend Forwardable
+    # extend Forwardable
 
     def self.use: (untyped schema_defn) -> untyped
 
@@ -1390,7 +1390,7 @@ module GraphQL
   module Types
     module Relay
       module ConnectionBehaviors
-        extend Forwardable
+        # extend Forwardable
 
         def self.included: (untyped child_class) -> untyped
 
@@ -1601,7 +1601,7 @@ module GraphQL
   #   require "rake"
   #   Rake::Task["graphql:schema:dump"].invoke
   class RakeTask
-    include Rake::DSL
+    # include Rake::DSL
 
     DEFAULT_OPTIONS: { namespace: "graphql", dependencies: nil, schema_name: nil, load_schema: untyped, load_context: untyped, only: nil, except: nil, directory: ".", idl_outfile: "schema.graphql", json_outfile: "schema.json" }
 
@@ -2075,7 +2075,7 @@ end
 
 module GraphQL
   class RakeTask
-    extend Rake::DSL
+    # extend Rake::DSL
   end
 end
 
@@ -2092,7 +2092,7 @@ module GraphQL
     class InterpreterVisitor < BaseVisitor
       include GraphQL::StaticValidation::DefinitionDependencies
 
-      include ContextMethods
+      # include ContextMethods
     end
   end
 end
@@ -2123,7 +2123,7 @@ module GraphQL
     # It also provides limited access to the {TypeStack} instance,
     # which tracks state as you climb in and out of different fields.
     class ValidationContext
-      extend Forwardable
+      # extend Forwardable
 
       attr_reader query: untyped
 
@@ -3479,7 +3479,7 @@ module GraphQL
       end
 
       class NodeWithPath
-        extend Forwardable
+        # extend Forwardable
 
         attr_reader node: untyped
 
@@ -4045,7 +4045,7 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -4139,14 +4139,14 @@ module GraphQL
       end
 
       class SchemaDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
       end
 
       class SchemaExtension < AbstractNode
       end
 
       class ScalarTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -4155,13 +4155,13 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
 
       class FieldDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
 
@@ -4173,7 +4173,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -4182,7 +4182,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -4191,7 +4191,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
 
@@ -4203,13 +4203,13 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
 
       class EnumTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -4218,7 +4218,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        include DefinitionNode
+        # include DefinitionNode
 
         attr_reader description: untyped
       end
@@ -6004,7 +6004,7 @@ end
 # backport from ruby v2.5 to v2.2 that has no `padding` things
 # @api private
 module Base64Bp
-  extend Base64
+  # extend Base64
 
   def self?.urlsafe_encode64: (untyped bin, padding: untyped padding) -> untyped
 
@@ -7305,7 +7305,7 @@ end
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
-      extend Forwardable
+      # extend Forwardable
 
       extend GraphQL::Schema::Member::HasArguments
 
@@ -8341,7 +8341,7 @@ module GraphQL
       #
       # @see GraphQL::Query#arguments_for to get access to these objects.
       class Arguments
-        extend Forwardable
+        # extend Forwardable
 
         include GraphQL::Dig
 
@@ -8750,7 +8750,7 @@ module GraphQL
 
         # Mock the Concurrent::Map API
         class ConcurrentishMap
-          extend Forwardable
+          # extend Forwardable
 
           def initialize: () -> void
 
@@ -8891,11 +8891,11 @@ module GraphQL
       #   # good
       #   field :name, String
       #
-      class DefaultNullTrue < BaseCop
-        MSG: "`null: true` is the default and can be removed."
+      # class DefaultNullTrue < BaseCop
+      #   MSG: "`null: true` is the default and can be removed."
 
-        def on_send: (untyped node) -> untyped
-      end
+      #   def on_send: (untyped node) -> untyped
+      # end
     end
   end
 end
@@ -8919,11 +8919,11 @@ module GraphQL
       #   # good
       #   argument :id, ID
       #
-      class DefaultRequiredTrue < BaseCop
-        MSG: "`required: true` is the default and can be removed."
+      # class DefaultRequiredTrue < BaseCop
+      #   MSG: "`required: true` is the default and can be removed."
 
-        def on_send: (untyped node) -> untyped
-      end
+      #   def on_send: (untyped node) -> untyped
+      # end
     end
   end
 end
@@ -8931,12 +8931,12 @@ end
 module GraphQL
   module Rubocop
     module GraphQL
-      class BaseCop < RuboCop::Cop::Base
-        extend RuboCop::Cop::AutoCorrector
+      # class BaseCop < RuboCop::Cop::Base
+      #   extend RuboCop::Cop::AutoCorrector
 
-        # Return the source of `send_node`, but without the keyword argument represented by `pair_node`
-        def source_without_keyword_argument: (untyped send_node, untyped pair_node) -> untyped
-      end
+      #   # Return the source of `send_node`, but without the keyword argument represented by `pair_node`
+      #   def source_without_keyword_argument: (untyped send_node, untyped pair_node) -> untyped
+      # end
     end
   end
 end
@@ -9198,7 +9198,7 @@ module GraphQL
   class Query
     include Tracing::Traceable
 
-    extend Forwardable
+    # extend Forwardable
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize: (untyped name) -> void
@@ -9391,7 +9391,7 @@ module GraphQL
     # It provides the requested data and
     # access to the {Query} and {Query::Context}.
     class Result
-      extend Forwardable
+      # extend Forwardable
 
       def initialize: (query: untyped query, values: untyped values) -> void
 
@@ -9458,7 +9458,7 @@ module GraphQL
 
       include SharedMethods
 
-      extend Forwardable
+      # extend Forwardable
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader errors: untyped
@@ -9592,7 +9592,7 @@ module GraphQL
 
       def interpreter?: () -> true
 
-      extend Forwardable
+      # extend Forwardable
 
       def self.[]: (untyped key) -> nil
 
@@ -9621,7 +9621,7 @@ module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.
     class Variables
-      extend Forwardable
+      # extend Forwardable
 
       # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
       attr_reader errors: untyped
@@ -10303,4 +10303,3 @@ module GraphQL
 
   def self.scan_with_ragel: (untyped graphql_string) -> untyped
 end
-
