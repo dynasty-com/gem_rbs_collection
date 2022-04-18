@@ -97,3 +97,6 @@
 [submodule "gems/json/2.6/_src"]
 	path = gems/json/2.6/_src
 	url = https://github.com/flori/json.git
+[submodule "gems/newrelic_rpm/8.6/_src"]
+	path = gems/newrelic_rpm/8.6/_src
+	url = https://github.com/newrelic/newrelic-ruby-agent.git
