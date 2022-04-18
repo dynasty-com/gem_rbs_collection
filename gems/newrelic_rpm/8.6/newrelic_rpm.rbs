@@ -6553,7 +6553,7 @@ module ActionDispatch
 
       alias build_without_new_relic build
 
-      alias build build_with_new_relic
+      # alias build build_with_new_relic
     end
   end
 end
