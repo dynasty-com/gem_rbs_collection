@@ -5823,7 +5823,7 @@ module GraphQL
       # Add an argument to this field's signature, but
       # also add some preparation hook methods which will be used for this argument
       # @see {GraphQL::Schema::Argument#initialize} for the signature
-      def self.argument: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+      def self.argument: (*untyped args, **untyped kwargs) ?{ () -> untyped } -> untyped
 
       # Registers new extension
       # @param extension [Class] Extension class
@@ -6086,7 +6086,7 @@ module GraphQL
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
         # @return [GraphQL::Schema::Argument] An instance of {argument_class}, created from `*args`
-        def argument: (*untyped args, **untyped kwargs) ?{ () -> untyped } -> untyped
+        def argument: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
 
         # Register this argument with the class.
         # @param arg_defn [GraphQL::Schema::Argument]
