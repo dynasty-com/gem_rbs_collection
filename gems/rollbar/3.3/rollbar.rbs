@@ -1,0 +1,2270 @@
+
+module Rollbar
+  module Middleware
+    class Sinatra < Rollbar::Middleware::Rack
+      def framework_error: (untyped env) -> untyped
+    end
+  end
+end
+
+# Allows a Ruby String to be used to pass native Javascript objects/functions
+# when calling JSON#generate with a Rollbar::JSON::JsOptionsState instance.
+#
+# Example:
+# JSON.generate(
+#   { foo: Rollbar::JSON::Value.new('function(){ alert("bar") }') },
+#   Rollbar::JSON::JsOptionsState.new
+# )
+#
+# => '{"foo":function(){ alert(\"bar\") }}'
+#
+# MUST use the Ruby JSON encoder, as in the example. The ActiveSupport encoder,
+# which is installed with Rails, is invoked when calling Hash#to_json and #as_json,
+# and will not work.
+#
+module Rollbar
+  module JSON
+    class JsOptionsState # < ::JSON::State
+    end
+
+    class Value
+      # :nodoc:
+      attr_accessor value: untyped
+
+      def initialize: (untyped value) -> void
+
+      def to_json: (?::Hash[untyped, untyped] opts) -> (untyped | ::String)
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    class Rack
+      module Builder
+        include ExceptionReporter
+
+        include RequestDataExtractor
+
+        def call_with_rollbar: (untyped env) -> untyped
+
+        def fetch_scope: (untyped env) -> untyped
+
+        def person_data_proc: (untyped env) -> untyped
+
+        def self.included: (untyped base) -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    class Rack
+      module TestSession
+        include ExceptionReporter
+
+        def env_for_with_rollbar: (untyped path, untyped env) -> untyped
+
+        def self.included: (untyped base) -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    # Middleware to inject the rollbar.js snippet into a 200 html response
+    class Js
+      include Rollbar::RequestDataExtractor
+
+      attr_reader app: untyped
+
+      attr_reader config: untyped
+
+      JS_IS_INJECTED_KEY: "rollbar.js_is_injected"
+
+      SNIPPET: untyped
+
+      def initialize: (untyped app, untyped config) -> void
+
+      def call: (untyped env) -> untyped
+
+      private
+
+      def enabled?: () -> untyped
+
+      def add_js?: (untyped env, untyped headers) -> untyped
+
+      def html?: (untyped headers) -> untyped
+
+      def attachment?: (untyped headers) -> untyped
+
+      def streaming?: (untyped env) -> (false | untyped)
+
+      def add_js: (untyped env, untyped response) -> untyped
+
+      def build_response: (untyped env, untyped app_result, untyped response_string) -> untyped
+
+      def build_body_with_js: (untyped env, untyped body, untyped head_open_end) -> untyped
+
+      def find_insertion_point: (untyped body) -> untyped
+
+      def find_end_after_regex: (untyped body, untyped regex) -> untyped
+
+      def join_body: (untyped response) -> untyped
+
+      def close_old_response: (untyped response) -> untyped
+
+      def config_js_tag: (untyped env) -> untyped
+
+      def add_person_data: (untyped js_config, untyped env) -> (nil | untyped)
+
+      def snippet_js_tag: (untyped env) -> untyped
+
+      def js_snippet: () -> untyped
+
+      def script_tag: (untyped content, untyped env) -> untyped
+
+      def html_safe_if_needed: (untyped string) -> untyped
+
+      # Rails 5.2+ Secure Content Policy
+      def rails5_nonce: (untyped env) -> untyped
+
+      # Secure Headers gem
+      def secure_headers_nonce: (untyped env) -> (nil | untyped)
+
+      def secure_headers: (untyped req) -> untyped
+
+      def secure_headers_nonce_key: (untyped req) -> untyped
+
+      class SecureHeadersResolver
+        def append_nonce?: () -> untyped
+
+        private
+
+        def find_csp: () -> untyped
+
+        def csp_needs_nonce?: (untyped csp) -> untyped
+
+        def opt_out?: (untyped _csp) -> untyped
+      end
+
+      class SecureHeadersFalse < SecureHeadersResolver
+        def append_nonce?: () -> false
+      end
+
+      class SecureHeaders3To5 < SecureHeadersResolver
+        private
+
+        def find_csp: () -> untyped
+
+        def opt_out?: (untyped csp) -> untyped
+      end
+
+      class SecureHeaders6 < SecureHeadersResolver
+        private
+
+        def find_csp: () -> untyped
+
+        def opt_out?: (untyped csp) -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    class Rack
+      include ::Rollbar::ExceptionReporter
+
+      include RequestDataExtractor
+
+      def initialize: (untyped app) -> void
+
+      def call: (untyped env) -> untyped
+
+      def fetch_scope: (untyped env) -> untyped
+
+      def person_data_proc: (untyped env) -> untyped
+
+      def framework_error: (untyped env) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    module Rails
+      module ShowExceptions
+        include ExceptionReporter
+
+        def render_exception_with_rollbar: (untyped env, untyped exception) -> untyped
+
+        def call_with_rollbar: (untyped env) -> untyped
+
+        def extract_scope_from: (untyped env) -> untyped
+
+        def self.included: (untyped base) -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Middleware
+    module Rails
+      class RollbarMiddleware
+        include RequestDataExtractor
+
+        include ExceptionReporter
+
+        def initialize: (untyped app) -> void
+
+        def call: (untyped env) -> untyped
+
+        def fetch_scope: (untyped env) -> { request: untyped, person: untyped, context: untyped }
+
+        def request_data: (untyped env) -> untyped
+
+        def request_data=: (untyped value) -> untyped
+
+        def extract_request_data: (untyped env) -> untyped
+
+        def person_data_proc: (untyped env) -> untyped
+
+        def context: (untyped request_data) -> (nil | ::String)
+      end
+    end
+  end
+end
+
+module Rollbar
+  module JSON
+    attr_writer options_module: untyped
+
+    def self?.dump: (untyped object) -> untyped
+
+    def self?.load: (untyped string) -> untyped
+  end
+end
+
+module Rollbar
+  # This class represents the payload to be sent to the API.
+  # It contains the logic to build the payload, trucante it
+  # and dump the JSON.
+  class Item
+    # extend Forwardable
+
+    attr_writer payload: untyped
+
+    attr_reader level: untyped
+
+    attr_reader message: untyped
+
+    attr_reader exception: untyped
+
+    attr_reader extra: untyped
+
+    attr_reader configuration: untyped
+
+    attr_reader scope: untyped
+
+    attr_reader logger: untyped
+
+    attr_reader notifier: untyped
+
+    attr_reader context: untyped
+
+    def self.build_with: (untyped payload, ?::Hash[untyped, untyped] options) -> untyped
+
+    def initialize: (untyped options) -> void
+
+    def payload: () -> untyped
+
+    def build: () -> untyped
+
+    def build_data: () -> untyped
+
+    def initial_data: () -> { timestamp: untyped, environment: untyped, level: untyped, language: "ruby", framework: untyped, server: untyped, notifier: { name: "rollbar-gem", version: untyped, configured_options: untyped }, body: untyped }
+
+    def build_optional_data: (untyped data) -> (nil | untyped)
+
+    def configured_options: () -> untyped
+
+    def dump: () -> (untyped | nil)
+
+    def handle_too_large_payload: (untyped stringified_payload, untyped _final_payload, untyped attempts) -> untyped
+
+    def too_large_payload_string: (untyped attempts) -> ::String
+
+    def ignored?: () -> (nil | untyped)
+
+    def add_access_token_to_payload: (untyped payload) -> untyped
+
+    private
+
+    def build_environment: () -> untyped
+
+    def build_body: () -> untyped
+
+    def build_backtrace_body: () -> untyped
+
+    def build_extra: () -> untyped
+
+    def error_context: () -> untyped
+
+    def scrub: (untyped data) -> untyped
+
+    def custom_data_method?: () -> untyped
+
+    def custom_data: () -> untyped
+
+    def report_custom_data_error: (untyped e) -> (::Hash[untyped, untyped] | { _error_in_custom_data_method: untyped })
+
+    def build_message_body: () -> { message: untyped }
+
+    def server_data: () -> untyped
+
+    def enforce_valid_utf8: () -> untyped
+
+    def transform: () -> untyped
+
+    def transform_options: () -> { level: untyped, scope: untyped, exception: untyped, message: untyped, extra: untyped, payload: untyped }
+  end
+end
+
+module Rollbar
+  module Scrubbers
+    def self?.scrub_value: (untyped _value) -> untyped
+
+    def self?.random_filtered_value: () -> untyped
+  end
+end
+
+module Rollbar
+  module Scrubbers
+    class URL
+      SCRUB_ALL: :scrub_all
+
+      def self.call: (*untyped args) -> untyped
+
+      def call: (?::Hash[untyped, untyped] options) -> untyped
+
+      private
+
+      def ascii_encode: (untyped url) -> untyped
+
+      def build_whitelist_regex: (untyped whitelist) -> (nil | untyped)
+
+      def filter: (untyped url, untyped regex, untyped scrub_user, untyped scrub_password, untyped randomize_scrub_length, untyped scrub_all, untyped whitelist) -> untyped
+
+      # Builds a regex to match with any of the received fields.
+      # The built regex will also match array params like 'user_ids[]'.
+      def build_regex: (untyped fields) -> untyped
+
+      def filter_user: (untyped user, untyped scrub_user, untyped randomize_scrub_length) -> untyped
+
+      def filter_password: (untyped password, untyped scrub_password, untyped randomize_scrub_length) -> untyped
+
+      def filter_query: (untyped query, untyped regex, untyped randomize_scrub_length, untyped scrub_all, untyped whitelist) -> untyped
+
+      def decode_www_form: (untyped query) -> untyped
+
+      def encode_www_form: (untyped params) -> untyped
+
+      def restore_square_brackets: (untyped query) -> untyped
+
+      def filter_query_params: (untyped params, untyped regex, untyped randomize_scrub_length, untyped scrub_all, untyped whitelist) -> untyped
+
+      def filter_key?: (untyped key, untyped regex, untyped scrub_all, untyped whitelist) -> untyped
+
+      def filtered_value: (untyped value, untyped randomize_scrub_length) -> untyped
+
+      def random_filtered_value: () -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Scrubbers
+    # This class contains the logic to scrub the received parameters. It will
+    # scrub the parameters matching Rollbar.configuration.scrub_fields Array.
+    # Also, if that configuration option is set to :scrub_all, it will scrub all
+    # received parameters. It will not scrub anything that is in the scrub_whitelist
+    # configuration array even if :scrub_all is true.
+    class Params
+      SKIPPED_CLASSES: ::Array[untyped]
+
+      ATTACHMENT_CLASSES: ::Array["ActionDispatch::Http::UploadedFile" | "Rack::Multipart::UploadedFile"]
+
+      SCRUB_ALL: :scrub_all
+
+      def self.call: (*untyped args) -> untyped
+
+      def call: (?::Hash[untyped, untyped] options) -> (::Hash[untyped, untyped] | untyped)
+
+      private
+
+      def build_scrub_options: (untyped config, untyped extra_fields, untyped whitelist) -> { fields_regex: untyped, scrub_all: untyped, whitelist: untyped }
+
+      def build_fields_regex: (untyped config, untyped extra_fields) -> (nil | untyped)
+
+      def build_whitelist_regex: (untyped whitelist) -> (nil | untyped)
+
+      def scrub: (untyped params, untyped options) -> untyped
+
+      def scrub_array: (untyped array, untyped options) -> untyped
+
+      def scrub_value: (untyped value) -> untyped
+
+      def rollbar_filtered_param_value: (untyped value) -> untyped
+
+      def attachment_value: (untyped value) -> { content_type: untyped, original_filename: untyped, size: untyped }
+
+      def skip_value?: (untyped value) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Util
+    module IPObfuscator
+      def self.obfuscate_ip: (untyped ip_string) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Util
+    module Hash
+      # :nodoc:
+      def self.deep_stringify_keys: (untyped hash, ?::Hash[untyped, untyped] seen) -> (nil | untyped)
+
+      def self.map_value: (untyped thing, untyped meth, untyped seen) -> untyped
+
+      def self.replace_seen_children: (untyped thing, untyped seen) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Util
+    module IPAnonymizer
+      def self.anonymize_ip: (untyped ip_string) -> untyped
+
+      def self.anonymize_ipv4: (untyped ip) -> untyped
+
+      def self.anonymize_ipv6: (untyped ip) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  class Notifier
+    class TraceWithBindings
+      # :nodoc:
+      attr_reader frames: untyped
+
+      # :nodoc:
+      attr_reader exception_frames: untyped
+
+      def initialize: () -> void
+
+      def reset: () -> untyped
+
+      def enable: () -> untyped
+
+      def disable: () -> untyped
+
+      private
+
+      def exception_signature: (untyped trace) -> untyped
+
+      def detect_reraise: (untyped trace) -> untyped
+
+      def trace_point: () -> (nil | untyped)
+
+      def frame: (untyped trace) -> { binding: untyped, defined_class: untyped, method_id: untyped, path: untyped, lineno: untyped }
+    end
+  end
+end
+
+module Rollbar
+  module Goalie
+    def render_exception_with_rollbar: (untyped env, untyped exception) -> untyped
+  end
+end
+
+class Object
+  # include Rollbar::Goalie
+
+  # alias render_exception_without_rollbar render_exception
+
+  # alias render_exception render_exception_with_rollbar
+end
+
+module Rollbar
+  class Sidekiq
+    PARAM_BLACKLIST: ::Array["backtrace" | "error_backtrace" | "error_message" | "error_class"]
+
+    class ResetScope
+      def call: (untyped _worker, untyped msg, untyped _queue) { () -> untyped } -> untyped
+    end
+
+    def self.handle_exception: (untyped msg, untyped e) -> (nil | untyped)
+
+    def self.skip_report?: (untyped msg, untyped _e) -> (false | untyped)
+
+    def self.job_scope: (untyped msg) -> untyped
+
+    def self.scrub_params: (untyped params) -> untyped
+
+    # see https://github.com/mperham/sidekiq/wiki/Middleware#server-middleware
+    def call: (untyped _worker, untyped msg, untyped _queue) { () -> untyped } -> untyped
+
+    def self.job_hash_from_msg: (untyped msg) -> untyped
+  end
+end
+
+module Rollbar
+  module Js
+    module Frameworks
+      # Adds Rollbar::Middleware::Js to the Rails middleware stack
+      # We need to delay the final insert to the last moment since
+      # this feature may be disable.
+      # But we need to prepare the middleware insert now because
+      # we need to use our Rails railtie initializer in case the
+      # customer is using SecureHeaders > 3.0
+      class Rails
+        def load: (untyped plugin) -> untyped
+
+        def after_secure_headers: () { () -> untyped } -> untyped
+
+        def plugin_execute_proc_body: (untyped plugin) -> untyped
+
+        def secure_headers_middleware?: () -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Rake
+    attr_accessor self.patched: untyped
+
+    module Handler
+      def self.included: (untyped base) -> untyped
+
+      def display_error_message_with_rollbar: (untyped ex) -> untyped
+    end
+
+    def self.patch!: () -> (nil | untyped)
+
+    def self.skip_patch: () -> untyped
+
+    def self.patch?: () -> (false | untyped)
+
+    def self.patched?: () -> untyped
+
+    def self.rake_version: () -> untyped
+  end
+end
+
+
+module Rollbar
+  # Module that defines methods to be used by instances using
+  # ActiveModel::Validations
+  # The name is ActiveRecordExtension in order to not break backwards
+  # compatibility, although probably it should be named
+  # Rollbar::ValidationsExtension or similar
+  module ActiveRecordExtension
+    def report_validation_errors_to_rollbar: () -> untyped
+  end
+end
+
+class Object
+  # include Rollbar::ActiveRecordExtension
+end
+
+module Resque
+  module Failure
+    # Falure class to use in Resque in order to send
+    # Resque errors to the Rollbar API
+    class Rollbar # < Base
+      def save: () -> untyped
+
+      private
+
+      # We want to disable async reporting since original
+      # resque-rollbar implementation disabled it.
+      def rollbar: () -> untyped
+
+      def use_exception_level_filters?: () -> untyped
+
+      def rollbar_version: () -> untyped
+    end
+  end
+end
+
+class BasicSocket
+  # :nodoc:
+  def new_as_json: (?untyped? _options) -> { value: untyped }
+
+  # alias original_as_json as_json
+
+  # alias as_json new_as_json
+end
+
+class BasicSocket
+  # alias as_json original_as_json
+end
+
+module RollbarErrorContext
+  attr_accessor rollbar_context: untyped
+end
+
+class StandardError < Exception
+  attr_accessor rollbar_context: untyped
+end
+
+module Rollbar
+  module ThreadPlugin
+    def initialize: (*untyped args) -> void
+  end
+end
+
+module Rollbar
+  module Delayed
+    attr_accessor self.wrapped: untyped
+
+    class RollbarPlugin # < ::Delayed::Plugin
+    end
+
+    def self.wrap_worker: () -> (nil | untyped)
+
+    def self.wrap_worker!: () -> untyped
+
+    def self.invoke_job_callback: () -> untyped
+
+    def self.report: (untyped e, untyped job) -> (nil | untyped)
+
+    def self.skip_report?: (untyped job) -> untyped
+
+    def self.build_job_data: (untyped job) -> (nil | untyped)
+  end
+end
+
+module Rollbar
+  module Delayed
+    class JobData
+      attr_reader job: untyped
+
+      def initialize: (untyped job) -> void
+
+      def to_hash: () -> untyped
+
+      private
+
+      def extract_job_data: () -> untyped
+
+      def handler_data: () -> untyped
+
+      def object_data: (untyped object) -> untyped
+    end
+  end
+end
+
+
+module Rollbar
+  # Report any uncaught errors in a job to Rollbar and reraise
+  module ActiveJob
+    def self.included: (untyped base) -> untyped
+  end
+end
+
+
+module Rollbar
+  class Railtie < ::Rails::Railtie
+    include Rollbar::RailtieMixin
+  end
+end
+
+module Rollbar
+  module RailtieMixin
+    extend ActiveSupport::Concern
+
+    include Rollbar::Rails::ControllerMethods
+  end
+end
+
+module Rollbar
+  class Railtie < ::Rails::Railtie
+    include Rollbar::RailtieMixin
+  end
+end
+
+module Rollbar
+  module Rails
+    module ControllerMethods
+      include RequestDataExtractor
+
+      def rollbar_person_data: () -> untyped
+
+      def rollbar_request_data: () -> untyped
+
+      # for backwards compatabilty with the old ratchetio-gem
+      def ratchetio_person_data: () -> untyped
+
+      # for backwards compatabilty with the old ratchetio-gem
+      def ratchetio_request_data: () -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Rails
+  end
+end
+
+module Rollbar
+  class Ignore < StandardError
+  end
+end
+
+module Rollbar
+  # Represents a plugin in the gem. Every plugin can have multiple dependencies
+  # and multiple execution blocks.
+  # On Rollbar initialization, all plugins will be saved in memory and those that
+  # satisfy the dependencies will be loaded
+  class Plugin
+    attr_reader name: untyped
+
+    attr_reader dependencies: untyped
+
+    attr_reader callables: untyped
+
+    attr_reader revert_callables: untyped
+
+    attr_accessor on_demand: untyped
+
+    attr_accessor loaded: untyped
+
+    def initialize: (untyped name) -> void
+
+    def load_on_demand: () -> untyped
+
+    def configuration: () -> untyped
+
+    def load_scoped!: (?bool transparent) { () -> untyped } -> (nil | untyped)
+
+    def load!: () -> (nil | untyped)
+
+    def unload!: () -> (nil | untyped)
+
+    def execute: () { () -> untyped } -> untyped
+
+    def execute!: () { () -> untyped } -> untyped
+
+    def revert: () { () -> untyped } -> untyped
+
+    private
+
+    def dependency: () { () -> untyped } -> untyped
+
+    def require_dependency: (untyped file) -> untyped
+
+    def load?: () -> untyped
+
+    def dependencies_satisfy?: () -> untyped
+
+    def log_loading_error: (untyped error) -> untyped
+
+    def log_unloading_error: (untyped error) -> untyped
+  end
+end
+
+module Rollbar
+  module Truncation
+    class RemoveAnyKeyStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      attr_accessor payload: untyped
+
+      attr_accessor data: untyped
+
+      attr_accessor sizes: untyped
+
+      attr_accessor extracted_title: untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def initialize: (untyped payload) -> void
+
+      def call: () -> untyped
+
+      def remove_unknown_root_keys: () -> untyped
+
+      def remove_oversized_data_keys: () -> (untyped | false)
+
+      def remove_key_and_return_payload: (untyped key) -> untyped
+
+      def replace_message_body: () -> untyped
+
+      def truncation_key: () -> untyped
+
+      def root_keys: () -> ::Array["access_token" | "data"]
+
+      def skip_keys: () -> ::Array["notifier" | "uuid" | "title" | "platform" | "language" | "framework" | "level"]
+
+      def message_key: () -> ::Hash[::String, ::Hash[::String, "Payload keys removed due to oversized payload. See diagnostic key"]]
+
+      def extract_title: (untyped body) -> (untyped | nil)
+
+      def extract_title_from_trace: (untyped trace) -> ::String
+
+      def data_keys: () -> untyped
+
+      def set_key_size: (untyped key, untyped hash) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class RemoveExtraStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+
+      def delete_message_extra: (untyped body) -> untyped
+
+      def delete_trace_chain_extra: (untyped body) -> (nil | untyped)
+
+      def delete_trace_extra: (untyped body) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class StringsStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      STRING_THRESHOLDS: ::Array[1024 | 512 | 256 | 128]
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+
+      def truncate_strings_proc: (untyped threshold) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class RemoveRequestStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class RawStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class MinBodyStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+
+      def truncate_trace_data: (untyped trace_data) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    module Mixin
+      def dump: (untyped payload) -> untyped
+
+      def truncate?: (untyped result) -> untyped
+
+      def select_frames: (untyped frames, ?::Integer range) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    class FramesStrategy
+      include ::Rollbar::Truncation::Mixin
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+
+      def truncate_trace: (untyped body) -> untyped
+
+      def truncate_trace_chain: (untyped body) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Truncation
+    extend ::Rollbar::Truncation::Mixin
+
+    MAX_PAYLOAD_SIZE: untyped
+
+    # 512kb
+    STRATEGIES: ::Array[untyped]
+
+    def self.truncate: (untyped payload, ?untyped attempts) -> untyped
+  end
+end
+
+module Rollbar
+  module Encoding
+    class LegacyEncoder
+      attr_accessor object: untyped
+
+      def initialize: (untyped object) -> void
+
+      def encode: () -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Encoding
+    class Encoder
+      ALL_ENCODINGS: ::Array[untyped]
+
+      ASCII_ENCODINGS: ::Array[untyped]
+
+      UTF8: "UTF-8"
+
+      BINARY: "binary"
+
+      attr_accessor object: untyped
+
+      def initialize: (untyped object) -> void
+
+      def encode: () -> untyped
+
+      private
+
+      def force_encoding: (untyped value) -> untyped
+
+      def detect_encoding: (untyped v) -> untyped
+
+      def encoding_args: (untyped value) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module RequestDataExtractor
+    ALLOWED_HEADERS_REGEX: ::Regexp
+
+    ALLOWED_BODY_PARSEABLE_METHODS: ::Array["POST" | "PUT" | "PATCH" | "DELETE"]
+
+    def extract_person_data_from_controller: (untyped env) -> untyped
+
+    def extract_request_data_from_rack: (untyped env) -> untyped
+
+    def scrub_url: (untyped url, untyped sensitive_params) -> untyped
+
+    def scrub_params: (untyped params, untyped sensitive_params) -> untyped
+
+    private
+
+    def mergeable_raw_body_params: (untyped rack_req) -> untyped
+
+    def rollbar_request_method: (untyped env) -> untyped
+
+    def rollbar_headers: (untyped env) -> untyped
+
+    def rollbar_url: (untyped env) -> untyped
+
+    def rollbar_user_ip: (untyped env) -> untyped
+
+    def user_ip_at_configured_key: (untyped env) -> (nil | untyped)
+
+    def x_forwarded_for_client: (untyped header_value) -> (nil | untyped)
+
+    def find_not_private_ip: (untyped ips) -> untyped
+
+    def rollbar_get_params: (untyped rack_req) -> untyped
+
+    def rollbar_post_params: (untyped rack_req) -> untyped
+
+    def rollbar_raw_body_params: (untyped rack_req) -> untyped
+
+    def json_request?: (untyped rack_req) -> untyped
+
+    def rollbar_route_params: (untyped env) -> (::Hash[untyped, untyped] | untyped)
+
+    def rollbar_request_session: (untyped env) -> untyped
+
+    def rollbar_request_cookies: (untyped rack_req) -> untyped
+
+    def sensitive_params_list: (untyped env) -> untyped
+
+    def sensitive_headers_list: () -> (::Array[untyped] | untyped)
+  end
+end
+
+
+module Rollbar
+  class LoggerProxy
+    attr_reader object: untyped
+
+    def initialize: (untyped object) -> void
+
+    def debug: (untyped message) -> untyped
+
+    def info: (untyped message) -> untyped
+
+    def warn: (untyped message) -> untyped
+
+    def error: (untyped message) -> untyped
+
+    def log: (untyped level, untyped message) -> untyped
+
+    def acceptable_levels: () -> untyped
+  end
+end
+
+module Rollbar
+  module ExceptionReporter
+    # :nodoc:
+    def report_exception_to_rollbar: (untyped env, untyped exception) -> untyped
+
+    def capture_uncaught?: () -> untyped
+
+    def log_exception_message: (untyped exception) -> untyped
+
+    def exception_data: (untyped exception) -> untyped
+  end
+end
+
+module Rollbar
+  # This class provides logger interface that can be used to replace
+  # the application logger and send all the log messages to Rollbar
+  #
+  # Usage:
+  # require 'rollbar/logger'
+  # logger = Rollbar::Logger.new
+  # logger.error('Error processing purchase')
+  #
+  # If using Rails, you can extend the Rails logger so messages are logged
+  # normally and also to Rollbar:
+  #
+  # Rails.logger.extend(ActiveSupport::Logger.broadcast(Rollbar::Logger.new))
+  class Logger < ::Logger
+    class Error < RuntimeError
+    end
+
+    class DatetimeFormatNotSupported < Error
+    end
+
+    class FormatterNotSupported < Error
+    end
+
+    def initialize: () -> void
+
+    def add: (untyped severity, ?untyped? message, ?untyped? progname) { () -> untyped } -> (true | untyped)
+
+    def <<: (untyped message) -> untyped
+
+    def formatter=: (untyped _) -> untyped
+
+    def formatter: () -> untyped
+
+    def datetime_format=: (untyped _) -> untyped
+
+    def datetime_format: () -> untyped
+
+    # Returns a Rollbar::Notifier instance with the current global scope and
+    # with a logger writing to /dev/null so we don't have a infinite loop
+    # when Rollbar.configuration.logger is Rails.logger.
+    def rollbar: () -> untyped
+
+    private
+
+    def blank?: (untyped message) -> untyped
+
+    # Find correct Rollbar level to use using the indexes in Logger::Severity
+    # DEBUG = 0
+    # INFO = 1
+    # WARN = 2
+    # ERROR = 3
+    # FATAL = 4
+    # UNKNOWN = 5
+    #
+    # If not found we'll use 'error' as the used level
+    def rollbar_level: (untyped severity) -> untyped
+  end
+end
+
+module Rollbar
+  module LanguageSupport
+    def self?.const_defined?: (untyped mod, untyped target, ?bool inherit) -> untyped
+
+    def self?.const_get: (untyped mod, untyped target, ?bool inherit) -> untyped
+
+    def self?.version?: (untyped version) -> untyped
+
+    def self?.timeout_exceptions: () -> ::Array[untyped]
+  end
+end
+
+module Rollbar
+  # Module containing the logic of Capistrano tasks for deploy tracking
+  module CapistranoTasks
+    def self.deploy_started: (untyped capistrano, untyped logger, untyped dry_run) -> untyped
+
+    def self.deploy_succeeded: (untyped capistrano, untyped logger, untyped dry_run) -> untyped
+
+    def self.deploy_failed: (untyped capistrano, untyped logger, untyped dry_run) -> untyped
+
+    private
+
+    def self.deploy_task: (untyped logger, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+    def self.deploy_update: (untyped capistrano, untyped logger, untyped dry_run, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+    def self.capistrano_300_warning: (untyped logger) -> (nil | untyped)
+
+    def self.report_deploy_started: (untyped capistrano, untyped dry_run) -> untyped
+
+    def self.report_deploy_succeeded: (untyped capistrano, untyped dry_run) -> untyped
+
+    def self.report_deploy_failed: (untyped capistrano, untyped dry_run) -> untyped
+
+    def self.depend_on_deploy_id: (untyped capistrano, untyped logger) { () -> untyped } -> untyped
+
+    def self.skip_in_dry_run: (untyped logger, untyped dry_run) { () -> untyped } -> untyped
+
+    def self.debug_request_response: (untyped logger, untyped result) -> untyped
+
+    def self.format_message: (*untyped args) -> untyped
+
+    def self.log_error: (untyped logger, untyped message) -> untyped
+  end
+end
+
+module Rollbar
+  class Item
+    class Locals
+      def self.exception_frames: () -> untyped
+
+      def self.locals_for_location: (untyped filename, untyped lineno) -> untyped
+
+      def self.frame_for_location: (untyped filename, untyped lineno) -> (nil | untyped)
+
+      private
+
+      def self.matching_frame?: (untyped frame, untyped filename, untyped lineno) -> untyped
+
+      def self.locals_for: (untyped frame) -> untyped
+
+      # Prepare objects to be handled by the payload serializer.
+      #
+      # Hashes and Arrays are traversed. Then all types execpt strings and
+      # immediates are exported using #inspect. Sending the object itself to the
+      # serializer can result in large recursive expansions, especially in Rails
+      # environments with ActiveRecord, ActiveSupport, etc. on the stack.
+      # Other export options could be #to_s, #to_h, and #as_json. Several of these
+      # will omit the class name, or are not implemented for many types.
+      #
+      # #inspect has the advantage that it is specifically intended for debugging
+      # output. If the user wants more or different information in the payload
+      # about a specific type, #inspect is the correct place to implement it.
+      # Likewise the default implementation should be oriented toward usefulness
+      # in debugging.
+      #
+      # Because #inspect outputs a string, it can be handled well by the string
+      # truncation strategy for large payloads.
+      #
+      def self.prepare_value: (untyped value) -> untyped
+
+      def self.simple_classes: () -> untyped
+
+      def self.simple_value?: (untyped value) -> (true | false)
+
+      def self.scrub: (untyped hash) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  class Item
+    class Backtrace
+      attr_reader exception: untyped
+
+      attr_reader message: untyped
+
+      attr_reader extra: untyped
+
+      attr_reader configuration: untyped
+
+      private
+
+      attr_reader files: untyped
+
+      public
+
+      def initialize: (untyped exception, ?::Hash[untyped, untyped] options) -> void
+
+      def to_h: () -> untyped
+
+      alias build to_h
+
+      def get_file_lines: (untyped filename) -> untyped
+
+      private
+
+      def read_file: (untyped filename) -> untyped
+
+      def trace_chain: () -> untyped
+
+      def trace_data: (untyped current_exception) -> { frames: untyped, exception: { class: untyped, message: untyped } }
+
+      def map_frames: (untyped current_exception) -> untyped
+
+      def cleaned_backtrace: (untyped current_exception) -> untyped
+
+      # Returns the backtrace to be sent to our API. There are 3 options:
+      #
+      # 1. The exception received has a backtrace, then that backtrace is returned.
+      # 2. configuration.populate_empty_backtraces is disabled, we return [] here
+      # 3. The user has configuration.populate_empty_backtraces is enabled, then:
+      #
+      # We want to send the caller as backtrace, but the first lines of that array
+      # are those from the user's Rollbar.error line until this method. We want
+      # to remove those lines.
+      def exception_backtrace: (untyped current_exception) -> (untyped | ::Array[untyped])
+
+      def rollbar_lib_gem_dir: () -> ::String
+    end
+  end
+end
+
+module Rollbar
+  class Item
+    # Representation of the trace data per frame in the payload
+    class Frame
+      attr_reader backtrace: untyped
+
+      attr_reader frame: untyped
+
+      attr_reader configuration: untyped
+
+      MAX_CONTEXT_LENGTH: 4
+
+      def initialize: (untyped backtrace, untyped frame, ?::Hash[untyped, untyped] options) -> void
+
+      def to_h: () -> untyped
+
+      private
+
+      def unknown_frame: () -> { filename: "<unknown>", lineno: 0, method: untyped }
+
+      def extra_frame_data: (untyped filename, untyped lineno) -> (::Hash[untyped, untyped] | { code: untyped, context: untyped, locals: untyped })
+
+      def skip_extra_frame_data?: (untyped filename, untyped file_lines) -> (false | untyped)
+
+      def outside_project?: (untyped filename) -> (false | true | untyped)
+
+      def code_data: (untyped file_lines, untyped lineno) -> untyped
+
+      def context_data: (untyped file_lines, untyped lineno) -> { pre: untyped, post: untyped }
+
+      def locals_data: (untyped filename, untyped lineno) -> (nil | untyped)
+
+      def post_data: (untyped file_lines, untyped lineno) -> untyped
+
+      def pre_data: (untyped file_lines, untyped lineno) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Util
+    # :nodoc:
+    def self.iterate_and_update_with_block: (untyped obj) { () -> untyped } -> untyped
+
+    def self.iterate_and_update: (untyped obj, untyped block, ?::Hash[untyped, untyped] seen) -> (nil | untyped)
+
+    def self.iterate_and_update_array: (untyped array, untyped block, untyped seen) -> untyped
+
+    def self.iterate_and_update_hash: (untyped obj, untyped block, untyped seen) -> untyped
+
+    def self.deep_copy: (untyped obj, ?::Hash[untyped, untyped] copied) -> untyped
+
+    def self.clone_obj: (untyped obj) -> untyped
+
+    def self.deep_merge: (untyped hash1, untyped hash2, ?::Hash[untyped, untyped] merged) -> untyped
+
+    def self.perform_deep_merge: (untyped hash1, untyped hash2, untyped merged) -> untyped
+
+    def self.truncate: (untyped str, untyped length) -> untyped
+
+    def self.uuid_rollbar_url: (untyped data, untyped configuration) -> ::String
+
+    def self.enforce_valid_utf8: (untyped payload) -> untyped
+
+    def self.count_method_in_stack: (untyped method_symbol, ?::String file_path) -> untyped
+
+    def self.method_in_stack: (untyped method_symbol, ?::String file_path) -> untyped
+
+    def self.method_in_stack_twice: (untyped method_symbol, ?::String file_path) -> untyped
+  end
+end
+
+module Rollbar
+  # Module for loading Rollbar Capistrano tasks into Capistrano 2
+  module Capistrano2
+    def self.load_into: (untyped configuration) -> untyped
+
+    private
+
+    def self.load_tasks_flow: (untyped configuration) -> untyped
+
+    def self.load_properties: (untyped configuration) -> untyped
+
+    def self.load_tasks: (untyped configuration) -> untyped
+
+    def self.load_deploy_started: (untyped configuration) -> untyped
+
+    def self.load_deploy_succeeded: (untyped configuration) -> untyped
+
+    def self.load_task: (configuration: untyped configuration, desc: untyped desc, task: untyped task) { () -> untyped } -> untyped
+  end
+end
+
+module Rollbar
+  # The notifier class. It has the core functionality
+  # for sending reports to the API.
+  class Notifier
+    attr_accessor configuration: untyped
+
+    attr_accessor last_report: untyped
+
+    attr_accessor scope_object: untyped
+
+    MUTEX: untyped
+
+    EXTENSION_REGEXP: ::Regexp
+
+    FAILSAFE_STRING_LENGTH: 10000
+
+    def initialize: (?untyped? parent_notifier, ?untyped? payload_options, ?untyped? scope) -> void
+
+    def reset!: () -> untyped
+
+    # Similar to configure below, but used only internally within the gem
+    # to configure it without initializing any of the third party hooks
+    def preconfigure: () { (untyped) -> untyped } -> untyped
+
+    # Configures the notifier instance
+    def configure: () { (untyped) -> untyped } -> untyped
+
+    def reconfigure: () { (untyped) -> untyped } -> untyped
+
+    def unconfigure: () -> untyped
+
+    def scope: (?::Hash[untyped, untyped] scope_overrides, ?::Hash[untyped, untyped] config_overrides) -> untyped
+
+    def scope!: (?::Hash[untyped, untyped] options, ?::Hash[untyped, untyped] config_overrides) -> untyped
+
+    # Returns a new notifier with same configuration options
+    # but it sets Configuration#safely to true.
+    # We are using this flag to avoid having inifite loops
+    # when evaluating some custom user methods.
+    def safely: () -> untyped
+
+    # Turns off reporting for the given block.
+    #
+    # @example
+    #   Rollbar.silenced { raise }
+    #
+    # @yield Block which exceptions won't be reported.
+    def silenced: () { () -> untyped } -> untyped
+
+    # Sends a report to Rollbar.
+    #
+    # Accepts a level string plus any number of arguments. The last String
+    # argument will become the message or description of the report. The last
+    # Exception argument will become the associated exception for the report.
+    # The last hash argument will be used as the extra data for the report.
+    #
+    # If the extra hash contains a symbol key :custom_data_method_context
+    # the value of the key will be used as the context for
+    # configuration.custom_data_method and will be removed from the extra
+    # hash.
+    #
+    # @example
+    #   begin
+    #     foo = bar
+    #   rescue => e
+    #     Rollbar.log('error', e)
+    #   end
+    #
+    # @example
+    #   Rollbar.log('info', 'This is a simple log message')
+    #
+    # @example
+    #   Rollbar.log('error', e, 'This is a description of the exception')
+    #
+    def log: (untyped level, *untyped args) -> ("disabled" | "ignored" | untyped)
+
+    def ignore_before_process?: (untyped level, untyped exception, untyped message, untyped extra) -> untyped
+
+    def report_with_rescue: (untyped level, untyped message, untyped exception, untyped extra, untyped context) -> untyped
+
+    # See log() above
+    def debug: (*untyped args) -> untyped
+
+    # See log() above
+    def info: (*untyped args) -> untyped
+
+    # See log() above
+    def warn: (*untyped args) -> untyped
+
+    # See log() above
+    def warning: (*untyped args) -> untyped
+
+    # See log() above
+    def error: (*untyped args) -> untyped
+
+    # See log() above
+    def critical: (*untyped args) -> untyped
+
+    def enabled?: () -> untyped
+
+    def process_item: (untyped item) -> untyped
+
+    # We will reraise exceptions in this method so async queues
+    # can retry the job or, in general, handle an error report some way.
+    #
+    # At same time that exception is silenced so we don't generate
+    # infinite reports. This example is what we want to avoid:
+    #
+    # 1. New exception in a the project is raised
+    # 2. That report enqueued to Sidekiq queue.
+    # 3. The Sidekiq job tries to send the report to our API
+    # 4. The report fails, for example cause a network failure,
+    #    and a exception is raised
+    # 5. We report an internal error for that exception
+    # 6. We reraise the exception so Sidekiq job fails and
+    #    Sidekiq can retry the job reporting the original exception
+    # 7. Because the job failed and Sidekiq can be managed by rollbar we'll
+    #    report a new exception.
+    # 8. Go to point 2.
+    #
+    # We'll then push to Sidekiq queue indefinitely until the network failure
+    # is fixed.
+    #
+    # Using Rollbar.silenced we avoid the above behavior but Sidekiq
+    # will have a chance to retry the original job.
+    def process_from_async_handler: (untyped payload) -> untyped
+
+    def build_item_with_payload: (untyped payload) -> untyped
+
+    def failsafe_initial_data: (untyped exception_reason) -> ::Hash[:level | :environment | :body | :notifier | :internal | ::String, "error" | untyped | { message: { body: untyped } } | { name: "rollbar-gem", version: untyped } | true]
+
+    def send_failsafe: (untyped message, untyped exception, ?untyped? original_error) -> untyped
+
+    def process_failsafe_item: (untyped failsafe_payload) -> untyped
+
+    def failsafe_add_original_error_data: (untyped payload_notifier, untyped original_error) -> (nil | untyped)
+
+    def add_original_message: (untyped diagnostic, untyped original_error) -> untyped
+
+    def add_original_error: (untyped diagnostic, untyped original_error) -> untyped
+
+    def add_configured_options: (untyped payload_notifier, untyped original_error) -> untyped
+
+    def add_original_host: (untyped diagnostic, untyped original_error) -> untyped
+
+    def add_original_uuid: (untyped diagnostic, untyped original_error) -> untyped
+
+    def logger: () -> untyped
+
+    def trace_with_bindings: () -> untyped
+
+    def exception_bindings: () -> untyped
+
+    def current_bindings: () -> untyped
+
+    def enable_locals?: () -> untyped
+
+    def enable_locals: () -> untyped
+
+    def disable_locals: () -> untyped
+
+    private
+
+    def use_exception_level_filters?: (untyped options) -> untyped
+
+    def call_before_process: (untyped options) -> ("ignored" | untyped)
+
+    def options_for_handler: (untyped options) -> { level: untyped, scope: untyped, exception: untyped, message: untyped, extra: untyped }
+
+    def extract_arguments: (untyped args) -> ::Array[untyped]
+
+    def java_exception?: (untyped obj) -> untyped
+
+    def lookup_exception_level: (untyped orig_level, untyped exception, untyped use_exception_level_filters) -> untyped
+
+    def ignored?: (untyped exception, ?bool use_exception_level_filters) -> (false | true)
+
+    def filtered_level: (untyped exception) -> (nil | untyped)
+
+    def report: (untyped level, untyped message, untyped exception, untyped extra, untyped context) -> ("error" | "ignored" | untyped)
+
+    def log_and_return_item_data: (untyped item) -> untyped
+
+    def log_data: (untyped data) -> untyped
+
+    # Reports an internal error in the Rollbar library. This will be reported
+    # within the configured Rollbar project. We'll first attempt to provide a
+    # report including the exception traceback. If that fails, we'll fall back
+    # to a more static failsafe response.
+    def report_internal_error: (untyped exception, ?untyped? original_error) -> untyped
+
+    def skip_reporting_internal_error: (untyped exception) -> (true | false)
+
+    def build_item: (untyped level, untyped message, untyped exception, untyped extra, untyped context) -> untyped
+
+    def send_using_eventmachine: (untyped body) -> untyped
+
+    def eventmachine_callback: (untyped req) -> untyped
+
+    def eventmachine_errback: (untyped req) -> untyped
+
+    def send_item: (untyped item) -> (nil | untyped)
+
+    def send_body: (untyped body) -> untyped
+
+    def do_post: (untyped uri, untyped body, untyped access_token) -> untyped
+
+    def init_http: (untyped uri) -> untyped
+
+    def init_http_timeouts: (untyped http) -> untyped
+
+    def pack_ruby260_bytes: (untyped body) -> untyped
+
+    def multibyte?: (untyped str) -> untyped
+
+    def http_proxy_for_em: (untyped uri) -> { proxy: { host: untyped, port: untyped, authorization: ::Array[untyped] } }
+
+    def http_proxy: (untyped uri) -> untyped
+
+    def proxy_from_config: () -> (nil | untyped)
+
+    def proxy_from_env: (untyped uri) -> untyped
+
+    def null_proxy: () -> untyped
+
+    def handle_net_retries: () { () -> untyped } -> untyped
+
+    def handle_response: (untyped response) -> untyped
+
+    def ssl_verify_mode: () -> untyped
+
+    def do_write_item: (untyped item) -> (nil | untyped)
+
+    def file_name_with_pid: (untyped configuration) -> untyped
+
+    def update_file: (untyped file, untyped file_name) -> (nil | untyped)
+
+    def failsafe_reason: (untyped message, untyped exception) -> untyped
+
+    def failsafe_exception_reason: (untyped message, untyped exception) -> untyped
+
+    def failsafe_body: (untyped reason) -> ::String
+
+    def schedule_item: (untyped item) -> (nil | untyped)
+
+    def default_async_handler: () -> untyped
+
+    def process_async_item: (untyped item) -> untyped
+
+    def async_failover: (untyped item) -> untyped
+
+    # alias log_warning log_warn
+
+    def log_instance_link: (untyped data) -> (nil | untyped)
+
+    def via_failsafe?: (untyped item) -> untyped
+  end
+end
+
+module Rollbar
+  module Js
+  end
+end
+
+module Rollbar
+  module Encoding
+    attr_accessor self.encoding_class: untyped
+
+    def self.setup: () -> untyped
+
+    def self.encode: (untyped object) -> untyped
+  end
+end
+
+module Rollbar
+  class LazyStore
+    private
+
+    attr_reader loaded_data: untyped
+
+    public
+
+    attr_reader raw: untyped
+
+    def initialize: (untyped initial_data) -> void
+
+    def eql?: (untyped other) -> untyped
+
+    def ==: (untyped other) -> untyped
+
+    # With this version of clone we ensure that the loaded_data is empty
+    def clone: () -> untyped
+
+    def []: (untyped key) -> untyped
+
+    def []=: (untyped key, untyped value) -> untyped
+
+    def data: () -> untyped
+
+    private
+
+    def load_value: (untyped key) -> (untyped | nil)
+
+    def find_value: (untyped key) -> untyped
+
+    def method_missing: (untyped method_sym, *untyped args) { () -> untyped } -> untyped
+
+    def respond_to_missing?: (untyped method_sym, untyped include_all) -> untyped
+  end
+end
+
+module Rollbar
+  # Deploy Tracking API wrapper module
+  module Deploy
+    ENDPOINT: "https://api.rollbar.com/api/1/deploy/"
+
+    def self.report: (untyped opts, untyped access_token, untyped environment, untyped revision) -> (::Hash[untyped, untyped] | untyped)
+
+    def self.update: (untyped opts, untyped access_token, untyped deploy_id, untyped status) -> (::Hash[untyped, untyped] | untyped)
+
+    private
+
+    def self.send_request: (untyped opts, untyped uri, untyped request) -> untyped
+
+    def self.build_result: (untyped uri, untyped request, ?untyped? response, ?bool dry_run) -> untyped
+
+    def self.success?: (untyped result, ?bool dry_run) -> (true | untyped)
+
+    def self.request_result: (untyped uri, untyped request) -> { request_info: ::String, request: untyped }
+
+    def self.response_result: (untyped response) -> untyped
+  end
+end
+
+module Rollbar
+  VERSION: "3.3.0"
+end
+
+module RollbarTest
+  # :nodoc:
+  def self.run: () -> (nil | untyped)
+
+  def self.confirmed_token?: () -> (true | false)
+
+  def self.token_error_message: () -> "Rollbar needs an access token configured. Check the README for instructions."
+
+  def self.error_message: () -> "Test failed! You may have a configuration issue, or you could be using a gem that's blocking the test. Contact support@rollbar.com if you need help troubleshooting."
+
+  def self.success_message: () -> "Testing rollbar with \"rake rollbar:test\". If you can see this, it works."
+end
+
+module Rollbar
+  module Delay
+    class GirlFriday
+      def self.queue_class: () -> untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def self.queue: () -> untyped
+
+      def call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    class SuckerPunch
+      # include ::SuckerPunch::Job
+
+      attr_accessor self.perform_proc: untyped
+
+      attr_accessor self.ready: untyped
+
+      def self.setup: () -> untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def perform: (*untyped args) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    class Sidekiq
+      OPTIONS: ::Hash[::String, "rollbar" | untyped]
+
+      def initialize: (*untyped args) -> void
+
+      def call: (untyped payload) -> (nil | untyped)
+
+      # include ::Sidekiq::Worker
+
+      def perform: (*untyped args) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    # Following class allows to send rollbars using Sho-ryu-ken as a background
+    # jobs processor. See the queue_name method which states that your queues
+    # needs to be names as "rollbar_ENVIRONMENT". Retry intervals will be used
+    # to retry sending the same message again if failed before.
+    class Shoryuken
+      # include ::Shoryuken::Worker
+
+      attr_accessor self.queue: untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload, ?::Hash[untyped, untyped] options) -> untyped
+
+      def perform: (untyped _sqs_message, untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    class Resque
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+
+      class Job
+        attr_accessor self.queue: untyped
+
+        def self.perform: (untyped payload) -> untyped
+
+        def perform: (untyped payload) -> untyped
+      end
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    class Thread
+      EXIT_SIGNAL: :exit
+
+      EXIT_TIMEOUT: 6
+
+      Error: untyped
+
+      TimeoutError: untyped
+
+      DEFAULT_PRIORITY: 1
+
+      attr_writer self.options: untyped
+
+      attr_reader self.reaper: untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def self.options: () -> untyped
+
+      private
+
+      def self.threads: () -> untyped
+
+      def self.spawn_threads_reaper: () -> (nil | untyped)
+
+      def self.build_reaper_thread: () -> untyped
+
+      def self.configure_exit_handler: () -> untyped
+
+      public
+
+      def priority: () -> untyped
+
+      def call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    # This class provides the ActiveJob async handler. Users can
+    # use ActiveJob in order to send the reports to the Rollbar API
+    class ActiveJob < ::ActiveJob::Base
+      def perform: (untyped payload) -> untyped
+
+      def self.call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  module Delay
+    # This class provides the DelayedJob async handler. Users can
+    # use DelayedJob in order to send the reports to the Rollbar API
+    class DelayedJob
+      attr_accessor self.queue: untyped
+
+      def self.call: (untyped payload) -> untyped
+
+      def call: (untyped payload) -> untyped
+    end
+  end
+end
+
+module Rollbar
+  # Stores the available plugin definitions and loads them
+  class Plugins
+    attr_reader collection: untyped
+
+    def initialize: () -> void
+
+    def require_all: () -> untyped
+
+    def plugin_files: () -> untyped
+
+    def define: (untyped name) { () -> untyped } -> (nil | untyped)
+
+    def load!: () -> untyped
+
+    def get: (untyped name) -> untyped
+
+    private
+
+    def loaded?: (untyped name) -> untyped
+  end
+end
+
+module Rollbar
+  class Configuration
+    SEND_EXTRA_FRAME_DATA_OPTIONS: ::Array[:none | :app | :all]
+
+    attr_accessor access_token: untyped
+
+    attr_accessor anonymize_user_ip: untyped
+
+    attr_accessor async_handler: untyped
+
+    attr_accessor async_json_payload: untyped
+
+    attr_accessor async_skip_report_handler: untyped
+
+    attr_accessor backtrace_cleaner: untyped
+
+    attr_accessor branch: untyped
+
+    attr_accessor capture_uncaught: untyped
+
+    attr_accessor code_version: untyped
+
+    attr_accessor collect_user_ip: untyped
+
+    attr_accessor configured_options: untyped
+
+    attr_accessor custom_data_method: untyped
+
+    attr_accessor default_logger: untyped
+
+    attr_accessor delayed_job_enabled: untyped
+
+    attr_accessor disable_core_monkey_patch: untyped
+
+    attr_accessor disable_monkey_patch: untyped
+
+    attr_accessor disable_rack_monkey_patch: untyped
+
+    attr_accessor dj_threshold: untyped
+
+    attr_accessor enable_error_context: untyped
+
+    attr_accessor enabled: untyped
+
+    attr_accessor endpoint: untyped
+
+    attr_accessor environment: untyped
+
+    attr_accessor exception_level_filters: untyped
+
+    attr_accessor failover_handlers: untyped
+
+    attr_accessor filepath: untyped
+
+    attr_accessor files_processed_duration: untyped
+
+    attr_accessor files_processed_enabled: untyped
+
+    attr_accessor files_processed_size: untyped
+
+    attr_accessor files_with_pid_name_enabled: untyped
+
+    attr_accessor framework: untyped
+
+    attr_accessor ignore_internal_errors: untyped
+
+    attr_accessor ignored_person_ids: untyped
+
+    attr_accessor js_enabled: untyped
+
+    attr_accessor js_options: untyped
+
+    attr_accessor host: untyped
+
+    attr_accessor locals: untyped
+
+    attr_accessor log_payload: untyped
+
+    attr_accessor net_retries: untyped
+
+    attr_accessor open_timeout: untyped
+
+    attr_accessor payload_options: untyped
+
+    attr_accessor person_email_method: untyped
+
+    attr_accessor person_id_method: untyped
+
+    attr_accessor person_method: untyped
+
+    attr_accessor person_username_method: untyped
+
+    attr_accessor populate_empty_backtraces: untyped
+
+    attr_accessor proxy: untyped
+
+    attr_accessor raise_on_error: untyped
+
+    attr_accessor randomize_scrub_length: untyped
+
+    attr_accessor report_dj_data: untyped
+
+    attr_accessor request_timeout: untyped
+
+    attr_accessor root: untyped
+
+    attr_accessor safely: untyped
+
+    attr_accessor scrub_fields: untyped
+
+    attr_accessor scrub_password: untyped
+
+    attr_accessor scrub_user: untyped
+
+    attr_accessor scrub_whitelist: untyped
+
+    attr_accessor transmit: untyped
+
+    attr_accessor uncaught_exception_level: untyped
+
+    attr_accessor user_ip_obfuscator_secret: untyped
+
+    attr_accessor user_ip_rack_env_key: untyped
+
+    attr_accessor scrub_headers: untyped
+
+    attr_accessor sidekiq_threshold: untyped
+
+    attr_accessor sidekiq_use_scoped_block: untyped
+
+    attr_accessor use_async: untyped
+
+    attr_accessor use_exception_level_filters_default: untyped
+
+    attr_accessor use_payload_access_token: untyped
+
+    attr_accessor verify_ssl_peer: untyped
+
+    attr_accessor web_base: untyped
+
+    attr_accessor write_to_file: untyped
+
+    attr_reader before_process: untyped
+
+    attr_reader logger_level: untyped
+
+    attr_reader project_gem_paths: untyped
+
+    attr_reader send_extra_frame_data: untyped
+
+    attr_reader transform: untyped
+
+    attr_reader use_eventmachine: untyped
+
+    attr_writer logger: untyped
+
+    alias safely? safely
+
+    DEFAULT_ENDPOINT: "https://api.rollbar.com/api/1/item/"
+
+    DEFAULT_WEB_BASE: "https://rollbar.com"
+
+    def initialize: () -> void
+
+    def initialize_copy: (untyped orig) -> untyped
+
+    def wrapped_clone: () -> untyped
+
+    alias original_clone clone
+
+    alias clone wrapped_clone
+
+    def merge: (untyped options) -> untyped
+
+    def merge!: (untyped options) -> untyped
+
+    def use_active_job: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_delayed_job: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_sidekiq: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_resque: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_shoryuken: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_sidekiq=: (untyped value) -> untyped
+
+    def use_thread: (?::Hash[untyped, untyped] options) -> untyped
+
+    def use_sucker_punch: () -> untyped
+
+    def use_sucker_punch=: (untyped _value) -> untyped
+
+    def use_eventmachine=: (untyped value) -> untyped
+
+    def project_gems=: (untyped gems) -> untyped
+
+    def before_process=: (*untyped handler) -> untyped
+
+    def transform=: (*untyped handler) -> untyped
+
+    def send_extra_frame_data=: (untyped value) -> (nil | untyped)
+
+    # allow params to be read like a hash
+    def []: (untyped option) -> untyped
+
+    def logger_level=: (untyped level) -> untyped
+
+    def logger: () -> untyped
+
+    def hook: (untyped symbol) { () -> untyped } -> untyped
+
+    def execute_hook: (untyped symbol, *untyped args) -> untyped
+  end
+
+  class ConfiguredOptions
+    attr_accessor configuration: untyped
+
+    attr_accessor configured: untyped
+
+    def initialize: (untyped configuration) -> void
+
+    def method_missing: (untyped method, *untyped args) { () -> untyped } -> untyped
+
+    def respond_to_missing?: (untyped method) -> untyped
+  end
+end
+
+# The Rollbar module. It stores a Rollbar::Notifier per thread and
+# provides some module methods in order to use the current thread notifier.
+module Rollbar
+  PUBLIC_NOTIFIER_METHODS: ::Array["debug" | "info" | "warn" | "warning" | "error" | "critical" | "log" | "logger" | "process_item" | "process_from_async_handler" | "scope" | "send_failsafe" | "log_info" | "log_debug" | "log_warning" | "log_error" | "silenced" | "scope_object"]
+
+  # extend Forwardable
+
+  attr_writer self.plugins: untyped
+
+  attr_writer self.root_notifier: untyped
+
+  def self.notifier: () -> untyped
+
+  def self.notifier=: (untyped notifier) -> untyped
+
+  # It's the first notifier instantiated in the
+  # process. We store it so all the next per-thread
+  # notifiers can inherit its configuration
+  # The methods Rollbar.configure, Rollbar.reconfigure,
+  # Rollbar.preconfigure and Rollbar.unconfigure work
+  # on this notifier.
+  # Before v2.13.0 these methods worked on the global
+  # configuration, so in the practice the behavior is the same,
+  # since they work on the root notifier's configuration
+  def self.root_notifier: () -> untyped
+
+  def self.preconfigure: () { () -> untyped } -> untyped
+
+  # Configures the root notifier and loads the plugins
+  def self.configure: () { () -> untyped } -> untyped
+
+  # Reconfigures the root notifier
+  def self.reconfigure: () { () -> untyped } -> untyped
+
+  # Unconfigures the root notifier
+  def self.unconfigure: () -> untyped
+
+  # Returns the configuration for the current notifier.
+  # The current notifier is Rollbar.notifier and exists
+  # one per thread.
+  def self.configuration: () -> untyped
+
+  def self.safely?: () -> untyped
+
+  def self.plugins: () -> untyped
+
+  def self.last_report: () -> untyped
+
+  def self.last_report=: (untyped report) -> untyped
+
+  # Resets the scope for the current thread notifier. The notifier
+  # reference is kept so we reuse the notifier.
+  # This is a change from version 2.13.0. Before this version
+  # this method clears the notifier.
+  #
+  # It was used in order to reset the scope and reusing the global
+  # configuration Rollbar.configuration. Since now Rollbar.configuration
+  # points to the current notifier configuration, we can resue the
+  # notifier instance and just reset the scope.
+  def self.reset_notifier!: () -> untyped
+
+  # Clears the current thread notifier and the root notifier.
+  # In the practice this should be used only on the specs
+  def self.clear_notifier!: () -> untyped
+
+  # Create a new Notifier instance using the received options and
+  # set it as the current thread notifier.
+  # The calls to Rollbar inside the received block will use then this
+  # new Notifier object.
+  #
+  # @example
+  #
+  #   new_scope = { job_type: 'scheduled' }
+  #   new_config = { use_async: false }
+  #
+  #   Rollbar.scoped(new_scope, new_config) do
+  #     begin
+  #       # do stuff
+  #     rescue => e
+  #       Rollbar.error(e)
+  #     end
+  #   end
+  def self.scoped: (?::Hash[untyped, untyped] options, ?::Hash[untyped, untyped] config_overrides) { () -> untyped } -> untyped
+
+  # Create a new Notifier instance with a new configuration
+  # using the current one but merging the passed options.
+  def self.with_config: (untyped overrides) { () -> untyped } -> untyped
+
+  def self.scope!: (?::Hash[untyped, untyped] options) -> untyped
+
+  def self.report_exception: (untyped exception, ?untyped? request_data, ?untyped? person_data, ?::String level) -> untyped
+
+  def self.report_message: (untyped message, ?::String level, ?untyped? extra_data) -> untyped
+
+  def self.report_message_with_request: (untyped message, ?::String level, ?untyped? request_data, ?untyped? person_data, ?untyped? extra_data) -> untyped
+end
+
+module Rollbar
+  module Generators
+    class RollbarGenerator < ::Rails::Generators::Base
+      def create_initializer: () -> untyped
+
+      def access_token_expr: () -> untyped
+
+      def access_token_configured?: () -> untyped
+    end
+  end
+end
+
+# Rails.root is not present here.
+# RSpec needs ENV['DUMMYAPP_PATH'] in order to have a valid path.
+# Dir.pwd is used in normal operation.
+# APP_PATH: untyped
+
+module Rails
+  class RollbarRunner
+    class GemResolver
+      def railties_gem: () -> untyped
+    end
+
+    class LegacyGemResolver
+      def railties_gem: () -> untyped
+    end
+
+    attr_reader command: untyped
+
+    def initialize: () -> void
+
+    def run: () -> untyped
+
+    def prepare_environment: () -> untyped
+
+    def eval_runner: () -> untyped
+
+    def legacy_runner: () -> untyped
+
+    def rails5_runner: () -> untyped
+
+    def rollbar_managed: () { () -> untyped } -> untyped
+
+    def runner_path: () -> ::String
+
+    def railties_gem: () -> untyped
+
+    def railties_gem_dir: () -> untyped
+  end
+end
+

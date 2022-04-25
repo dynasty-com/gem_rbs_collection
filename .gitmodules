@@ -106,3 +106,9 @@
 [submodule "gems/rest-client/2.1/_src"]
 	path = gems/rest-client/2.1/_src
 	url = https://github.com/rest-client/rest-client.git
+[submodule "gems/rollbar/3.3/_src"]
+	path = gems/rollbar/3.3/_src
+	url = https://github.com/rollbar/rollbar-gem.git
+[submodule "gems/shoryuken/6.0/_src"]
+	path = gems/shoryuken/6.0/_src
+	url = https://github.com/ruby-shoryuken/shoryuken.git
