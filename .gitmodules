@@ -103,3 +103,6 @@
 [submodule "gems/globalid/1.0/_src"]
 	path = gems/globalid/1.0/_src
 	url = https://github.com/rails/globalid.git
+[submodule "gems/rest-client/2.1/_src"]
+	path = gems/rest-client/2.1/_src
+	url = https://github.com/rest-client/rest-client.git

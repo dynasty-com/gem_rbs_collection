@@ -1,0 +1,1189 @@
+# This module's static methods are the entry point for using the REST client.
+#
+#   # GET
+#   xml = RestClient.get 'http://example.com/resource'
+#   jpg = RestClient.get 'http://example.com/resource', :accept => 'image/jpg'
+#
+#   # authentication and SSL
+#   RestClient.get 'https://user:password@example.com/private/resource'
+#
+#   # POST or PUT with a hash sends parameters as a urlencoded form body
+#   RestClient.post 'http://example.com/resource', :param1 => 'one'
+#
+#   # nest hash parameters
+#   RestClient.post 'http://example.com/resource', :nested => { :param1 => 'one' }
+#
+#   # POST and PUT with raw payloads
+#   RestClient.post 'http://example.com/resource', 'the post body', :content_type => 'text/plain'
+#   RestClient.post 'http://example.com/resource.xml', xml_doc
+#   RestClient.put 'http://example.com/resource.pdf', File.read('my.pdf'), :content_type => 'application/pdf'
+#
+#   # DELETE
+#   RestClient.delete 'http://example.com/resource'
+#
+#   # retrieve the response http code and headers
+#   res = RestClient.get 'http://example.com/some.jpg'
+#   res.code                    # => 200
+#   res.headers[:content_type]  # => 'image/jpg'
+#
+#   # HEAD
+#   RestClient.head('http://example.com').headers
+#
+# To use with a proxy, just set RestClient.proxy to the proper http proxy:
+#
+#   RestClient.proxy = "http://proxy.example.com/"
+#
+# Or inherit the proxy from the environment:
+#
+#   RestClient.proxy = ENV['http_proxy']
+#
+# For live tests of RestClient, try using http://rest-test.heroku.com, which echoes back information about the rest call:
+#
+#   >> RestClient.put 'http://rest-test.heroku.com/resource', :foo => 'baz'
+#   => "PUT http://rest-test.heroku.com/resource with a 7 byte payload, content type application/x-www-form-urlencoded {\"foo\"=>\"baz\"}"
+#
+module RestClient
+  def self.get: (untyped url, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.post: (untyped url, untyped payload, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.patch: (untyped url, untyped payload, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.put: (untyped url, untyped payload, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.delete: (untyped url, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.head: (untyped url, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  def self.options: (untyped url, ?::Hash[untyped, untyped] headers) { () -> untyped } -> untyped
+
+  # A global proxy URL to use for all requests. This can be overridden on a
+  # per-request basis by passing `:proxy` to RestClient::Request.
+  def self.proxy: () -> untyped
+
+  def self.proxy=: (untyped value) -> untyped
+
+  # Return whether RestClient.proxy was set explicitly. We use this to
+  # differentiate between no value being set and a value explicitly set to nil.
+  #
+  # @return [Boolean]
+  #
+  def self.proxy_set?: () -> untyped
+
+  # Setup the log for RestClient calls.
+  # Value should be a logger but can can be stdout, stderr, or a filename.
+  # You can also configure logging by the environment variable RESTCLIENT_LOG.
+  def self.log=: (untyped log) -> untyped
+
+  # Create a log that respond to << like a logger
+  # param can be 'stdout', 'stderr', a string (then we will log to that file) or a logger (then we return it)
+  def self.create_log: (untyped param) -> untyped
+
+  def self.log: () -> untyped
+
+  # Add a Proc to be called before each request in executed.
+  # The proc parameters will be the http request and the request params.
+  def self.add_before_execution_proc: () { () -> untyped } -> untyped
+
+  # Reset the procs to be called before each request is executed.
+  def self.reset_before_execution_procs: () -> untyped
+
+  def self.before_execution_procs: () -> untyped
+end
+
+
+
+module RestClient
+  module Windows
+  end
+end
+
+module RestClient
+  # Hash of HTTP status code => message.
+  #
+  # 1xx: Informational - Request received, continuing process
+  # 2xx: Success - The action was successfully received, understood, and
+  #      accepted
+  # 3xx: Redirection - Further action must be taken in order to complete the
+  #      request
+  # 4xx: Client Error - The request contains bad syntax or cannot be fulfilled
+  # 5xx: Server Error - The server failed to fulfill an apparently valid
+  #      request
+  #
+  # @see
+  #   http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+  #
+  STATUSES: { 100 => "Continue", 101 => "Switching Protocols", 102 => "Processing", 200 => "OK", 201 => "Created", 202 => "Accepted", 203 => "Non-Authoritative Information", 204 => "No Content", 205 => "Reset Content", 206 => "Partial Content", 207 => "Multi-Status", 208 => "Already Reported", 226 => "IM Used", 300 => "Multiple Choices", 301 => "Moved Permanently", 302 => "Found", 303 => "See Other", 304 => "Not Modified", 305 => "Use Proxy", 306 => "Switch Proxy", 307 => "Temporary Redirect", 308 => "Permanent Redirect", 400 => "Bad Request", 401 => "Unauthorized", 402 => "Payment Required", 403 => "Forbidden", 404 => "Not Found", 405 => "Method Not Allowed", 406 => "Not Acceptable", 407 => "Proxy Authentication Required", 408 => "Request Timeout", 409 => "Conflict", 410 => "Gone", 411 => "Length Required", 412 => "Precondition Failed", 413 => "Payload Too Large", 414 => "URI Too Long", 415 => "Unsupported Media Type", 416 => "Range Not Satisfiable", 417 => "Expectation Failed", 418 => "I'm A Teapot", 421 => "Too Many Connections From This IP", 422 => "Unprocessable Entity", 423 => "Locked", 424 => "Failed Dependency", 425 => "Unordered Collection", 426 => "Upgrade Required", 428 => "Precondition Required", 429 => "Too Many Requests", 431 => "Request Header Fields Too Large", 449 => "Retry With", 450 => "Blocked By Windows Parental Controls", 500 => "Internal Server Error", 501 => "Not Implemented", 502 => "Bad Gateway", 503 => "Service Unavailable", 504 => "Gateway Timeout", 505 => "HTTP Version Not Supported", 506 => "Variant Also Negotiates", 507 => "Insufficient Storage", 508 => "Loop Detected", 509 => "Bandwidth Limit Exceeded", 510 => "Not Extended", 511 => "Network Authentication Required" }
+
+  STATUSES_COMPATIBILITY: { 404 => ::Array["ResourceNotFound"], 413 => ::Array["RequestEntityTooLarge"], 414 => ::Array["RequestURITooLong"], 416 => ::Array["RequestedRangeNotSatisfiable"] }
+
+  # This is the base RestClient exception class. Rescue it if you want to
+  # catch any exception that your request might raise
+  # You can get the status code by e.http_code, or see anything about the
+  # response via e.response.
+  # For example, the entire result body (which is
+  # probably an HTML error page) is e.response.
+  class Exception < RuntimeError
+    attr_accessor response: untyped
+
+    attr_accessor original_exception: untyped
+
+    attr_writer message: untyped
+
+    def initialize: (?untyped? response, ?untyped? initial_response_code) -> void
+
+    def http_code: () -> untyped
+
+    def http_headers: () -> untyped
+
+    def http_body: () -> untyped
+
+    def to_s: () -> untyped
+
+    def message: () -> untyped
+
+    def default_message: () -> untyped
+  end
+
+  # Compatibility
+  class ExceptionWithResponse < RestClient::Exception
+  end
+
+  # The request failed with an error code not managed by the code
+  class RequestFailed < ExceptionWithResponse
+    def default_message: () -> ::String
+
+    def to_s: () -> untyped
+  end
+
+  # RestClient exception classes. TODO: move all exceptions into this module.
+  #
+  # We will a create an exception for each status code, see
+  # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+  #
+  module Exceptions
+    # Map http status codes to the corresponding exception class
+    EXCEPTIONS_MAP: ::Hash[untyped, untyped]
+  end
+
+  module Exceptions
+    # Base class for request timeouts.
+    #
+    # NB: Previous releases of rest-client would raise RequestTimeout both for
+    # HTTP 408 responses and for actual connection timeouts.
+    class Timeout < RestClient::RequestTimeout
+      def initialize: (?untyped? message, ?untyped? original_exception) -> void
+    end
+
+    # Timeout when connecting to a server. Typically wraps Net::OpenTimeout (in
+    # ruby 2.0 or greater).
+    class OpenTimeout < Timeout
+      def default_message: () -> "Timed out connecting to server"
+    end
+
+    # Timeout when reading from a server. Typically wraps Net::ReadTimeout (in
+    # ruby 2.0 or greater).
+    class ReadTimeout < Timeout
+      def default_message: () -> "Timed out reading data from server"
+    end
+  end
+
+  # The server broke the connection prior to the request completing.  Usually
+  # this means it crashed, or sometimes that your network connection was
+  # severed before it could complete.
+  class ServerBrokeConnection < RestClient::Exception
+    def initialize: (?::String message) -> void
+  end
+
+  class SSLCertificateNotVerified < RestClient::Exception
+    def initialize: (?::String message) -> void
+  end
+end
+
+module RestClient
+  module Platform
+    # Return true if we are running on a darwin-based Ruby platform. This will
+    # be false for jruby even on OS X.
+    #
+    # @return [Boolean]
+    def self.mac_mri?: () -> untyped
+
+    # Return true if we are running on Windows.
+    #
+    # @return [Boolean]
+    #
+    def self.windows?: () -> untyped
+
+    # Return true if we are running on jruby.
+    #
+    # @return [Boolean]
+    #
+    def self.jruby?: () -> untyped
+
+    def self.architecture: () -> ::String
+
+    def self.ruby_agent_version: () -> untyped
+
+    def self.default_user_agent: () -> ::String
+  end
+end
+
+module RestClient
+  module Payload
+    extend ::RestClient::Payload
+
+    def generate: (untyped params) -> untyped
+
+    def has_file?: (untyped params) -> untyped
+
+    def _has_file?: (untyped obj) -> untyped
+
+    class Base
+      def initialize: (untyped params) -> void
+
+      def build_stream: (untyped params) -> untyped
+
+      def read: (*untyped args) -> untyped
+
+      def to_s: () -> untyped
+
+      def headers: () -> ::Hash[::String, untyped]
+
+      def size: () -> untyped
+
+      alias length size
+
+      def close: () -> untyped
+
+      def closed?: () -> untyped
+
+      def to_s_inspect: () -> untyped
+
+      def short_inspect: () -> untyped
+    end
+
+    class Streamed < Base
+      def build_stream: (?untyped? params) -> untyped
+
+      def size: () -> untyped
+
+      alias length size
+    end
+
+    class UrlEncoded < Base
+      def build_stream: (?untyped? params) -> untyped
+
+      def headers: () -> untyped
+    end
+
+    class Multipart < Base
+      EOL: ::String
+
+      def build_stream: (untyped params) -> untyped
+
+      def create_regular_field: (untyped s, untyped k, untyped v) -> untyped
+
+      def create_file_field: (untyped s, untyped k, untyped v) -> untyped
+
+      def mime_for: (untyped path) -> untyped
+
+      def boundary: () -> untyped
+
+      # for Multipart do not escape the keys
+      #
+      # Ostensibly multipart keys MAY be percent encoded per RFC 7578, but in
+      # practice no major browser that I'm aware of uses percent encoding.
+      #
+      # Further discussion of multipart encoding:
+      # https://github.com/rest-client/rest-client/pull/403#issuecomment-156976930
+      #
+      def handle_key: (untyped key) -> untyped
+
+      def headers: () -> untyped
+
+      def close: () -> untyped
+    end
+  end
+end
+
+module RestClient
+  # Various utility methods
+  module Utils
+    # Return encoding from an HTTP header hash.
+    #
+    # We use the RFC 7231 specification and do not impose a default encoding on
+    # text. This differs from the older RFC 2616 behavior, which specifies
+    # using ISO-8859-1 for text/* content types without a charset.
+    #
+    # Strings will use the default encoding when this method returns nil. This
+    # default is likely to be UTF-8 for Ruby >= 2.0
+    #
+    # @param headers [Hash<Symbol,String>]
+    #
+    # @return [String, nil] Return the string encoding or nil if no header is
+    #   found.
+    #
+    # @example
+    #   >> get_encoding_from_headers({:content_type => 'text/plain; charset=UTF-8'})
+    #   => "UTF-8"
+    #
+    def self.get_encoding_from_headers: (untyped headers) -> (nil | untyped)
+
+    # Parse a Content-Type like header.
+    #
+    # Return the main content-type and a hash of params.
+    #
+    # @param [String] line
+    # @return [Array(String, Hash)]
+    #
+    def self.cgi_parse_header: (untyped line) -> ::Array[untyped]
+
+    # Parse semi-colon separated, potentially quoted header string iteratively.
+    #
+    # @private
+    #
+    # @deprecated This method is deprecated and only exists to support Ruby
+    #   2.0, which is not supported by HTTP::Accept.
+    #
+    # @todo remove this method when dropping support for Ruby 2.0
+    #
+    def self._cgi_parseparam: (untyped s) { (untyped) -> untyped } -> (untyped | nil)
+
+    # Parse a Content-Type like header.
+    #
+    # Return the main content-type and a hash of options.
+    #
+    # This method was ported directly from Python's cgi.parse_header(). It
+    # probably doesn't read or perform particularly well in ruby.
+    # https://github.com/python/cpython/blob/3.4/Lib/cgi.py#L301-L331
+    #
+    # @param [String] line
+    # @return [Array(String, Hash)]
+    #
+    # @deprecated This method is deprecated and only exists to support Ruby
+    #   2.0, which is not supported by HTTP::Accept.
+    #
+    # @todo remove this method when dropping support for Ruby 2.0
+    #
+    def self.deprecated_cgi_parse_header: (untyped line) -> ::Array[untyped]
+
+    # Serialize a ruby object into HTTP query string parameters.
+    #
+    # There is no standard for doing this, so we choose our own slightly
+    # idiosyncratic format. The output closely matches the format understood by
+    # Rails, Rack, and PHP.
+    #
+    # If you don't want handling of complex objects and only want to handle
+    # simple flat hashes, you may want to use `URI.encode_www_form` instead,
+    # which implements HTML5-compliant URL encoded form data.
+    #
+    # @param [Hash,ParamsArray] object The object to serialize
+    #
+    # @return [String] A string appropriate for use as an HTTP query string
+    #
+    # @see {flatten_params}
+    #
+    # @see URI.encode_www_form
+    #
+    # @see See also Object#to_query in ActiveSupport
+    # @see http://php.net/manual/en/function.http-build-query.php
+    #   http_build_query in PHP
+    # @see See also Rack::Utils.build_nested_query in Rack
+    #
+    # Notable differences from the ActiveSupport implementation:
+    #
+    # - Empty hash and empty array are treated the same as nil instead of being
+    #   omitted entirely from the output. Rather than disappearing, they will
+    #   appear to be nil instead.
+    #
+    # It's most common to pass a Hash as the object to serialize, but you can
+    # also use a ParamsArray if you want to be able to pass the same key with
+    # multiple values and not use the rack/rails array convention.
+    #
+    # @since 2.0.0
+    #
+    # @example Simple hashes
+    #   >> encode_query_string({foo: 123, bar: 456})
+    #   => 'foo=123&bar=456'
+    #
+    # @example Simple arrays
+    #   >> encode_query_string({foo: [1,2,3]})
+    #   => 'foo[]=1&foo[]=2&foo[]=3'
+    #
+    # @example Nested hashes
+    #   >> encode_query_string({outer: {foo: 123, bar: 456}})
+    #   => 'outer[foo]=123&outer[bar]=456'
+    #
+    # @example Deeply nesting
+    #   >> encode_query_string({coords: [{x: 1, y: 0}, {x: 2}, {x: 3}]})
+    #   => 'coords[][x]=1&coords[][y]=0&coords[][x]=2&coords[][x]=3'
+    #
+    # @example Null and empty values
+    #   >> encode_query_string({string: '', empty: nil, list: [], hash: {}})
+    #   => 'string=&empty&list&hash'
+    #
+    # @example Nested nulls
+    #   >> encode_query_string({foo: {string: '', empty: nil}})
+    #   => 'foo[string]=&foo[empty]'
+    #
+    # @example Multiple fields with the same name using ParamsArray
+    #   >> encode_query_string(RestClient::ParamsArray.new([[:foo, 1], [:foo, 2], [:foo, 3]]))
+    #   => 'foo=1&foo=2&foo=3'
+    #
+    # @example Nested ParamsArray
+    #   >> encode_query_string({foo: RestClient::ParamsArray.new([[:a, 1], [:a, 2]])})
+    #   => 'foo[a]=1&foo[a]=2'
+    #
+    #   >> encode_query_string(RestClient::ParamsArray.new([[:foo, {a: 1}], [:foo, {a: 2}]]))
+    #   => 'foo[a]=1&foo[a]=2'
+    #
+    def self.encode_query_string: (untyped object) -> untyped
+
+    # Transform deeply nested param containers into a flat array of [key,
+    # value] pairs.
+    #
+    # @example
+    #   >> flatten_params({key1: {key2: 123}})
+    #   => [["key1[key2]", 123]]
+    #
+    # @example
+    #   >> flatten_params({key1: {key2: 123, arr: [1,2,3]}})
+    #   => [["key1[key2]", 123], ["key1[arr][]", 1], ["key1[arr][]", 2], ["key1[arr][]", 3]]
+    #
+    # @param object [Hash, ParamsArray] The container to flatten
+    # @param uri_escape [Boolean] Whether to URI escape keys and values
+    # @param parent_key [String] Should not be passed (used for recursion)
+    #
+    def self.flatten_params: (untyped object, ?bool uri_escape, ?untyped? parent_key) -> (::Array[::Array[untyped | nil]] | untyped)
+
+    # Encode string for safe transport by URI or form encoding. This uses a CGI
+    # style escape, which transforms ` ` into `+` and various special
+    # characters into percent encoded forms.
+    #
+    # This calls URI.encode_www_form_component for the implementation. The only
+    # difference between this and CGI.escape is that it does not escape `*`.
+    # http://stackoverflow.com/questions/25085992/
+    #
+    # @see URI.encode_www_form_component
+    #
+    def self.escape: (untyped string) -> untyped
+  end
+end
+
+module RestClient
+  # A Response from RestClient, you can access the response body, the code or the headers.
+  #
+  class Response < String
+    include AbstractResponse
+
+    # Return the HTTP response body.
+    #
+    # Future versions of RestClient will deprecate treating response objects
+    # directly as strings, so it will be necessary to call `.body`.
+    #
+    # @return [String]
+    #
+    def body: () -> untyped
+
+    # Convert the HTTP response body to a pure String object.
+    #
+    # @return [String]
+    def to_s: () -> untyped
+
+    # Convert the HTTP response body to a pure String object.
+    #
+    # @return [String]
+    def to_str: () -> untyped
+
+    def inspect: () -> ::String
+
+    # Initialize a Response object. Because RestClient::Response is
+    # (unfortunately) a subclass of String for historical reasons,
+    # Response.create is the preferred initializer.
+    #
+    # @param [String, nil] body The response body from the Net::HTTPResponse
+    # @param [Net::HTTPResponse] net_http_res
+    # @param [RestClient::Request] request
+    # @param [Time] start_time
+    def self.create: (untyped body, untyped net_http_res, untyped request, ?untyped? start_time) -> untyped
+
+    # Set the String encoding according to the 'Content-Type: charset' header,
+    # if possible.
+    def self.fix_encoding: (untyped response) -> (nil | untyped)
+
+    private
+
+    def body_truncated: (untyped length) -> untyped
+  end
+end
+
+module RestClient
+  # This class is used internally by RestClient to send the request, but you can also
+  # call it directly if you'd like to use a method not supported by the
+  # main API.  For example:
+  #
+  #   RestClient::Request.execute(:method => :head, :url => 'http://example.com')
+  #
+  # Mandatory parameters:
+  # * :method
+  # * :url
+  # Optional parameters (have a look at ssl and/or uri for some explanations):
+  # * :headers a hash containing the request headers
+  # * :cookies may be a Hash{String/Symbol => String} of cookie values, an
+  #     Array<HTTP::Cookie>, or an HTTP::CookieJar containing cookies. These
+  #     will be added to a cookie jar before the request is sent.
+  # * :user and :password for basic auth, will be replaced by a user/password available in the :url
+  # * :block_response call the provided block with the HTTPResponse as parameter
+  # * :raw_response return a low-level RawResponse instead of a Response
+  # * :log Set the log for this request only, overriding RestClient.log, if
+  #      any.
+  # * :stream_log_percent (Only relevant with :raw_response => true) Customize
+  #     the interval at which download progress is logged. Defaults to every
+  #     10% complete.
+  # * :max_redirects maximum number of redirections (default to 10)
+  # * :proxy An HTTP proxy URI to use for this request. Any value here
+  #   (including nil) will override RestClient.proxy.
+  # * :verify_ssl enable ssl verification, possible values are constants from
+  #     OpenSSL::SSL::VERIFY_*, defaults to OpenSSL::SSL::VERIFY_PEER
+  # * :read_timeout and :open_timeout are how long to wait for a response and
+  #     to open a connection, in seconds. Pass nil to disable the timeout.
+  # * :timeout can be used to set both timeouts
+  # * :ssl_client_cert, :ssl_client_key, :ssl_ca_file, :ssl_ca_path,
+  #     :ssl_cert_store, :ssl_verify_callback, :ssl_verify_callback_warnings
+  # * :ssl_version specifies the SSL version for the underlying Net::HTTP connection
+  # * :ssl_ciphers sets SSL ciphers for the connection. See
+  #     OpenSSL::SSL::SSLContext#ciphers=
+  # * :before_execution_proc a Proc to call before executing the request. This
+  #      proc, like procs from RestClient.before_execution_procs, will be
+  #      called with the HTTP request and request params.
+  class Request
+    attr_reader method: untyped
+
+    attr_reader uri: untyped
+
+    attr_reader url: untyped
+
+    attr_reader headers: untyped
+
+    attr_reader payload: untyped
+
+    attr_reader proxy: untyped
+
+    attr_reader user: untyped
+
+    attr_reader password: untyped
+
+    attr_reader read_timeout: untyped
+
+    attr_reader max_redirects: untyped
+
+    attr_reader open_timeout: untyped
+
+    attr_reader raw_response: untyped
+
+    attr_reader processed_headers: untyped
+
+    attr_reader args: untyped
+
+    attr_reader ssl_opts: untyped
+
+    # An array of previous redirection responses
+    attr_accessor redirection_history: untyped
+
+    def self.execute: (untyped args) { () -> untyped } -> untyped
+
+    SSLOptionList: ::Array["client_cert" | "client_key" | "ca_file" | "ca_path" | "cert_store" | "version" | "ciphers" | "verify_callback" | "verify_callback_warnings"]
+
+    def inspect: () -> ::String
+
+    def initialize: (untyped args) -> void
+
+    def execute: () { () -> untyped } -> untyped
+
+    # SSL-related options
+    def verify_ssl: () -> untyped
+
+    # Return true if the request URI will use HTTPS.
+    #
+    # @return [Boolean]
+    #
+    def use_ssl?: () -> untyped
+
+    # Extract the query parameters and append them to the url
+    #
+    # Look through the headers hash for a :params option (case-insensitive,
+    # may be string or symbol). If present and the value is a Hash or
+    # RestClient::ParamsArray, *delete* the key/value pair from the headers
+    # hash and encode the value into a query string. Append this query string
+    # to the URL and return the resulting URL.
+    #
+    # @param [String] url
+    # @param [Hash] headers An options/headers hash to process. Mutation
+    #   warning: the params key may be removed if present!
+    #
+    # @return [String] resulting url with query string
+    #
+    def process_url_params: (untyped url, untyped headers) -> untyped
+
+    # Render a hash of key => value pairs for cookies in the Request#cookie_jar
+    # that are valid for the Request#uri. This will not necessarily include all
+    # cookies if there are duplicate keys. It's safer to use the cookie_jar
+    # directly if that's a concern.
+    #
+    # @see Request#cookie_jar
+    #
+    # @return [Hash]
+    #
+    def cookies: () -> untyped
+
+    # @return [HTTP::CookieJar]
+    def cookie_jar: () -> untyped
+
+    # Render a Cookie HTTP request header from the contents of the @cookie_jar,
+    # or nil if the jar is empty.
+    #
+    # @see Request#cookie_jar
+    #
+    # @return [String, nil]
+    #
+    def make_cookie_header: () -> (nil | untyped)
+
+    # Process cookies passed as hash or as HTTP::CookieJar. For backwards
+    # compatibility, these may be passed as a :cookies option masquerading
+    # inside the headers hash. To avoid confusion, if :cookies is passed in
+    # both headers and Request#initialize, raise an error.
+    #
+    # :cookies may be a:
+    # - Hash{String/Symbol => String}
+    # - Array<HTTP::Cookie>
+    # - HTTP::CookieJar
+    #
+    # Passing as a hash:
+    #   Keys may be symbols or strings. Values must be strings.
+    #   Infer the domain name from the request URI and allow subdomains (as
+    #   though '.example.com' had been set in a Set-Cookie header). Assume a
+    #   path of '/'.
+    #
+    #     RestClient::Request.new(url: 'http://example.com', method: :get,
+    #       :cookies => {:foo => 'Value', 'bar' => '123'}
+    #     )
+    #
+    # results in cookies as though set from the server by:
+    #     Set-Cookie: foo=Value; Domain=.example.com; Path=/
+    #     Set-Cookie: bar=123; Domain=.example.com; Path=/
+    #
+    # which yields a client cookie header of:
+    #     Cookie: foo=Value; bar=123
+    #
+    # Passing as HTTP::CookieJar, which will be passed through directly:
+    #
+    #     jar = HTTP::CookieJar.new
+    #     jar.add(HTTP::Cookie.new('foo', 'Value', domain: 'example.com',
+    #                              path: '/', for_domain: false))
+    #
+    #     RestClient::Request.new(..., :cookies => jar)
+    #
+    # @param [URI::HTTP] uri The URI for the request. This will be used to
+    # infer the domain name for cookies passed as strings in a hash. To avoid
+    # this implicit behavior, pass a full cookie jar or use HTTP::Cookie hash
+    # values.
+    # @param [Hash] headers The headers hash from which to pull the :cookies
+    #   option. MUTATION NOTE: This key will be deleted from the hash if
+    #   present.
+    # @param [Hash] args The options passed to Request#initialize. This hash
+    #   will be used as another potential source for the :cookies key.
+    #   These args will not be mutated.
+    #
+    # @return [HTTP::CookieJar] A cookie jar containing the parsed cookies.
+    #
+    def process_cookie_args!: (untyped uri, untyped headers, untyped args) -> untyped
+
+    # Generate headers for use by a request. Header keys will be stringified
+    # using `#stringify_headers` to normalize them as capitalized strings.
+    #
+    # The final headers consist of:
+    #   - default headers from #default_headers
+    #   - user_headers provided here
+    #   - headers from the payload object (e.g. Content-Type, Content-Lenth)
+    #   - cookie headers from #make_cookie_header
+    #
+    # BUG: stringify_headers does not alter the capitalization of headers that
+    # are passed as strings, it only normalizes those passed as symbols. This
+    # behavior will probably remain for a while for compatibility, but it means
+    # that the warnings that attempt to detect accidental header overrides may
+    # not always work.
+    # https://github.com/rest-client/rest-client/issues/599
+    #
+    # @param [Hash] user_headers User-provided headers to include
+    #
+    # @return [Hash<String, String>] A hash of HTTP headers => values
+    #
+    def make_headers: (untyped user_headers) -> untyped
+
+    # The proxy URI for this request. If `:proxy` was provided on this request,
+    # use it over `RestClient.proxy`.
+    #
+    # Return false if a proxy was explicitly set and is falsy.
+    #
+    # @return [URI, false, nil]
+    #
+    def proxy_uri: () -> untyped
+
+    def net_http_object: (untyped hostname, untyped port) -> untyped
+
+    def net_http_request_class: (untyped method) -> untyped
+
+    def net_http_do_request: (untyped http, untyped req, ?untyped? body) { () -> untyped } -> untyped
+
+    # Normalize a URL by adding a protocol if none is present.
+    #
+    # If the string has no HTTP-like scheme (i.e. scheme followed by '//'), a
+    # scheme of 'http' will be added. This mimics the behavior of browsers and
+    # user agents like cURL.
+    #
+    # @param [String] url A URL string.
+    #
+    # @return [String]
+    #
+    def normalize_url: (untyped url) -> untyped
+
+    # Return a certificate store that can be used to validate certificates with
+    # the system certificate authorities. This will probably not do anything on
+    # OS X, which monkey patches OpenSSL in terrible ways to insert its own
+    # validation. On most *nix platforms, this will add the system certifcates
+    # using OpenSSL::X509::Store#set_default_paths. On Windows, this will use
+    # RestClient::Windows::RootCerts to look up the CAs trusted by the system.
+    #
+    # @return [OpenSSL::X509::Store]
+    #
+    def self.default_ssl_cert_store: () -> untyped
+
+    def redacted_uri: () -> untyped
+
+    def redacted_url: () -> untyped
+
+    # Default to the global logger if there's not a request-specific one
+    def log: () -> untyped
+
+    def log_request: () -> (nil | untyped)
+
+    # Return a hash of headers whose keys are capitalized strings
+    #
+    # BUG: stringify_headers does not fix the capitalization of headers that
+    # are already Strings. Leaving this behavior as is for now for
+    # backwards compatibility.
+    # https://github.com/rest-client/rest-client/issues/599
+    #
+    def stringify_headers: (untyped headers) -> untyped
+
+    # Default headers set by RestClient. In addition to these headers, servers
+    # will receive headers set by Net::HTTP, such as Accept-Encoding and Host.
+    #
+    # @return [Hash<Symbol, String>]
+    def default_headers: () -> { accept: "*/*", user_agent: untyped }
+
+    private
+
+    # Parse the `@url` string into a URI object and save it as
+    # `@uri`. Also save any basic auth user or password as @user and @password.
+    # If no auth info was passed, check for credentials in a Netrc file.
+    #
+    # @param [String] url A URL string.
+    #
+    # @return [URI]
+    #
+    # @raise URI::InvalidURIError on invalid URIs
+    #
+    def parse_url_with_auth!: (untyped url) -> untyped
+
+    def print_verify_callback_warnings: () -> untyped
+
+    # Parse a method and return a normalized string version.
+    #
+    # Raise ArgumentError if the method is falsy, but otherwise do no
+    # validation.
+    #
+    # @param method [String, Symbol]
+    #
+    # @return [String]
+    #
+    # @see net_http_request_class
+    #
+    def normalize_method: (untyped method) -> untyped
+
+    def transmit: (untyped uri, untyped req, untyped payload) { () -> untyped } -> untyped
+
+    def setup_credentials: (untyped req) -> untyped
+
+    def fetch_body_to_tempfile: (untyped http_response) -> untyped
+
+    # @param res The Net::HTTP response object
+    # @param start_time [Time] Time of request start
+    def process_result: (untyped res, untyped start_time, ?untyped? tempfile) { () -> untyped } -> untyped
+
+    def parser: () -> untyped
+
+    # Given a MIME type or file extension, return either a MIME type or, if
+    # none is found, the input unchanged.
+    #
+    #     >> maybe_convert_extension('json')
+    #     => 'application/json'
+    #
+    #     >> maybe_convert_extension('unknown')
+    #     => 'unknown'
+    #
+    #     >> maybe_convert_extension('application/xml')
+    #     => 'application/xml'
+    #
+    # @param ext [String]
+    #
+    # @return [String]
+    #
+    def maybe_convert_extension: (untyped ext) -> untyped
+  end
+end
+
+module RestClient
+  # A class that can be instantiated for access to a RESTful resource,
+  # including authentication.
+  #
+  # Example:
+  #
+  #   resource = RestClient::Resource.new('http://some/resource')
+  #   jpg = resource.get(:accept => 'image/jpg')
+  #
+  # With HTTP basic authentication:
+  #
+  #   resource = RestClient::Resource.new('http://protected/resource', :user => 'user', :password => 'password')
+  #   resource.delete
+  #
+  # With a timeout (seconds):
+  #
+  #   RestClient::Resource.new('http://slow', :read_timeout => 10)
+  #
+  # With an open timeout (seconds):
+  #
+  #   RestClient::Resource.new('http://behindfirewall', :open_timeout => 10)
+  #
+  # You can also use resources to share common headers. For headers keys,
+  # symbols are converted to strings. Example:
+  #
+  #   resource = RestClient::Resource.new('http://some/resource', :headers => { :client_version => 1 })
+  #
+  # This header will be transported as X-Client-Version (notice the X prefix,
+  # capitalization and hyphens)
+  #
+  # Use the [] syntax to allocate subresources:
+  #
+  #   site = RestClient::Resource.new('http://example.com', :user => 'adam', :password => 'mypasswd')
+  #   site['posts/1/comments'].post 'Good article.', :content_type => 'text/plain'
+  #
+  class Resource
+    attr_reader url: untyped
+
+    attr_reader options: untyped
+
+    attr_reader block: untyped
+
+    def initialize: (untyped url, ?::Hash[untyped, untyped] options, ?untyped? backwards_compatibility) { () -> untyped } -> void
+
+    def get: (?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def head: (?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def post: (untyped payload, ?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def put: (untyped payload, ?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def patch: (untyped payload, ?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def delete: (?::Hash[untyped, untyped] additional_headers) { () -> untyped } -> untyped
+
+    def to_s: () -> untyped
+
+    def user: () -> untyped
+
+    def password: () -> untyped
+
+    def headers: () -> untyped
+
+    def read_timeout: () -> untyped
+
+    def open_timeout: () -> untyped
+
+    def log: () -> untyped
+
+    # Construct a subresource, preserving authentication.
+    #
+    # Example:
+    #
+    #   site = RestClient::Resource.new('http://example.com', 'adam', 'mypasswd')
+    #   site['posts/1/comments'].post 'Good article.', :content_type => 'text/plain'
+    #
+    # This is especially useful if you wish to define your site in one place and
+    # call it in multiple locations:
+    #
+    #   def orders
+    #     RestClient::Resource.new('http://example.com/orders', 'admin', 'mypasswd')
+    #   end
+    #
+    #   orders.get                     # GET http://example.com/orders
+    #   orders['1'].get                # GET http://example.com/orders/1
+    #   orders['1/items'].delete       # DELETE http://example.com/orders/1/items
+    #
+    # Nest resources as far as you want:
+    #
+    #   site = RestClient::Resource.new('http://example.com')
+    #   posts = site['posts']
+    #   first_post = posts['1']
+    #   comments = first_post['comments']
+    #   comments.post 'Hello', :content_type => 'text/plain'
+    #
+    def []: (untyped suburl) { () -> untyped } -> untyped
+
+    def concat_urls: (untyped url, untyped suburl) -> untyped
+  end
+end
+
+module RestClient
+  module AbstractResponse
+    attr_reader net_http_res: untyped
+
+    attr_reader request: untyped
+
+    attr_reader start_time: untyped
+
+    attr_reader end_time: untyped
+
+    attr_reader duration: untyped
+
+    def inspect: () -> untyped
+
+    # Logger from the request, potentially nil.
+    def log: () -> untyped
+
+    def log_response: () -> (nil | untyped)
+
+    # HTTP status code
+    def code: () -> untyped
+
+    def history: () -> untyped
+
+    # A hash of the headers, beautified with symbols and underscores.
+    # e.g. "Content-type" will become :content_type.
+    def headers: () -> untyped
+
+    # The raw headers.
+    def raw_headers: () -> untyped
+
+    # @param [Net::HTTPResponse] net_http_res
+    # @param [RestClient::Request] request
+    # @param [Time] start_time
+    def response_set_vars: (untyped net_http_res, untyped request, untyped start_time) -> untyped
+
+    # Hash of cookies extracted from response headers.
+    #
+    # NB: This will return only cookies whose domain matches this request, and
+    # may not even return all of those cookies if there are duplicate names.
+    # Use the full cookie_jar for more nuanced access.
+    #
+    # @see #cookie_jar
+    #
+    # @return [Hash]
+    #
+    def cookies: () -> untyped
+
+    # Cookie jar extracted from response headers.
+    #
+    # @return [HTTP::CookieJar]
+    #
+    def cookie_jar: () -> untyped
+
+    # Return the default behavior corresponding to the response code:
+    #
+    # For 20x status codes: return the response itself
+    #
+    # For 30x status codes:
+    #   301, 302, 307: redirect GET / HEAD if there is a Location header
+    #   303: redirect, changing method to GET, if there is a Location header
+    #
+    # For all other responses, raise a response exception
+    #
+    def return!: () { () -> untyped } -> untyped
+
+    def to_i: () -> untyped
+
+    def description: () -> ::String
+
+    # Follow a redirection response by making a new HTTP request to the
+    # redirection target.
+    def follow_redirection: () { () -> untyped } -> untyped
+
+    # Follow a redirection response, but change the HTTP method to GET and drop
+    # the payload from the original request.
+    def follow_get_redirection: () { () -> untyped } -> untyped
+
+    # Convert headers hash into canonical form.
+    #
+    # Header names will be converted to lowercase symbols with underscores
+    # instead of hyphens.
+    #
+    # Headers specified multiple times will be joined by comma and space,
+    # except for Set-Cookie, which will always be an array.
+    #
+    # Per RFC 2616, if a server sends multiple headers with the same key, they
+    # MUST be able to be joined into a single header by a comma. However,
+    # Set-Cookie (RFC 6265) cannot because commas are valid within cookie
+    # definitions. The newer RFC 7230 notes (3.2.2) that Set-Cookie should be
+    # handled as a special case.
+    #
+    # http://tools.ietf.org/html/rfc2616#section-4.2
+    # http://tools.ietf.org/html/rfc7230#section-3.2.2
+    # http://tools.ietf.org/html/rfc6265
+    #
+    # @param headers [Hash]
+    # @return [Hash]
+    #
+    def self.beautify_headers: (untyped headers) -> untyped
+
+    private
+
+    # Follow a redirection
+    #
+    # @param new_args [Hash] Start with this hash of arguments for the
+    #   redirection request. The hash will be mutated, so be sure to dup any
+    #   existing hash that should not be modified.
+    #
+    def _follow_redirection: (untyped new_args) { () -> untyped } -> untyped
+
+    def check_max_redirects: () -> untyped
+
+    def exception_with_response: () -> untyped
+  end
+end
+
+module RestClient
+  # The response from RestClient on a raw request looks like a string, but is
+  # actually one of these.  99% of the time you're making a rest call all you
+  # care about is the body, but on the occasion you want to fetch the
+  # headers you can:
+  #
+  #   RestClient.get('http://example.com').headers[:content_type]
+  #
+  # In addition, if you do not use the response as a string, you can access
+  # a Tempfile object at res.file, which contains the path to the raw
+  # downloaded request body.
+  class RawResponse
+    include AbstractResponse
+
+    attr_reader file: untyped
+
+    attr_reader request: untyped
+
+    attr_reader start_time: untyped
+
+    attr_reader end_time: untyped
+
+    def inspect: () -> ::String
+
+    # @param [Tempfile] tempfile The temporary file containing the body
+    # @param [Net::HTTPResponse] net_http_res
+    # @param [RestClient::Request] request
+    # @param [Time] start_time
+    def initialize: (untyped tempfile, untyped net_http_res, untyped request, ?untyped? start_time) -> void
+
+    def to_s: () -> untyped
+
+    def body: () -> untyped
+
+    def size: () -> untyped
+  end
+end
+
+module RestClient
+  # The ParamsArray class is used to represent an ordered list of [key, value]
+  # pairs. Use this when you need to include a key multiple times or want
+  # explicit control over parameter ordering.
+  #
+  # Most of the request payload & parameter functions normally accept a Hash of
+  # keys => values, which does not allow for duplicated keys.
+  #
+  # @see RestClient::Utils.encode_query_string
+  # @see RestClient::Utils.flatten_params
+  #
+  class ParamsArray
+    include Enumerable
+
+    # @param array [Array<Array>] An array of parameter key,value pairs. These
+    #   pairs may be 2 element arrays [key, value] or single element hashes
+    #   {key => value}. They may also be single element arrays to represent a
+    #   key with no value.
+    #
+    # @example
+    #   >> ParamsArray.new([[:foo, 123], [:foo, 456], [:bar, 789]])
+    #   This will be encoded as "foo=123&foo=456&bar=789"
+    #
+    # @example
+    #   >> ParamsArray.new({foo: 123, bar: 456})
+    #   This is valid, but there's no reason not to just use the Hash directly
+    #   instead of a ParamsArray.
+    #
+    #
+    def initialize: (untyped array) -> void
+
+    def each: (*untyped args) { () -> untyped } -> untyped
+
+    def empty?: () -> untyped
+
+    private
+
+    def process_input: (untyped array) -> untyped
+
+    # A pair may be:
+    # - A single element hash, e.g. {foo: 'bar'}
+    # - A two element array, e.g. ['foo', 'bar']
+    # - A one element array, e.g. ['foo']
+    #
+    def process_pair: (untyped pair) -> untyped
+  end
+end
+
+module RestClient
+  VERSION_INFO: ::Array[2 | 1 | 0]
+
+  VERSION: untyped
+
+  def self.version: () -> untyped
+end
+
+# Represents a collection of trusted root certificates.
+#
+# @api public
+class RestClient::Windows::RootCerts
+  include Enumerable
+
+  extend FFI::Library
+
+  def initialize: (untyped roots) -> void
+
+  # Enumerates each root certificate.
+  # @yieldparam cert [OpenSSL::X509::Certificate] each root certificate
+  # @api public
+  def each: () { (untyped) -> untyped } -> untyped
+
+  # Returns a new instance.
+  # @return [RestClient::Windows::RootCerts] object constructed from current root certificates
+  def self.instance: () -> untyped
+
+  # Returns an array of root certificates.
+  #
+  # @return [Array<[OpenSSL::X509::Certificate]>] an array of root certificates
+  # @api private
+  def self.load_certs: () -> untyped
+
+  private
+
+  class CERT_CONTEXT < FFI::Struct
+  end
+end
+
