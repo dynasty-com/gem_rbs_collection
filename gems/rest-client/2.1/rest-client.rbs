@@ -171,9 +171,9 @@ module RestClient
     #
     # NB: Previous releases of rest-client would raise RequestTimeout both for
     # HTTP 408 responses and for actual connection timeouts.
-    class Timeout < RestClient::RequestTimeout
-      def initialize: (?untyped? message, ?untyped? original_exception) -> void
-    end
+    # class Timeout < RestClient::RequestTimeout
+    #   def initialize: (?untyped? message, ?untyped? original_exception) -> void
+    # end
 
     # Timeout when connecting to a server. Typically wraps Net::OpenTimeout (in
     # ruby 2.0 or greater).
@@ -1162,7 +1162,7 @@ end
 class RestClient::Windows::RootCerts
   include Enumerable
 
-  extend FFI::Library
+  # extend FFI::Library
 
   def initialize: (untyped roots) -> void
 
@@ -1183,7 +1183,6 @@ class RestClient::Windows::RootCerts
 
   private
 
-  class CERT_CONTEXT < FFI::Struct
-  end
+  # class CERT_CONTEXT < FFI::Struct
+  # end
 end
-
