@@ -1112,7 +1112,7 @@ module RestClient
   # @see RestClient::Utils.flatten_params
   #
   class ParamsArray
-    include Enumerable
+    # include Enumerable[untyped]
 
     # @param array [Array<Array>] An array of parameter key,value pairs. These
     #   pairs may be 2 element arrays [key, value] or single element hashes
@@ -1160,7 +1160,7 @@ end
 #
 # @api public
 class RestClient::Windows::RootCerts
-  include Enumerable
+  include Enumerable[untyped]
 
   # extend FFI::Library
 
