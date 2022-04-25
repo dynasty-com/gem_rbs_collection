@@ -24,7 +24,7 @@ end
 #
 module Rollbar
   module JSON
-    class JsOptionsState < ::JSON::State
+    class JsOptionsState # < ::JSON::State
     end
 
     class Value
@@ -254,7 +254,7 @@ module Rollbar
   # It contains the logic to build the payload, trucante it
   # and dump the JSON.
   class Item
-    extend Forwardable
+    # extend Forwardable
 
     attr_writer payload: untyped
 
@@ -497,11 +497,11 @@ module Rollbar
 end
 
 class Object
-  include Rollbar::Goalie
+  # include Rollbar::Goalie
 
-  alias render_exception_without_rollbar render_exception
+  # alias render_exception_without_rollbar render_exception
 
-  alias render_exception render_exception_with_rollbar
+  # alias render_exception render_exception_with_rollbar
 end
 
 module Rollbar
@@ -584,16 +584,14 @@ module Rollbar
 end
 
 class Object
-  include Rollbar::ActiveRecordExtension
-
-  include Rollbar::ActiveRecordExtension
+  # include Rollbar::ActiveRecordExtension
 end
 
 module Resque
   module Failure
     # Falure class to use in Resque in order to send
     # Resque errors to the Rollbar API
-    class Rollbar < Base
+    class Rollbar # < Base
       def save: () -> untyped
 
       private
@@ -613,19 +611,22 @@ class BasicSocket
   # :nodoc:
   def new_as_json: (?untyped? _options) -> { value: untyped }
 
-  alias original_as_json as_json
+  # alias original_as_json as_json
 
-  alias as_json new_as_json
+  # alias as_json new_as_json
 end
 
 class BasicSocket
-  alias as_json original_as_json
+  # alias as_json original_as_json
 end
 
 module RollbarErrorContext
   attr_accessor rollbar_context: untyped
 end
 
+class StandardError < Exception
+  attr_accessor rollbar_context: untyped
+end
 
 module Rollbar
   module ThreadPlugin
@@ -637,7 +638,7 @@ module Rollbar
   module Delayed
     attr_accessor self.wrapped: untyped
 
-    class RollbarPlugin < ::Delayed::Plugin
+    class RollbarPlugin # < ::Delayed::Plugin
     end
 
     def self.wrap_worker: () -> (nil | untyped)
@@ -1615,7 +1616,7 @@ module Rollbar
 
     def async_failover: (untyped item) -> untyped
 
-    alias log_warning log_warn
+    # alias log_warning log_warn
 
     def log_instance_link: (untyped data) -> (nil | untyped)
 
@@ -1732,7 +1733,7 @@ end
 module Rollbar
   module Delay
     class SuckerPunch
-      include ::SuckerPunch::Job
+      # include ::SuckerPunch::Job
 
       attr_accessor self.perform_proc: untyped
 
@@ -1756,7 +1757,7 @@ module Rollbar
 
       def call: (untyped payload) -> (nil | untyped)
 
-      include ::Sidekiq::Worker
+      # include ::Sidekiq::Worker
 
       def perform: (*untyped args) -> untyped
     end
@@ -1770,7 +1771,7 @@ module Rollbar
     # needs to be names as "rollbar_ENVIRONMENT". Retry intervals will be used
     # to retry sending the same message again if failed before.
     class Shoryuken
-      include ::Shoryuken::Worker
+      # include ::Shoryuken::Worker
 
       attr_accessor self.queue: untyped
 
@@ -2124,7 +2125,7 @@ end
 module Rollbar
   PUBLIC_NOTIFIER_METHODS: ::Array["debug" | "info" | "warn" | "warning" | "error" | "critical" | "log" | "logger" | "process_item" | "process_from_async_handler" | "scope" | "send_failsafe" | "log_info" | "log_debug" | "log_warning" | "log_error" | "silenced" | "scope_object"]
 
-  extend Forwardable
+  # extend Forwardable
 
   attr_writer self.plugins: untyped
 
@@ -2231,7 +2232,7 @@ end
 # Rails.root is not present here.
 # RSpec needs ENV['DUMMYAPP_PATH'] in order to have a valid path.
 # Dir.pwd is used in normal operation.
-APP_PATH: untyped
+# APP_PATH: untyped
 
 module Rails
   class RollbarRunner
