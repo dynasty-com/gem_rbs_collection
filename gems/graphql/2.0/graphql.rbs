@@ -7201,7 +7201,7 @@ module GraphQL
       # A copy of the Ruby-style hash
       def to_kwargs: () -> untyped
 
-      def self.argument: (*untyped args, **untyped kwargs) { () -> untyped } -> untyped
+      def self.argument: (*untyped args, **untyped kwargs) ?{ () -> untyped } -> untyped
 
       def self.kind: () -> untyped
 
