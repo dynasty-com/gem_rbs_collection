@@ -6670,7 +6670,7 @@ module GraphQL
       def self.all_field_argument_definitions: () -> untyped
 
       # Also apply this argument to the input type:
-      def self.argument: (*untyped args, ?own_argument: bool own_argument, **untyped kwargs) { () -> untyped } -> untyped
+      def self.argument: (*untyped args, ?own_argument: bool own_argument, **untyped kwargs) ?{ () -> untyped } -> untyped
 
       # The base class for generated input object types
       # @param new_class [Class] The base class to use for generating input object definitions
