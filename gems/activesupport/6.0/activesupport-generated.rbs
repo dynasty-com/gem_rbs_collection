@@ -3440,12 +3440,12 @@ class Hash[unchecked out K, unchecked out V]
   #
   #   hash.deep_symbolize_keys
   #   # => {:person=>{:name=>"Rob", :age=>"28"}}
-  def deep_symbolize_keys: () -> untyped
+  def deep_symbolize_keys: () -> Hash[untyped, untyped]
 
   # Destructively converts all keys to symbols, as long as they respond
   # to +to_sym+. This includes the keys from the root hash and from all
   # nested hashes and arrays.
-  def deep_symbolize_keys!: () -> untyped
+  def deep_symbolize_keys!: () -> void
 
   private
 
