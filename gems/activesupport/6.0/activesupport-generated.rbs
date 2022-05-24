@@ -3410,7 +3410,7 @@ class Hash[unchecked out K, unchecked out V]
   #
   #  hash.deep_transform_keys{ |key| key.to_s.upcase }
   #  # => {"PERSON"=>{"NAME"=>"Rob", "AGE"=>"28"}}
-  def deep_transform_keys: () { () -> untyped } -> Hash[unchecked out K, unchecked out V]
+  def deep_transform_keys: () { () -> untyped } -> Hash[K, V]
 
   # Destructively converts all keys by using the block operation.
   # This includes the keys from the root hash and from all
@@ -4721,7 +4721,7 @@ class Array[unchecked out Elem]
   #
   #   array[1][2] # => nil
   #   dup[1][2]   # => 4
-  def deep_dup: () -> Array[unchecked out Elem]
+  def deep_dup: () -> Array[Elem]
 end
 
 class Hash[unchecked out K, unchecked out V]
@@ -4733,7 +4733,7 @@ class Hash[unchecked out K, unchecked out V]
   #
   #   hash[:a][:c] # => nil
   #   dup[:a][:c]  # => "c"
-  def deep_dup: () -> Hash[unchecked out K, unchecked out V]
+  def deep_dup: () -> Hash[K, V]
 end
 
 # -
