@@ -4709,7 +4709,7 @@ class Object
   #
   #   object.instance_variable_defined?(:@a) # => false
   #   dup.instance_variable_defined?(:@a)    # => true
-  def deep_dup: () -> untyped
+  def deep_dup: () -> Object
 end
 
 class Array[unchecked out Elem]
@@ -4721,7 +4721,7 @@ class Array[unchecked out Elem]
   #
   #   array[1][2] # => nil
   #   dup[1][2]   # => 4
-  def deep_dup: () -> untyped
+  def deep_dup: () -> Array[unchecked out Elem]
 end
 
 class Hash[unchecked out K, unchecked out V]
@@ -4733,7 +4733,7 @@ class Hash[unchecked out K, unchecked out V]
   #
   #   hash[:a][:c] # => nil
   #   dup[:a][:c]  # => "c"
-  def deep_dup: () -> untyped
+  def deep_dup: () -> Hash[unchecked out K, unchecked out V]
 end
 
 # -
