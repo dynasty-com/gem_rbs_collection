@@ -112,3 +112,6 @@
 [submodule "gems/shoryuken/6.0/_src"]
 	path = gems/shoryuken/6.0/_src
 	url = https://github.com/ruby-shoryuken/shoryuken.git
+[submodule "gems/active_decorator/1.4/_src"]
+	path = gems/active_decorator/1.4/_src
+	url = https://github.com/amatsuda/active_decorator.git
