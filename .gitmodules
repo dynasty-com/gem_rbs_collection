@@ -115,21 +115,3 @@
 [submodule "gems/active_decorator/1.4/_src"]
 	path = gems/active_decorator/1.4/_src
 	url = https://github.com/amatsuda/active_decorator.git
-[submodule "gems/rspec/3.11/_src"]
-	path = gems/rspec/3.11/_src
-	url = https://github.com/rspec/rspec.git
-[submodule "gems/rspec-core/3.11/_src"]
-	path = gems/rspec-core/3.11/_src
-	url = https://github.com/rspec/rspec-core.git
-[submodule "gems/rspec-expectations/3.11/_src"]
-	path = gems/rspec-expectations/3.11/_src
-	url = https://github.com/rspec/rspec-expectations.git
-[submodule "gems/rspec-mocks/3.11/_src"]
-	path = gems/rspec-mocks/3.11/_src
-	url = https://github.com/rspec/rspec-mocks.git
-[submodule "gems/rspec-support/3.11/_src"]
-	path = gems/rspec-support/3.11/_src
-	url = https://github.com/rspec/rspec-support.git
-[submodule "gems/rspec-rails/5.1/_src"]
-	path = gems/rspec-rails/5.1/_src
-	url = https://github.com/rspec/rspec-rails.git
