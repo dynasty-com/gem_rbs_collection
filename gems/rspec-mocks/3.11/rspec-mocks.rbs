@@ -1,0 +1,3353 @@
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class StubChainChain < StubChain
+        def initialize: (*untyped args) -> void
+
+        private
+
+        def create_message_expectation_on: (untyped `instance`) -> untyped
+
+        def invocation_order: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class StubChain < Chain
+        # @private
+        def expectation_fulfilled?: () -> true
+
+        private
+
+        def create_message_expectation_on: (untyped `instance`) -> untyped
+
+        InvocationOrder: { and_return: ::Array[:with | nil], and_raise: ::Array[:with | nil], and_yield: ::Array[:with | :and_yield | nil], and_throw: ::Array[:with | nil], and_call_original: ::Array[:with | nil], and_wrap_original: ::Array[:with | nil] }
+
+        EmptyInvocationOrder: ::Hash[untyped, untyped]
+
+        def invocation_order: () -> untyped
+
+        def verify_invocation_order: (untyped rspec_method_name, *untyped _args) { () -> untyped } -> (nil | untyped)
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class ExpectationChain < Chain
+        def expectation_fulfilled?: () -> untyped
+
+        def initialize: (*untyped args) { () -> untyped } -> void
+
+        private
+
+        def verify_invocation_order: (untyped _rspec_method_name, *untyped _args) { () -> untyped } -> nil
+      end
+
+      # @private
+      class PositiveExpectationChain < ExpectationChain
+        private
+
+        def create_message_expectation_on: (untyped `instance`) -> untyped
+
+        ExpectationInvocationOrder: { and_return: ::Array[:with | nil], and_raise: ::Array[:with | nil] }
+
+        def invocation_order: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      # The `AnyInstance::Recorder` is responsible for redefining the klass's
+      # instance method in order to add any stubs/expectations the first time
+      # the method is called. It's not capable of updating a stub on an instance
+      # that's already been previously stubbed (either directly, or via
+      # `any_instance`).
+      #
+      # This proxy sits in front of the recorder and delegates both to it
+      # and to the `RSpec::Mocks::Proxy` for each already mocked or stubbed
+      # instance of the class, in order to propogates changes to the instances.
+      #
+      # Note that unlike `RSpec::Mocks::Proxy`, this proxy class is stateless
+      # and is not persisted in `RSpec::Mocks.space`.
+      #
+      # Proxying for the message expectation fluent interface (typically chained
+      # off of the return value of one of these methods) is provided by the
+      # `FluentInterfaceProxy` class below.
+      class Proxy
+        def initialize: (untyped recorder, untyped target_proxies) -> void
+
+        def klass: () -> untyped
+
+        def stub: (untyped method_name_or_method_map) { () -> untyped } -> untyped
+
+        def unstub: (untyped method_name) -> untyped
+
+        def stub_chain: (*untyped chain) { () -> untyped } -> untyped
+
+        def expect_chain: (*untyped chain) { () -> untyped } -> untyped
+
+        def should_receive: (untyped method_name) { () -> untyped } -> untyped
+
+        def should_not_receive: (untyped method_name) { () -> untyped } -> untyped
+
+        private
+
+        def perform_proxying: (untyped method_name, untyped args, untyped block) { () -> untyped } -> untyped
+      end
+
+      # @private
+      # Delegates messages to each of the given targets in order to
+      # provide the fluent interface that is available off of message
+      # expectations when dealing with `any_instance`.
+      #
+      # `targets` will typically contain 1 of the `AnyInstance::Recorder`
+      # return values and N `MessageExpectation` instances (one per instance
+      # of the `any_instance` klass).
+      class FluentInterfaceProxy
+        def initialize: (untyped targets) -> void
+
+        def respond_to_missing?: (untyped method_name, ?bool include_private) -> untyped
+
+        def respond_to?: (untyped method_name, ?bool include_private) -> untyped
+
+        def method_missing: (*untyped args) { () -> untyped } -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class ExpectChainChain < StubChain
+        def initialize: (*untyped args) -> void
+
+        def expectation_fulfilled?: () -> untyped
+
+        def playback!: (untyped `instance`) -> untyped
+
+        private
+
+        def create_message_expectation_on: (untyped `instance`) -> untyped
+
+        def invocation_order: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    module AnyInstance
+      # @private
+      class Chain
+        def initialize: (untyped recorder, *untyped args) { () -> untyped } -> void
+
+        # @private
+        #
+        # Provides convenience methods for recording customizations on message
+        # expectations.
+        module Customizations
+          # @macro [attach] record
+          #   @method $1(*args, &block)
+          #   Records the `$1` message for playback against an instance that
+          #   invokes a method stubbed or mocked using `any_instance`.
+          #
+          #   @see RSpec::Mocks::MessageExpectation#$1
+          #
+          def self.record: (untyped method_name) -> untyped
+        end
+
+        include Customizations
+
+        # @private
+        def playback!: (untyped `instance`) -> untyped
+
+        # @private
+        def constrained_to_any_of?: (*untyped constraints) -> untyped
+
+        # @private
+        def matches_args?: (*untyped args) -> untyped
+
+        # @private
+        def expectation_fulfilled!: () -> untyped
+
+        def never: () -> untyped
+
+        def with: (*untyped args) { () -> untyped } -> untyped
+
+        private
+
+        def negated?: () -> untyped
+
+        def messages: () -> untyped
+
+        def last_message: () -> untyped
+
+        def record: (untyped rspec_method_name, *untyped args) { () -> untyped } -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # Given a class `TheClass`, `TheClass.any_instance` returns a `Recorder`,
+      # which records stubs and message expectations for later playback on
+      # instances of `TheClass`.
+      #
+      # Further constraints are stored in instances of [Chain](Chain).
+      #
+      # @see AnyInstance
+      # @see Chain
+      class Recorder
+        # @private
+        attr_reader message_chains: untyped
+
+        # @private
+        attr_reader stubs: untyped
+
+        # @private
+        attr_reader klass: untyped
+
+        def initialize: (untyped klass) -> void
+
+        # Initializes the recording a stub to be played back against any
+        # instance of this object that invokes the submitted method.
+        #
+        # @see Methods#stub
+        def stub: (untyped method_name) { () -> untyped } -> untyped
+
+        # Initializes the recording a stub chain to be played back against any
+        # instance of this object that invokes the method matching the first
+        # argument.
+        #
+        # @see Methods#stub_chain
+        def stub_chain: (*untyped method_names_and_optional_return_values) { () -> untyped } -> untyped
+
+        # @private
+        def expect_chain: (*untyped method_names_and_optional_return_values) { () -> untyped } -> untyped
+
+        # Initializes the recording a message expectation to be played back
+        # against any instance of this object that invokes the submitted
+        # method.
+        #
+        # @see Methods#should_receive
+        def should_receive: (untyped method_name) { () -> untyped } -> untyped
+
+        # The opposite of `should_receive`
+        #
+        # @see Methods#should_not_receive
+        def should_not_receive: (untyped method_name) { () -> untyped } -> untyped
+
+        # Removes any previously recorded stubs, stub_chains or message
+        # expectations that use `method_name`.
+        #
+        # @see Methods#unstub
+        def unstub: (untyped method_name) -> untyped
+
+        # @api private
+        #
+        # Used internally to verify that message expectations have been
+        # fulfilled.
+        def verify: () -> (nil | untyped)
+
+        # @private
+        def stop_all_observation!: () -> untyped
+
+        # @private
+        def playback!: (untyped `instance`, untyped method_name) -> untyped
+
+        # @private
+        def instance_that_received: (untyped method_name) -> untyped
+
+        # @private
+        def build_alias_method_name: (untyped method_name) -> ::String
+
+        # @private
+        def already_observing?: (untyped method_name) -> untyped
+
+        # @private
+        def notify_received_message: (untyped _object, untyped message, untyped args, untyped _blk) -> (nil | untyped)
+
+        def stop_observing!: (untyped method_name) -> untyped
+
+        private
+
+        def ancestor_is_an_observer?: (untyped method_name) -> untyped
+
+        def super_class_observers_for: (untyped method_name) -> untyped
+
+        def super_class_observing?: (untyped method_name) -> untyped
+
+        def normalize_chain: (*untyped args) { (untyped, untyped) -> untyped } -> untyped
+
+        def received_expected_message!: (untyped method_name) -> untyped
+
+        def restore_method!: (untyped method_name) -> untyped
+
+        def restore_original_method!: (untyped method_name) -> (nil | untyped)
+
+        def remove_dummy_method!: (untyped method_name) -> untyped
+
+        def backup_method!: (untyped method_name) -> (nil | untyped)
+
+        def public_protected_or_private_method_defined?: (untyped method_name) -> untyped
+
+        def observe!: (untyped method_name) -> untyped
+
+        def mark_invoked!: (untyped method_name) -> untyped
+
+        def allow_no_prepended_module_definition_of: (untyped method_name) -> (nil | untyped)
+
+        def allow_no_prepended_module_definition_of: (untyped _method_name) -> nil
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class ErrorGenerator < ::RSpec::Mocks::ErrorGenerator
+        def raise_second_instance_received_message_error: (untyped unfulfilled_expectations) -> untyped
+
+        def raise_does_not_implement_error: (untyped klass, untyped method_name) -> untyped
+
+        def raise_message_already_received_by_other_instance_error: (untyped method_name, untyped object_inspect, untyped invoked_instance) -> untyped
+
+        def raise_not_supported_with_prepend_error: (untyped method_name, untyped problem_mod) -> untyped
+      end
+
+      def self.error_generator: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module AnyInstance
+      # @private
+      class MessageChains
+        def initialize: () -> void
+
+        # @private
+        def []: (untyped method_name) -> untyped
+
+        # @private
+        def add: (untyped method_name, untyped chain) -> untyped
+
+        # @private
+        def remove_stub_chains_for!: (untyped method_name) -> untyped
+
+        # @private
+        def has_expectation?: (untyped method_name) -> untyped
+
+        # @private
+        def each_unfulfilled_expectation_matching: (untyped method_name, *untyped args) { (untyped) -> untyped } -> untyped
+
+        # @private
+        def all_expectations_fulfilled?: () -> untyped
+
+        # @private
+        def unfulfilled_expectations: () -> untyped
+
+        # @private
+        def received_expected_message!: (untyped method_name) -> untyped
+
+        # @private
+        def playback!: (untyped `instance`, untyped method_name) -> untyped
+
+        private
+
+        def raise_if_second_instance_to_receive_message: (untyped `instance`) -> (nil | untyped)
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class InstanceMethodStasher
+      def initialize: (untyped object, untyped method) -> void
+
+      attr_reader original_method: untyped
+
+      # @private
+      def method_is_stashed?: () -> untyped
+
+      # @private
+      def stash: () -> (nil | untyped)
+
+      # @private
+      def stashed_method_name: () -> ::String
+
+      # @private
+      def restore: () -> (nil | untyped)
+
+      # ruby 2.0.0-p247 and 2.0.0-p195 both have a bug that we can't work around :(.
+      # https://bugs.ruby-lang.org/issues/8686
+      def handle_restoration_failures: () { () -> untyped } -> untyped
+
+      private
+
+      # @private
+      def method_defined_directly_on_klass?: () -> untyped
+
+      # @private
+      def method_defined_on_klass?: (?untyped klass) -> untyped
+
+      def method_owned_by_klass?: () -> (true | untyped)
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    # Provides a default space implementation for outside
+    # the scope of an example. Called "root" because it serves
+    # as the root of the space stack.
+    class RootSpace
+      def proxy_for: (*untyped _args) -> untyped
+
+      def any_instance_recorder_for: (*untyped _args) -> untyped
+
+      def any_instance_proxy_for: (*untyped _args) -> untyped
+
+      def register_constant_mutator: (untyped _mutator) -> untyped
+
+      def any_instance_recorders_from_ancestry_of: (untyped _object) -> untyped
+
+      def reset_all: () -> nil
+
+      def verify_all: () -> nil
+
+      def registered?: (untyped _object) -> false
+
+      def superclass_proxy_for: (*untyped _args) -> untyped
+
+      def new_scope: () -> untyped
+
+      private
+
+      def raise_lifecycle_message: () -> untyped
+    end
+
+    # @private
+    class Space
+      attr_reader proxies: untyped
+
+      attr_reader any_instance_recorders: untyped
+
+      attr_reader proxy_mutex: untyped
+
+      attr_reader any_instance_mutex: untyped
+
+      def initialize: () -> void
+
+      def new_scope: () -> untyped
+
+      def verify_all: () -> untyped
+
+      def reset_all: () -> untyped
+
+      def register_constant_mutator: (untyped mutator) -> untyped
+
+      def constant_mutator_for: (untyped name) -> untyped
+
+      def any_instance_recorder_for: (untyped klass, ?bool only_return_existing) -> untyped
+
+      def any_instance_proxy_for: (untyped klass) -> untyped
+
+      def proxies_of: (untyped klass) -> untyped
+
+      def proxy_for: (untyped object) -> untyped
+
+      def superclass_proxy_for: (untyped klass) -> untyped
+
+      alias ensure_registered proxy_for
+
+      def registered?: (untyped object) -> untyped
+
+      def any_instance_recorders_from_ancestry_of: (untyped object) -> (::Array[untyped] | untyped)
+
+      private
+
+      def new_mutex: () -> untyped
+
+      def proxy_not_found_for: (untyped id, untyped object) -> untyped
+
+      def superclass_proxy_not_found_for: (untyped id, untyped object) -> untyped
+
+      def class_proxy_with_callback_verification_strategy: (untyped object, untyped strategy) -> untyped
+
+      def any_instance_recorder_not_found_for: (untyped id, untyped klass) -> untyped
+
+      def id_for: (untyped object) -> untyped
+    end
+
+    # @private
+    class NestedSpace < Space
+      def initialize: (untyped parent) -> void
+
+      def proxies_of: (untyped klass) -> untyped
+
+      def constant_mutator_for: (untyped name) -> untyped
+
+      def registered?: (untyped object) -> untyped
+
+      private
+
+      def proxy_not_found_for: (untyped id, untyped object) -> untyped
+
+      def any_instance_recorder_not_found_for: (untyped id, untyped klass) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # ArgumentMatchers are placeholders that you can include in message
+    # expectations to match arguments against a broader check than simple
+    # equality.
+    #
+    # With the exception of `any_args` and `no_args`, they all match against
+    # the arg in same position in the argument list.
+    #
+    # @see ArgumentListMatcher
+    module ArgumentMatchers
+      # Acts like an arg splat, matching any number of args at any point in an arg list.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(1, 2, any_args)
+      #
+      #   # matches any of these:
+      #   object.message(1, 2)
+      #   object.message(1, 2, 3)
+      #   object.message(1, 2, 3, 4)
+      def any_args: () -> untyped
+
+      # Matches any argument at all.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(anything)
+      def anything: () -> untyped
+
+      # Matches no arguments.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(no_args)
+      def no_args: () -> untyped
+
+      # Matches if the actual argument responds to the specified messages.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(duck_type(:hello))
+      #   expect(object).to receive(:message).with(duck_type(:hello, :goodbye))
+      def duck_type: (*untyped args) -> untyped
+
+      # Matches a boolean value.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(boolean())
+      def boolean: () -> untyped
+
+      # Matches a hash that includes the specified key(s) or key/value pairs.
+      # Ignores any additional keys.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(hash_including(:key => val))
+      #   expect(object).to receive(:message).with(hash_including(:key))
+      #   expect(object).to receive(:message).with(hash_including(:key, :key2 => val2))
+      def hash_including: (*untyped args) -> untyped
+
+      # Matches an array that includes the specified items at least once.
+      # Ignores duplicates and additional values
+      #
+      # @example
+      #   expect(object).to receive(:message).with(array_including(1,2,3))
+      #   expect(object).to receive(:message).with(array_including([1,2,3]))
+      def array_including: (*untyped args) -> untyped
+
+      # Matches a hash that doesn't include the specified key(s) or key/value.
+      #
+      # @example
+      #   expect(object).to receive(:message).with(hash_excluding(:key => val))
+      #   expect(object).to receive(:message).with(hash_excluding(:key))
+      #   expect(object).to receive(:message).with(hash_excluding(:key, :key2 => :val2))
+      def hash_excluding: (*untyped args) -> untyped
+
+      alias hash_not_including hash_excluding
+
+      # Matches if `arg.instance_of?(klass)`
+      #
+      # @example
+      #   expect(object).to receive(:message).with(instance_of(Thing))
+      def instance_of: (untyped klass) -> untyped
+
+      alias an_instance_of instance_of
+
+      # Matches if `arg.kind_of?(klass)`
+      #
+      # @example
+      #   expect(object).to receive(:message).with(kind_of(Thing))
+      def kind_of: (untyped klass) -> untyped
+
+      alias a_kind_of kind_of
+
+      # @private
+      def self.anythingize_lonely_keys: (*untyped args) -> untyped
+
+      # Intended to be subclassed by stateless, immutable argument matchers.
+      # Provides a `<klass name>::INSTANCE` constant for accessing a global
+      # singleton instance of the matcher. There is no need to construct
+      # multiple instance since there is no state. It also facilities the
+      # special case logic we need for some of these matchers, by making it
+      # easy to do comparisons like: `[klass::INSTANCE] == args` rather than
+      # `args.count == 1 && klass === args.first`.
+      #
+      # @private
+      class SingletonMatcher
+        def self.inherited: (untyped subklass) -> untyped
+      end
+
+      # @private
+      class AnyArgsMatcher < SingletonMatcher
+        def description: () -> "*(any args)"
+      end
+
+      # @private
+      class AnyArgMatcher < SingletonMatcher
+        def ===: (untyped _other) -> true
+
+        def description: () -> "anything"
+      end
+
+      # @private
+      class NoArgsMatcher < SingletonMatcher
+        def description: () -> "no args"
+      end
+
+      # @private
+      class BooleanMatcher < SingletonMatcher
+        def ===: (untyped value) -> untyped
+
+        def description: () -> "boolean"
+      end
+
+      # @private
+      class BaseHashMatcher
+        def initialize: (untyped expected) -> void
+
+        def ===: (untyped predicate, untyped actual) -> untyped
+
+        def description: (untyped name) -> ::String
+
+        private
+
+        def formatted_expected_hash: () -> untyped
+      end
+
+      # @private
+      class HashIncludingMatcher < BaseHashMatcher
+        def ===: (untyped actual) -> untyped
+
+        def description: () -> untyped
+      end
+
+      # @private
+      class HashExcludingMatcher < BaseHashMatcher
+        def ===: (untyped actual) -> untyped
+
+        def description: () -> untyped
+      end
+
+      # @private
+      class ArrayIncludingMatcher
+        def initialize: (untyped expected) -> void
+
+        def ===: (untyped actual) -> untyped
+
+        def description: () -> ::String
+
+        private
+
+        def formatted_expected_values: () -> untyped
+      end
+
+      # @private
+      class DuckTypeMatcher
+        def initialize: (*untyped methods_to_respond_to) -> void
+
+        def ===: (untyped value) -> untyped
+
+        def description: () -> ::String
+      end
+
+      # @private
+      class InstanceOf
+        def initialize: (untyped klass) -> void
+
+        def ===: (untyped actual) -> untyped
+
+        def description: () -> ::String
+      end
+
+      # @private
+      class KindOf
+        def initialize: (untyped klass) -> void
+
+        def ===: (untyped actual) -> untyped
+
+        def description: () -> ::String
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Contains methods intended to be used from within code examples.
+    # Mix this in to your test context (such as a test framework base class)
+    # to use rspec-mocks with your test framework. If you're using rspec-core,
+    # it'll take care of doing this for you.
+    module ExampleMethods
+      include RSpec::Mocks::ArgumentMatchers
+
+      # @overload double()
+      # @overload double(name)
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload double(stubs)
+      #   @param stubs (Hash) hash of message/return-value pairs
+      # @overload double(name, stubs)
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs (Hash) hash of message/return-value pairs
+      # @return (Double)
+      #
+      # Constructs an instance of [RSpec::Mocks::Double](RSpec::Mocks::Double) configured
+      # with an optional name, used for reporting in failure messages, and an optional
+      # hash of message/return-value pairs.
+      #
+      # @example
+      #   book = double("book", :title => "The RSpec Book")
+      #   book.title #=> "The RSpec Book"
+      #
+      #   card = double("card", :suit => "Spades", :rank => "A")
+      #   card.suit  #=> "Spades"
+      #   card.rank  #=> "A"
+      #
+      def double: (*untyped args) -> untyped
+
+      # @overload instance_double(doubled_class)
+      #   @param doubled_class [String, Class]
+      # @overload instance_double(doubled_class, name)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload instance_double(doubled_class, stubs)
+      #   @param doubled_class [String, Class]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload instance_double(doubled_class, name, stubs)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return InstanceVerifyingDouble
+      #
+      # Constructs a test double against a specific class. If the given class
+      # name has been loaded, only instance methods defined on the class are
+      # allowed to be stubbed. In all other ways it behaves like a
+      # [double](double).
+      def instance_double: (untyped doubled_class, *untyped args) -> untyped
+
+      # @overload class_double(doubled_class)
+      #   @param doubled_class [String, Module]
+      # @overload class_double(doubled_class, name)
+      #   @param doubled_class [String, Module]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload class_double(doubled_class, stubs)
+      #   @param doubled_class [String, Module]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload class_double(doubled_class, name, stubs)
+      #   @param doubled_class [String, Module]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return ClassVerifyingDouble
+      #
+      # Constructs a test double against a specific class. If the given class
+      # name has been loaded, only class methods defined on the class are
+      # allowed to be stubbed. In all other ways it behaves like a
+      # [double](double).
+      def class_double: (untyped doubled_class, *untyped args) -> untyped
+
+      # @overload object_double(object_or_name)
+      #   @param object_or_name [String, Object]
+      # @overload object_double(object_or_name, name)
+      #   @param object_or_name [String, Object]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload object_double(object_or_name, stubs)
+      #   @param object_or_name [String, Object]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload object_double(object_or_name, name, stubs)
+      #   @param object_or_name [String, Object]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return ObjectVerifyingDouble
+      #
+      # Constructs a test double against a specific object. Only the methods
+      # the object responds to are allowed to be stubbed. If a String argument
+      # is provided, it is assumed to reference a constant object which is used
+      # for verification. In all other ways it behaves like a [double](double).
+      def object_double: (untyped object_or_name, *untyped args) -> untyped
+
+      # @overload spy()
+      # @overload spy(name)
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload spy(stubs)
+      #   @param stubs (Hash) hash of message/return-value pairs
+      # @overload spy(name, stubs)
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs (Hash) hash of message/return-value pairs
+      # @return (Double)
+      #
+      # Constructs a test double that is optimized for use with
+      # `have_received`. With a normal double one has to stub methods in order
+      # to be able to spy them. A spy automatically spies on all methods.
+      def spy: (*untyped args) -> untyped
+
+      # @overload instance_spy(doubled_class)
+      #   @param doubled_class [String, Class]
+      # @overload instance_spy(doubled_class, name)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload instance_spy(doubled_class, stubs)
+      #   @param doubled_class [String, Class]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload instance_spy(doubled_class, name, stubs)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return InstanceVerifyingDouble
+      #
+      # Constructs a test double that is optimized for use with `have_received`
+      # against a specific class. If the given class name has been loaded, only
+      # instance methods defined on the class are allowed to be stubbed.  With
+      # a normal double one has to stub methods in order to be able to spy
+      # them. An instance_spy automatically spies on all instance methods to
+      # which the class responds.
+      def instance_spy: (*untyped args) -> untyped
+
+      # @overload object_spy(object_or_name)
+      #   @param object_or_name [String, Object]
+      # @overload object_spy(object_or_name, name)
+      #   @param object_or_name [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload object_spy(object_or_name, stubs)
+      #   @param object_or_name [String, Object]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload object_spy(object_or_name, name, stubs)
+      #   @param object_or_name [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return ObjectVerifyingDouble
+      #
+      # Constructs a test double that is optimized for use with `have_received`
+      # against a specific object. Only instance methods defined on the object
+      # are allowed to be stubbed.  With a normal double one has to stub
+      # methods in order to be able to spy them. An object_spy automatically
+      # spies on all methods to which the object responds.
+      def object_spy: (*untyped args) -> untyped
+
+      # @overload class_spy(doubled_class)
+      #   @param doubled_class [String, Module]
+      # @overload class_spy(doubled_class, name)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      # @overload class_spy(doubled_class, stubs)
+      #   @param doubled_class [String, Module]
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @overload class_spy(doubled_class, name, stubs)
+      #   @param doubled_class [String, Class]
+      #   @param name [String/Symbol] name or description to be used in failure messages
+      #   @param stubs [Hash] hash of message/return-value pairs
+      # @return ClassVerifyingDouble
+      #
+      # Constructs a test double that is optimized for use with `have_received`
+      # against a specific class. If the given class name has been loaded,
+      # only class methods defined on the class are allowed to be stubbed.
+      # With a normal double one has to stub methods in order to be able to spy
+      # them. An class_spy automatically spies on all class methods to which the
+      # class responds.
+      def class_spy: (*untyped args) -> untyped
+
+      # Disables warning messages about expectations being set on nil.
+      #
+      # By default warning messages are issued when expectations are set on
+      # nil.  This is to prevent false-positives and to catch potential bugs
+      # early on.
+      # @deprecated Use {RSpec::Mocks::Configuration#allow_message_expectations_on_nil} instead.
+      def allow_message_expectations_on_nil: () -> untyped
+
+      # Stubs the named constant with the given value.
+      # Like method stubs, the constant will be restored
+      # to its original value (or lack of one, if it was
+      # undefined) when the example completes.
+      #
+      # @param constant_name [String] The fully qualified name of the constant. The current
+      #   constant scoping at the point of call is not considered.
+      # @param value [Object] The value to make the constant refer to. When the
+      #   example completes, the constant will be restored to its prior state.
+      # @param options [Hash] Stubbing options.
+      # @option options :transfer_nested_constants [Boolean, Array<Symbol>] Determines
+      #   what nested constants, if any, will be transferred from the original value
+      #   of the constant to the new value of the constant. This only works if both
+      #   the original and new values are modules (or classes).
+      # @return [Object] the stubbed value of the constant
+      #
+      # @example
+      #   stub_const("MyClass", Class.new) # => Replaces (or defines) MyClass with a new class object.
+      #   stub_const("SomeModel::PER_PAGE", 5) # => Sets SomeModel::PER_PAGE to 5.
+      #
+      #   class CardDeck
+      #     SUITS = [:Spades, :Diamonds, :Clubs, :Hearts]
+      #     NUM_CARDS = 52
+      #   end
+      #
+      #   stub_const("CardDeck", Class.new)
+      #   CardDeck::SUITS # => uninitialized constant error
+      #   CardDeck::NUM_CARDS # => uninitialized constant error
+      #
+      #   stub_const("CardDeck", Class.new, :transfer_nested_constants => true)
+      #   CardDeck::SUITS # => our suits array
+      #   CardDeck::NUM_CARDS # => 52
+      #
+      #   stub_const("CardDeck", Class.new, :transfer_nested_constants => [:SUITS])
+      #   CardDeck::SUITS # => our suits array
+      #   CardDeck::NUM_CARDS # => uninitialized constant error
+      def stub_const: (untyped constant_name, untyped value, ?::Hash[untyped, untyped] options) -> untyped
+
+      # Hides the named constant with the given value. The constant will be
+      # undefined for the duration of the test.
+      #
+      # Like method stubs, the constant will be restored to its original value
+      # when the example completes.
+      #
+      # @param constant_name [String] The fully qualified name of the constant.
+      #   The current constant scoping at the point of call is not considered.
+      #
+      # @example
+      #   hide_const("MyClass") # => MyClass is now an undefined constant
+      def hide_const: (untyped constant_name) -> untyped
+
+      # Verifies that the given object received the expected message during the
+      # course of the test. On a spy objects or as null object doubles this
+      # works for any method, on other objects the method must have
+      # been stubbed beforehand in order for messages to be verified.
+      #
+      # Stubbing and verifying messages received in this way implements the
+      # Test Spy pattern.
+      #
+      # @param method_name [Symbol] name of the method expected to have been
+      #   called.
+      #
+      # @example
+      #   invitation = double('invitation', accept: true)
+      #   user.accept_invitation(invitation)
+      #   expect(invitation).to have_received(:accept)
+      #
+      #   # You can also use most message expectations:
+      #   expect(invitation).to have_received(:accept).with(mailer).once
+      #
+      # @note `have_received(...).with(...)` is unable to work properly when
+      #   passed arguments are mutated after the spy records the received message.
+      def have_received: (untyped method_name) { () -> untyped } -> untyped
+
+      # Turns off the verifying of partial doubles for the duration of the
+      # block, this is useful in situations where methods are defined at run
+      # time and you wish to define stubs for them but not turn off partial
+      # doubles for the entire run suite. (e.g. view specs in rspec-rails).
+      def without_partial_double_verification: () { () -> untyped } -> untyped
+
+      # @private
+      def self.included: (untyped klass) -> untyped
+
+      # @private
+      def self.extended: (untyped object) -> untyped
+
+      # @private
+      def self.declare_verifying_double: (untyped `type`, untyped ref, *untyped args) -> untyped
+
+      # @private
+      def self.declare_double: (untyped `type`, *untyped args) -> untyped
+
+      # This module exists to host the `expect` method for cases where
+      # rspec-mocks is used w/o rspec-expectations.
+      module ExpectHost
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # A message expectation that only allows concrete return values to be set
+    # for a message. While this same effect can be achieved using a standard
+    # MessageExpectation, this version is much faster and so can be used as an
+    # optimization.
+    #
+    # @private
+    class SimpleMessageExpectation
+      def initialize: (untyped message, untyped response, untyped error_generator, ?untyped? backtrace_line) -> void
+
+      def invoke: (*untyped _) -> untyped
+
+      def matches?: (untyped message, *untyped _) -> untyped
+
+      def called_max_times?: () -> false
+
+      def verify_messages_received: () -> (nil | untyped)
+
+      def unadvise: (untyped _) -> nil
+    end
+
+    # Represents an individual method stub or message expectation. The methods
+    # defined here can be used to configure how it behaves. The methods return
+    # `self` so that they can be chained together to form a fluent interface.
+    class MessageExpectation
+      # @overload and_return(value)
+      # @overload and_return(first_value, second_value)
+      #
+      # Tells the object to return a value when it receives the message.  Given
+      # more than one value, the first value is returned the first time the
+      # message is received, the second value is returned the next time, etc,
+      # etc.
+      #
+      # If the message is received more times than there are values, the last
+      # value is returned for every subsequent call.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @example
+      #   allow(counter).to receive(:count).and_return(1)
+      #   counter.count # => 1
+      #   counter.count # => 1
+      #
+      #   allow(counter).to receive(:count).and_return(1,2,3)
+      #   counter.count # => 1
+      #   counter.count # => 2
+      #   counter.count # => 3
+      #   counter.count # => 3
+      #   counter.count # => 3
+      #   # etc
+      def and_return: (untyped first_value, *untyped values) -> nil
+
+      # Tells the object to invoke a Proc when it receives the message. Given
+      # more than one value, the result of the first Proc is returned the first
+      # time the message is received, the result of the second Proc is returned
+      # the next time, etc, etc.
+      #
+      # If the message is received more times than there are Procs, the result of
+      # the last Proc is returned for every subsequent call.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @example
+      #   allow(api).to receive(:get_foo).and_invoke(-> { raise ApiTimeout })
+      #   api.get_foo # => raises ApiTimeout
+      #   api.get_foo # => raises ApiTimeout
+      #
+      #   allow(api).to receive(:get_foo).and_invoke(-> { raise ApiTimeout }, -> { raise ApiTimeout }, -> { :a_foo })
+      #   api.get_foo # => raises ApiTimeout
+      #   api.get_foo # => rasies ApiTimeout
+      #   api.get_foo # => :a_foo
+      #   api.get_foo # => :a_foo
+      #   api.get_foo # => :a_foo
+      #   # etc
+      def and_invoke: (untyped first_proc, *untyped procs) -> nil
+
+      # Tells the object to delegate to the original unmodified method
+      # when it receives the message.
+      #
+      # @note This is only available on partial doubles.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @example
+      #   expect(counter).to receive(:increment).and_call_original
+      #   original_count = counter.count
+      #   counter.increment
+      #   expect(counter.count).to eq(original_count + 1)
+      def and_call_original: () -> untyped
+
+      # Decorates the stubbed method with the supplied block. The original
+      # unmodified method is passed to the block along with any method call
+      # arguments so you can delegate to it, whilst still being able to
+      # change what args are passed to it and/or change the return value.
+      #
+      # @note This is only available on partial doubles.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @example
+      #   expect(api).to receive(:large_list).and_wrap_original do |original_method, *args, &block|
+      #     original_method.call(*args, &block).first(10)
+      #   end
+      def and_wrap_original: () { () -> untyped } -> untyped
+
+      # @overload and_raise
+      # @overload and_raise(ExceptionClass)
+      # @overload and_raise(ExceptionClass, message)
+      # @overload and_raise(exception_instance)
+      #
+      # Tells the object to raise an exception when the message is received.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @note
+      #   When you pass an exception class, the MessageExpectation will raise
+      #   an instance of it, creating it with `exception` and passing `message`
+      #   if specified.  If the exception class initializer requires more than
+      #   one parameters, you must pass in an instance and not the class,
+      #   otherwise this method will raise an ArgumentError exception.
+      #
+      # @example
+      #   allow(car).to receive(:go).and_raise
+      #   allow(car).to receive(:go).and_raise(OutOfGas)
+      #   allow(car).to receive(:go).and_raise(OutOfGas, "At least 2 oz of gas needed to drive")
+      #   allow(car).to receive(:go).and_raise(OutOfGas.new(2, :oz))
+      def and_raise: (*untyped args) -> nil
+
+      # @overload and_throw(symbol)
+      # @overload and_throw(symbol, object)
+      #
+      # Tells the object to throw a symbol (with the object if that form is
+      # used) when the message is received.
+      #
+      # @return [nil] No further chaining is supported after this.
+      # @example
+      #   allow(car).to receive(:go).and_throw(:out_of_gas)
+      #   allow(car).to receive(:go).and_throw(:out_of_gas, :level => 0.1)
+      def and_throw: (*untyped args) -> nil
+
+      # Tells the object to yield one or more args to a block when the message
+      # is received.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   stream.stub(:open).and_yield(StringIO.new)
+      def and_yield: (*untyped args) { (untyped) -> untyped } -> untyped
+
+      # Constrain a message expectation to be received a specific number of
+      # times.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(dealer).to receive(:deal_card).exactly(10).times
+      def exactly: (untyped n) { () -> untyped } -> untyped
+
+      # Constrain a message expectation to be received at least a specific
+      # number of times.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(dealer).to receive(:deal_card).at_least(9).times
+      def at_least: (untyped n) { () -> untyped } -> untyped
+
+      # Constrain a message expectation to be received at most a specific
+      # number of times.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(dealer).to receive(:deal_card).at_most(10).times
+      def at_most: (untyped n) { () -> untyped } -> untyped
+
+      # Syntactic sugar for `exactly`, `at_least` and `at_most`
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(dealer).to receive(:deal_card).exactly(10).times
+      #   expect(dealer).to receive(:deal_card).at_least(10).times
+      #   expect(dealer).to receive(:deal_card).at_most(10).times
+      def times: () { () -> untyped } -> untyped
+
+      alias time times
+
+      # Expect a message not to be received at all.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(car).to receive(:stop).never
+      def never: () -> untyped
+
+      # Expect a message to be received exactly one time.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(car).to receive(:go).once
+      def once: () { () -> untyped } -> untyped
+
+      # Expect a message to be received exactly two times.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(car).to receive(:go).twice
+      def twice: () { () -> untyped } -> untyped
+
+      # Expect a message to be received exactly three times.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(car).to receive(:go).thrice
+      def thrice: () { () -> untyped } -> untyped
+
+      # Constrains a stub or message expectation to invocations with specific
+      # arguments.
+      #
+      # With a stub, if the message might be received with other args as well,
+      # you should stub a default value first, and then stub or mock the same
+      # message using `with` to constrain to specific arguments.
+      #
+      # A message expectation will fail if the message is received with different
+      # arguments.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   allow(cart).to receive(:add) { :failure }
+      #   allow(cart).to receive(:add).with(Book.new(:isbn => 1934356379)) { :success }
+      #   cart.add(Book.new(:isbn => 1234567890))
+      #   # => :failure
+      #   cart.add(Book.new(:isbn => 1934356379))
+      #   # => :success
+      #
+      #   expect(cart).to receive(:add).with(Book.new(:isbn => 1934356379)) { :success }
+      #   cart.add(Book.new(:isbn => 1234567890))
+      #   # => failed expectation
+      #   cart.add(Book.new(:isbn => 1934356379))
+      #   # => passes
+      def with: (*untyped args) { () -> untyped } -> untyped
+
+      # Expect messages to be received in a specific order.
+      #
+      # @return [MessageExpectation] self, to support further chaining.
+      # @example
+      #   expect(api).to receive(:prepare).ordered
+      #   expect(api).to receive(:run).ordered
+      #   expect(api).to receive(:finish).ordered
+      def ordered: () { () -> untyped } -> untyped
+
+      # @return [String] a nice representation of the message expectation
+      def to_s: () -> ::String
+
+      alias inspect to_s
+
+      # @private
+      # Contains the parts of `MessageExpectation` that aren't part of
+      # rspec-mocks' public API. The class is very big and could really use
+      # some collaborators it delegates to for this stuff but for now this was
+      # the simplest way to split the public from private stuff to make it
+      # easier to publish the docs for the APIs we want published.
+      module ImplementationDetails
+        attr_accessor error_generator: untyped
+
+        attr_accessor implementation: untyped
+
+        attr_reader message: untyped
+
+        attr_reader orig_object: untyped
+
+        attr_writer expected_received_count: untyped
+
+        attr_writer expected_from: untyped
+
+        attr_writer argument_list_matcher: untyped
+
+        # @private
+        attr_reader type: untyped
+
+        # rubocop:disable Metrics/ParameterLists
+        def initialize: (untyped error_generator, untyped expectation_ordering, untyped expected_from, untyped method_double, ?::Symbol `type`, ?::Hash[untyped, untyped] opts) { () -> untyped } -> void
+
+        def expected_args: () -> untyped
+
+        def and_yield_receiver_to_implementation: () -> untyped
+
+        def yield_receiver_to_implementation_block?: () -> untyped
+
+        def matches?: (untyped message, *untyped args) -> untyped
+
+        def safe_invoke: (untyped parent_stub, *untyped args) { () -> untyped } -> untyped
+
+        def invoke: (untyped parent_stub, *untyped args) { () -> untyped } -> untyped
+
+        def invoke_without_incrementing_received_count: (untyped parent_stub, *untyped args) { () -> untyped } -> untyped
+
+        def negative?: () -> untyped
+
+        def called_max_times?: () -> untyped
+
+        def matches_name_but_not_args: (untyped message, *untyped args) -> untyped
+
+        def verify_messages_received: () -> (nil | untyped)
+
+        def expected_messages_received?: () -> untyped
+
+        def ensure_expected_ordering_received!: () -> true
+
+        def ignoring_args?: () -> untyped
+
+        def matches_at_least_count?: () -> untyped
+
+        def matches_at_most_count?: () -> untyped
+
+        def matches_exact_count?: () -> untyped
+
+        def similar_messages: () -> untyped
+
+        def advise: (*untyped args) -> untyped
+
+        def unadvise: (untyped args) -> untyped
+
+        def generate_error: () -> untyped
+
+        def raise_unexpected_message_args_error: (untyped args_for_multiple_calls) -> untyped
+
+        def expectation_count_type: () -> (:at_least | :at_most | nil)
+
+        def description_for: (untyped verb) -> untyped
+
+        def raise_out_of_order_error: () -> untyped
+
+        def additional_expected_calls: () -> (0 | untyped)
+
+        def ordered?: () -> untyped
+
+        def negative_expectation_for?: (untyped message) -> untyped
+
+        def actual_received_count_matters?: () -> untyped
+
+        def increase_actual_received_count!: () -> untyped
+
+        private
+
+        def exception_source_id: () -> untyped
+
+        def invoke_incrementing_actual_calls_by: (untyped increment, untyped allowed_to_fail, untyped parent_stub, *untyped args) { () -> untyped } -> untyped
+
+        def has_been_invoked?: () -> untyped
+
+        def raise_already_invoked_error_if_necessary: (untyped calling_customization) -> (nil | untyped)
+
+        def set_expected_received_count: (untyped relativity, untyped n) -> untyped
+
+        def initial_implementation_action=: (untyped action) -> untyped
+
+        def inner_implementation_action=: (untyped action) -> (nil | untyped)
+
+        def terminal_implementation_action=: (untyped action) -> untyped
+
+        def warn_about_stub_override: () -> untyped
+
+        def wrap_original: (untyped method_name) { () -> untyped } -> nil
+      end
+
+      include ImplementationDetails
+    end
+
+    # Handles the implementation of an `and_yield` declaration.
+    # @private
+    class AndYieldImplementation
+      def initialize: (untyped args_to_yield, untyped eval_context, untyped error_generator) -> void
+
+      def call: (*untyped _args_to_ignore) { (untyped) -> untyped } -> (nil | untyped)
+    end
+
+    # Handles the implementation of an `and_return` implementation.
+    # @private
+    class AndReturnImplementation
+      def initialize: (untyped values_to_return) -> void
+
+      def call: (*untyped _args_to_ignore) { () -> untyped } -> untyped
+    end
+
+    # Handles the implementation of an `and_invoke` implementation.
+    # @private
+    class AndInvokeImplementation
+      def initialize: (untyped procs_to_invoke) -> void
+
+      def call: (*untyped args) { () -> untyped } -> untyped
+    end
+
+    # Represents a configured implementation. Takes into account
+    # any number of sub-implementations.
+    # @private
+    class Implementation
+      attr_accessor initial_action: untyped
+
+      attr_accessor inner_action: untyped
+
+      attr_accessor terminal_action: untyped
+
+      def call: (*untyped args) { () -> untyped } -> untyped
+
+      def present?: () -> untyped
+
+      private
+
+      def actions: () -> untyped
+    end
+
+    # Represents an `and_call_original` implementation.
+    # @private
+    class AndWrapOriginalImplementation
+      def initialize: (untyped method, untyped block) -> void
+
+      CannotModifyFurtherError: untyped
+
+      def initial_action=: (untyped _value) -> untyped
+
+      def inner_action=: (untyped _value) -> untyped
+
+      def terminal_action=: (untyped _value) -> untyped
+
+      def present?: () -> true
+
+      def inner_action: () -> true
+
+      def call: (*untyped args) { () -> untyped } -> untyped
+
+      private
+
+      def cannot_modify_further_error: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class MessageChain
+      attr_reader object: untyped
+
+      attr_reader chain: untyped
+
+      attr_reader block: untyped
+
+      def initialize: (untyped object, *untyped chain) { () -> untyped } -> void
+
+      # @api private
+      def setup_chain: () -> untyped
+
+      private
+
+      def chain_on: (untyped object, *untyped chain) { () -> untyped } -> untyped
+
+      def format_chain: (*untyped chain) { () -> untyped } -> untyped
+
+      def find_matching_stub: () -> untyped
+
+      def find_matching_expectation: () -> untyped
+    end
+
+    # @private
+    class ExpectChain < MessageChain
+      # @api private
+      def self.expect_chain_on: (untyped object, *untyped chain) { () -> untyped } -> untyped
+
+      private
+
+      def expectation: (untyped object, untyped message) { () -> untyped } -> untyped
+    end
+
+    # @private
+    class StubChain < MessageChain
+      def self.stub_chain_on: (untyped object, *untyped chain) { () -> untyped } -> untyped
+
+      private
+
+      def expectation: (untyped object, untyped message) { () -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @api private
+    # Provides methods for enabling and disabling the available syntaxes
+    # provided by rspec-mocks.
+    module Syntax
+      # @private
+      def self.warn_about_should!: () -> untyped
+
+      # @private
+      def self.warn_unless_should_configured: (untyped method_name, ?::String replacement) -> untyped
+
+      # @api private
+      # Enables the should syntax (`dbl.stub`, `dbl.should_receive`, etc).
+      def self.enable_should: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Disables the should syntax (`dbl.stub`, `dbl.should_receive`, etc).
+      def self.disable_should: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Enables the expect syntax (`expect(dbl).to receive`, `allow(dbl).to receive`, etc).
+      def self.enable_expect: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Disables the expect syntax (`expect(dbl).to receive`, `allow(dbl).to receive`, etc).
+      def self.disable_expect: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Indicates whether or not the should syntax is enabled.
+      def self.should_enabled?: (?untyped syntax_host) -> untyped
+
+      # @api private
+      # Indicates whether or not the expect syntax is enabled.
+      def self.expect_enabled?: (?untyped syntax_host) -> untyped
+
+      # @api private
+      # Determines where the methods like `should_receive`, and `stub` are added.
+      def self.default_should_syntax_host: () -> untyped
+    end
+  end
+end
+
+# The legacy `:should` syntax adds the following methods directly to
+# `BasicObject` so that they are available off of any object. Note, however,
+# that this syntax does not always play nice with delegate/proxy objects.
+# We recommend you use the non-monkeypatching `:expect` syntax instead.
+# @see Class
+class BasicObject
+end
+
+# The legacy `:should` syntax adds the `any_instance` to `Class`.
+# We generally recommend you use the newer `:expect` syntax instead,
+# which allows you to stub any instance of a class using
+# `allow_any_instance_of(klass)` or mock any instance using
+# `expect_any_instance_of(klass)`.
+# @see BasicObject
+class Class
+end
+
+module RSpec
+  module Mocks
+    # A message expectation that knows about the real implementation of the
+    # message being expected, so that it can verify that any expectations
+    # have the valid arguments.
+    # @api private
+    class VerifyingMessageExpectation < MessageExpectation
+      # A level of indirection is used here rather than just passing in the
+      # method itself, since method look up is expensive and we only want to
+      # do it if actually needed.
+      #
+      # Conceptually the method reference makes more sense as a constructor
+      # argument since it should be immutable, but it is significantly more
+      # straight forward to build the object in pieces so for now it stays as
+      # an accessor.
+      attr_accessor method_reference: untyped
+
+      def initialize: (*untyped args) -> void
+
+      # @private
+      def with: (*untyped args) { () -> untyped } -> untyped
+
+      private
+
+      def validate_expected_arguments!: () { (untyped) -> untyped } -> (nil | untyped)
+    end
+  end
+end
+
+
+module RSpec
+  module Mocks
+    # Wrapper for matching arguments against a list of expected values. Used by
+    # the `with` method on a `MessageExpectation`:
+    #
+    #     expect(object).to receive(:message).with(:a, 'b', 3)
+    #     object.message(:a, 'b', 3)
+    #
+    # Values passed to `with` can be literal values or argument matchers that
+    # match against the real objects .e.g.
+    #
+    #     expect(object).to receive(:message).with(hash_including(:a => 'b'))
+    #
+    # Can also be used directly to match the contents of any `Array`. This
+    # enables 3rd party mocking libs to take advantage of rspec's argument
+    # matching without using the rest of rspec-mocks.
+    #
+    #     require 'rspec/mocks/argument_list_matcher'
+    #     include RSpec::Mocks::ArgumentMatchers
+    #
+    #     arg_list_matcher = RSpec::Mocks::ArgumentListMatcher.new(123, hash_including(:a => 'b'))
+    #     arg_list_matcher.args_match?(123, :a => 'b')
+    #
+    # This class is immutable.
+    #
+    # @see ArgumentMatchers
+    class ArgumentListMatcher
+      # @private
+      attr_reader expected_args: untyped
+
+      # @api public
+      # @param [Array] expected_args a list of expected literals and/or argument matchers
+      #
+      # Initializes an `ArgumentListMatcher` with a collection of literal
+      # values and/or argument matchers.
+      #
+      # @see ArgumentMatchers
+      # @see #args_match?
+      def initialize: (*untyped expected_args) -> void
+
+      # @api public
+      # @param [Array] actual_args
+      #
+      # Matches each element in the `expected_args` against the element in the same
+      # position of the arguments passed to `new`.
+      #
+      # @see #initialize
+      def args_match?: (*untyped actual_args) -> (false | untyped)
+
+      # @private
+      # Resolves abstract arg placeholders like `no_args` and `any_args` into
+      # a more concrete arg list based on the provided `actual_args`.
+      def resolve_expected_args_based_on: (untyped actual_args) -> (::Array[untyped] | untyped)
+
+      private
+
+      def replace_any_args_with_splat_of_anything: (untyped before_count, untyped actual_args_count) -> untyped
+
+      def ensure_expected_args_valid!: () -> untyped
+
+      # Value that will match all argument lists.
+      #
+      # @private
+      MATCH_ALL: untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    module MinitestIntegration
+      include ::RSpec::Mocks::ExampleMethods
+
+      def before_setup: () -> untyped
+
+      def after_teardown: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Raised when a message expectation is not satisfied.
+    MockExpectationError: untyped
+  end
+end
+
+class Object
+  include RSpec::Mocks::ExpectationTargetMethods
+
+  def to: (*untyped args) -> untyped
+
+  def not_to: (*untyped args) -> untyped
+
+  def to_not: (*untyped args) -> untyped
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class Proxy
+      # @private
+      SpecificMessage: untyped
+
+      Mutex: untyped
+
+      # @private
+      def ensure_implemented: (*untyped _args) -> nil
+
+      # @private
+      def initialize: (untyped object, untyped order_group, ?::Hash[untyped, untyped] options) -> void
+
+      # @private
+      def ensure_can_be_proxied!: (untyped object) -> (nil | untyped)
+
+      # @private
+      attr_reader object: untyped
+
+      # @private
+      def null_object?: () -> untyped
+
+      # @private
+      # Tells the object to ignore any messages that aren't explicitly set as
+      # stubs or message expectations.
+      def as_null_object: () -> untyped
+
+      # @private
+      def original_method_handle_for: (untyped _message) -> nil
+
+      DEFAULT_MESSAGE_EXPECTATION_OPTS: ::Hash[untyped, untyped]
+
+      # @private
+      def add_message_expectation: (untyped method_name, ?untyped opts) { () -> untyped } -> untyped
+
+      # @private
+      def add_simple_expectation: (untyped method_name, untyped response, untyped location) -> untyped
+
+      # @private
+      def build_expectation: (untyped method_name) -> untyped
+
+      # @private
+      def replay_received_message_on: (untyped expectation) { () -> untyped } -> untyped
+
+      # @private
+      def check_for_unexpected_arguments: (untyped expectation) -> untyped
+
+      # @private
+      def add_stub: (untyped method_name, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      # @private
+      def add_simple_stub: (untyped method_name, untyped response) -> untyped
+
+      # @private
+      def remove_stub: (untyped method_name) -> untyped
+
+      # @private
+      def remove_stub_if_present: (untyped method_name) -> untyped
+
+      # @private
+      def verify: () -> untyped
+
+      # @private
+      def reset: () -> untyped
+
+      # @private
+      def received_message?: (untyped method_name, *untyped args) { () -> untyped } -> untyped
+
+      # @private
+      def messages_arg_list: () -> untyped
+
+      # @private
+      def has_negative_expectation?: (untyped message) -> untyped
+
+      # @private
+      def record_message_received: (untyped message, *untyped args) { () -> untyped } -> untyped
+
+      # @private
+      def message_received: (untyped message, *untyped args) { () -> untyped } -> untyped
+
+      # @private
+      def raise_unexpected_message_error: (untyped method_name, untyped args) -> untyped
+
+      # @private
+      def raise_missing_default_stub_error: (untyped expectation, untyped args_for_multiple_calls) -> untyped
+
+      # @private
+      def visibility_for: (untyped _method_name) -> :public
+
+      def self.prepended_modules_of: (untyped klass) -> untyped
+
+      def prepended_modules_of_singleton_class: () -> untyped
+
+      # @private
+      def method_double_if_exists_for_message: (untyped message) -> untyped
+
+      private
+
+      def method_double_for: (untyped message) -> untyped
+
+      def find_matching_expectation: (untyped method_name, *untyped args) -> untyped
+
+      def find_almost_matching_expectation: (untyped method_name, *untyped args) -> untyped
+
+      def find_best_matching_expectation_for: (untyped method_name) { (untyped) -> untyped } -> untyped
+
+      def find_matching_method_stub: (untyped method_name, *untyped args) -> untyped
+
+      def find_almost_matching_stub: (untyped method_name, *untyped args) -> untyped
+    end
+
+    # @private
+    class TestDoubleProxy < Proxy
+      def reset: () -> untyped
+    end
+
+    # @private
+    class PartialDoubleProxy < Proxy
+      def original_method_handle_for: (untyped message) -> untyped
+
+      # @private
+      def add_simple_expectation: (untyped method_name, untyped response, untyped location) -> untyped
+
+      # @private
+      def add_simple_stub: (untyped method_name, untyped response) -> untyped
+
+      # @private
+      def visibility_for: (untyped method_name) -> untyped
+
+      def reset: () -> untyped
+
+      def message_received: (untyped message, *untyped args) { () -> untyped } -> untyped
+
+      private
+
+      def any_instance_class_recorder_observing_method?: (untyped klass, untyped method_name) -> (true | false | untyped)
+    end
+
+    # @private
+    # When we mock or stub a method on a class, we have to treat it a bit different,
+    # because normally singleton method definitions only affect the object on which
+    # they are defined, but on classes they affect subclasses, too. As a result,
+    # we need some special handling to get the original method.
+    module PartialClassDoubleProxyMethods
+      def initialize: (untyped source_space, *untyped args) -> void
+
+      # Consider this situation:
+      #
+      #   class A; end
+      #   class B < A; end
+      #
+      #   allow(A).to receive(:new)
+      #   expect(B).to receive(:new).and_call_original
+      #
+      # When getting the original definition for `B.new`, we cannot rely purely on
+      # using `B.method(:new)` before our redefinition is defined on `B`, because
+      # `B.method(:new)` will return a method that will execute the stubbed version
+      # of the method on `A` since singleton methods on classes are in the lookup
+      # hierarchy.
+      #
+      # To do it properly, we need to find the original definition of `new` from `A`
+      # from _before_ `A` was stubbed, and we need to rebind it to `B` so that it will
+      # run with the proper `self`.
+      #
+      # That's what this method (together with `original_unbound_method_handle_from_ancestor_for`)
+      # does.
+      def original_method_handle_for: (untyped message) -> untyped
+
+      def original_unbound_method_handle_from_ancestor_for: (untyped message) -> untyped
+
+      def method_double_from_ancestor_for: (untyped message) -> untyped
+
+      def superclass_proxy: () -> untyped
+    end
+
+    # @private
+    class PartialClassDoubleProxy < PartialDoubleProxy
+      include PartialClassDoubleProxyMethods
+    end
+
+    # @private
+    class ProxyForNil < PartialDoubleProxy
+      def initialize: (untyped order_group) -> void
+
+      attr_accessor disallow_expectations: untyped
+
+      attr_accessor warn_about_expectations: untyped
+
+      def add_message_expectation: (untyped method_name, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      def add_stub: (untyped method_name, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      private
+
+      def set_expectation_behavior: () -> untyped
+
+      def warn_or_raise!: (untyped method_name) -> untyped
+
+      def warn: (untyped method_name) -> untyped
+
+      def raise_error: (untyped method_name) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Implements the methods needed for a pure test double.  RSpec::Mocks::Double
+    # includes this module, and it is provided for cases where you want a
+    # pure test double without subclassing RSpec::Mocks::Double.
+    module TestDouble
+      # Creates a new test double with a `name` (that will be used in error
+      # messages only)
+      def initialize: (?untyped? name, ?::Hash[untyped, untyped] stubs) -> void
+
+      # Tells the object to respond to all messages. If specific stub values
+      # are declared, they'll work as expected. If not, the receiver is
+      # returned.
+      def as_null_object: () -> untyped
+
+      # Returns true if this object has received `as_null_object`
+      def null_object?: () -> untyped
+
+      # This allows for comparing the mock to other objects that proxy such as
+      # ActiveRecords belongs_to proxy objects. By making the other object run
+      # the comparison, we're sure the call gets delegated to the proxy
+      # target.
+      def ==: (untyped other) -> untyped
+
+      # @private
+      def inspect: () -> untyped
+
+      # @private
+      def to_s: () -> untyped
+
+      # @private
+      def respond_to?: (untyped message, ?bool incl_private) -> untyped
+
+      # @private
+      def __build_mock_proxy_unless_expired: (untyped order_group) -> untyped
+
+      # @private
+      def __disallow_further_usage!: () -> untyped
+
+      # Override for default freeze implementation to prevent freezing of test
+      # doubles.
+      def freeze: () -> untyped
+
+      private
+
+      def method_missing: (untyped message, *untyped args) { () -> untyped } -> (0 | nil | untyped)
+
+      def assign_stubs: (untyped stubs) -> untyped
+
+      def __mock_proxy: () -> untyped
+
+      def __build_mock_proxy: (untyped order_group) -> untyped
+
+      def __raise_expired_error: () -> (false | untyped)
+
+      def initialize_copy: (untyped other) -> untyped
+    end
+
+    # A generic test double object. `double`, `instance_double` and friends
+    # return an instance of this.
+    class Double
+      include TestDouble
+    end
+
+    # @private
+    module TestDoubleFormatter
+      def self.format: (untyped dbl, ?bool unwrap) -> (untyped | ::String)
+
+      private
+
+      def self.type_desc: (untyped dbl) -> untyped
+
+      # @private
+      IVAR_GET: untyped
+
+      def self.verified_module_desc: (untyped dbl) -> (nil | ::String)
+
+      def self.name_desc: (untyped dbl) -> ("(anonymous)" | untyped)
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class ObjectReference
+      # Returns an appropriate Object or Module reference based
+      # on the given argument.
+      def self.for: (untyped object_module_or_name, ?bool allow_direct_object_refs) -> untyped
+
+      def self.anonymous_module?: (untyped mod) -> untyped
+
+      def self.name_of: (untyped mod) -> untyped
+
+      # @private
+      MODULE_NAME_METHOD: untyped
+    end
+
+    # An implementation of rspec-mocks' reference interface.
+    # Used when an object is passed to {ExampleMethods#object_double}, or
+    # an anonymous class or module is passed to {ExampleMethods#instance_double}
+    # or {ExampleMethods#class_double}.
+    # Represents a reference to that object.
+    # @see NamedObjectReference
+    class DirectObjectReference
+      # @param object [Object] the object to which this refers
+      def initialize: (untyped object) -> void
+
+      # @return [String] the object's description (via `#inspect`).
+      def description: () -> untyped
+
+      # Defined for interface parity with the other object reference
+      # implementations. Raises an `ArgumentError` to indicate that `as_stubbed_const`
+      # is invalid when passing an object argument to `object_double`.
+      def const_to_replace: () -> untyped
+
+      # The target of the verifying double (the object itself).
+      #
+      # @return [Object]
+      def target: () -> untyped
+
+      # Always returns true for an object as the class is defined.
+      #
+      # @return [true]
+      def defined?: () -> true
+
+      # Yields if the reference target is loaded, providing a generic mechanism
+      # to optionally run a bit of code only when a reference's target is
+      # loaded.
+      #
+      # This specific implementation always yields because direct references
+      # are always loaded.
+      #
+      # @yield [Object] the target of this reference.
+      def when_loaded: () { (untyped) -> untyped } -> untyped
+    end
+
+    # An implementation of rspec-mocks' reference interface.
+    # Used when a string is passed to {ExampleMethods#object_double},
+    # and when a string, named class or named module is passed to
+    # {ExampleMethods#instance_double}, or {ExampleMethods#class_double}.
+    # Represents a reference to the object named (via a constant lookup)
+    # by the string.
+    # @see DirectObjectReference
+    class NamedObjectReference
+      # @param const_name [String] constant name
+      def initialize: (untyped const_name) -> void
+
+      # @return [Boolean] true if the named constant is defined, false otherwise.
+      def defined?: () -> untyped
+
+      # @return [String] the constant name to replace with a double.
+      def const_to_replace: () -> untyped
+
+      alias description const_to_replace
+
+      # @return [Object, nil] the target of the verifying double (the named object), or
+      #   nil if it is not defined.
+      def target: () -> untyped
+
+      # Yields if the reference target is loaded, providing a generic mechanism
+      # to optionally run a bit of code only when a reference's target is
+      # loaded.
+      #
+      # @yield [Object] the target object
+      def when_loaded: () { (untyped) -> untyped } -> untyped
+
+      private
+
+      def object: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Support for `patch_marshal_to_support_partial_doubles` configuration.
+    #
+    # @private
+    class MarshalExtension
+      def self.patch!: () -> (nil | untyped)
+
+      def self.unpatch!: () -> (nil | untyped)
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    module TargetDelegationClassMethods
+      def delegate_to: (untyped matcher_method) -> untyped
+
+      def delegate_not_to: (untyped matcher_method, ?::Hash[untyped, untyped] options) -> untyped
+
+      def disallow_negation: (untyped method_name) -> untyped
+    end
+
+    # @private
+    module TargetDelegationInstanceMethods
+      attr_reader target: untyped
+
+      private
+
+      def matcher_allowed?: (untyped matcher) -> untyped
+
+      def define_matcher: (untyped matcher, untyped name) { () -> untyped } -> untyped
+
+      def raise_unsupported_matcher: (untyped method_name, untyped matcher) -> untyped
+
+      def raise_negation_unsupported: (untyped method_name, untyped matcher) -> untyped
+    end
+
+    # @private
+    class TargetBase
+      def initialize: (untyped target) -> void
+
+      extend TargetDelegationClassMethods
+
+      include TargetDelegationInstanceMethods
+    end
+
+    # @private
+    module ExpectationTargetMethods
+      extend TargetDelegationClassMethods
+
+      include TargetDelegationInstanceMethods
+
+      def expression: () -> :expect
+    end
+
+    # @private
+    class ExpectationTarget < TargetBase
+      include ExpectationTargetMethods
+    end
+
+    # @private
+    class AllowanceTarget < TargetBase
+      def expression: () -> :allow
+    end
+
+    # @private
+    class AnyInstanceAllowanceTarget < TargetBase
+      def expression: () -> :allow_any_instance_of
+    end
+
+    # @private
+    class AnyInstanceExpectationTarget < TargetBase
+      def expression: () -> :expect_any_instance_of
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Version information for RSpec mocks.
+    module Version
+      # Version of RSpec mocks currently in use in SemVer format.
+      STRING: "3.12.0.pre"
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Represents a method on an object that may or may not be defined.
+    # The method may be an instance method on a module or a method on
+    # any object.
+    #
+    # @private
+    class MethodReference
+      def self.for: (untyped object_reference, untyped method_name) -> untyped
+
+      def initialize: (untyped object_reference, untyped method_name) -> void
+
+      # A method is implemented if sending the message does not result in
+      # a `NoMethodError`. It might be dynamically implemented by
+      # `method_missing`.
+      def implemented?: () -> untyped
+
+      # Returns true if we definitively know that sending the method
+      # will result in a `NoMethodError`.
+      #
+      # This is not simply the inverse of `implemented?`: there are
+      # cases when we don't know if a method is implemented and
+      # both `implemented?` and `unimplemented?` will return false.
+      def unimplemented?: () -> (untyped | false)
+
+      # A method is defined if we are able to get a `Method` object for it.
+      # In that case, we can assert against metadata like the arity.
+      def defined?: () -> untyped
+
+      def with_signature: () { (untyped) -> untyped } -> (nil | untyped)
+
+      def visibility: () -> (untyped | :public)
+
+      def self.instance_method_visibility_for: (untyped klass, untyped method_name) -> untyped
+
+      alias self.method_defined_at_any_visibility? self.instance_method_visibility_for
+
+      def self.method_visibility_for: (untyped object, untyped method_name) -> untyped
+
+      private
+
+      def original_method: () -> untyped
+    end
+
+    # @private
+    class InstanceMethodReference < MethodReference
+      private
+
+      def method_implemented?: (untyped mod) -> untyped
+
+      # Ideally, we'd use `respond_to?` for `method_implemented?` but we need a
+      # reference to an instance to do that and we don't have one.  Note that
+      # we may get false negatives: if the method is implemented via
+      # `method_missing`, we'll return `false` even though it meets our
+      # definition of "implemented". However, it's the best we can do.
+      alias method_defined? method_implemented?
+
+      def find_method: (untyped mod) -> untyped
+
+      def visibility_from: (untyped mod) -> untyped
+    end
+
+    # @private
+    class ObjectMethodReference < MethodReference
+      def self.for: (untyped object_reference, untyped method_name) -> untyped
+
+      private
+
+      def method_implemented?: (untyped object) -> untyped
+
+      def method_defined?: (untyped object) -> untyped
+
+      def find_method: (untyped object) -> untyped
+
+      def visibility_from: (untyped object) -> untyped
+    end
+
+    # When a class's `.new` method is stubbed, we want to use the method
+    # signature from `#initialize` because `.new`'s signature is a generic
+    # `def new(*args)` and it simply delegates to `#initialize` and forwards
+    # all args...so the method with the actually used signature is `#initialize`.
+    #
+    # This method reference implementation handles that specific case.
+    # @private
+    class ClassNewMethodReference < ObjectMethodReference
+      def self.applies_to?: (untyped method_name) { () -> untyped } -> (false | untyped)
+
+      CLASS_NEW: untyped
+
+      def self.uses_class_new?: (untyped klass) -> untyped
+
+      def with_signature: () { (untyped) -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module Matchers
+      # @private
+      class ExpectationCustomization
+        attr_accessor block: untyped
+
+        def initialize: (untyped method_name, untyped args, untyped block) -> void
+
+        def playback_onto: (untyped expectation) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module Matchers
+      # @private
+      class ReceiveMessages
+        include Matcher
+
+        def initialize: (untyped message_return_value_hash) -> void
+
+        def name: () -> "receive_messages"
+
+        def description: () -> ::String
+
+        def setup_expectation: (untyped subject) -> untyped
+
+        alias matches? setup_expectation
+
+        def setup_negative_expectation: (untyped _subject) -> untyped
+
+        alias does_not_match? setup_negative_expectation
+
+        def setup_allowance: (untyped subject) -> untyped
+
+        def setup_any_instance_expectation: (untyped subject) -> untyped
+
+        def setup_any_instance_allowance: (untyped subject) -> untyped
+
+        def warn_about_block: () -> untyped
+
+        private
+
+        def proxy_on: (untyped subject) -> untyped
+
+        def any_instance_of: (untyped subject) -> untyped
+
+        def each_message_on: (untyped host) { (untyped, untyped, untyped) -> untyped } -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module Matchers
+      # @private
+      class HaveReceived
+        include Matcher
+
+        COUNT_CONSTRAINTS: ::Array["exactly" | "at_least" | "at_most" | "times" | "time" | "once" | "twice" | "thrice"]
+
+        ARGS_CONSTRAINTS: ::Array["with"]
+
+        CONSTRAINTS: untyped
+
+        def initialize: (untyped method_name) { () -> untyped } -> void
+
+        def name: () -> "have_received"
+
+        def matches?: (untyped subject) { () -> untyped } -> untyped
+
+        def does_not_match?: (untyped subject) -> untyped
+
+        def failure_message: () -> untyped
+
+        def failure_message_when_negated: () -> untyped
+
+        def description: () -> untyped
+
+        def setup_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_negative_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_allowance: (untyped _subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_allowance: (untyped _subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_expectation: (untyped _subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_negative_expectation: (untyped _subject) { () -> untyped } -> untyped
+
+        private
+
+        def disallow: (untyped `type`, ?::String reason) -> untyped
+
+        def expect: () -> untyped
+
+        def apply_constraints_to: (untyped expectation) -> untyped
+
+        def ensure_count_unconstrained: () -> (nil | untyped)
+
+        def count_constraint: () -> untyped
+
+        def capture_failure_message: () -> untyped
+
+        def notify_failure_message: () -> untyped
+
+        def expected_messages_received_in_order?: () -> untyped
+
+        def mock_proxy: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module Matchers
+      # @private
+      class ReceiveMessageChain
+        include Matcher
+
+        def initialize: (untyped chain) { () -> untyped } -> void
+
+        def name: () -> "receive_message_chain"
+
+        def description: () -> ::String
+
+        def setup_allowance: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_allowance: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_negative_expectation: (*untyped _args) -> untyped
+
+        alias matches? setup_expectation
+
+        alias does_not_match? setup_negative_expectation
+
+        private
+
+        def replay_customizations: (untyped chain) -> untyped
+
+        def formatted_chain: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    module Matchers
+      # @private
+      class Receive
+        include Matcher
+
+        def initialize: (untyped message, untyped block) -> void
+
+        def name: () -> "receive"
+
+        def description: () -> untyped
+
+        def setup_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        alias matches? setup_expectation
+
+        def setup_negative_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        alias does_not_match? setup_negative_expectation
+
+        def setup_allowance: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_negative_expectation: (untyped subject) { () -> untyped } -> untyped
+
+        def setup_any_instance_allowance: (untyped subject) { () -> untyped } -> untyped
+
+        private
+
+        def describable: () -> untyped
+
+        def warn_if_any_instance: (untyped expression, untyped subject) -> (nil | untyped)
+
+        def setup_mock_proxy_method_substitute: (untyped subject, untyped method, untyped block) -> untyped
+
+        def setup_any_instance_method_substitute: (untyped subject, untyped method, untyped block) -> untyped
+
+        def setup_method_substitute: (untyped host, untyped method, untyped block, *untyped args) -> untyped
+
+        def move_block_to_last_customization: (untyped block) -> (untyped | nil)
+
+        # MessageExpectation objects are able to describe themselves in detail.
+        # We use this as a fall back when a MessageExpectation is not available.
+        # @private
+        class DefaultDescribable
+          def initialize: (untyped message) -> void
+
+          # This is much simpler for the `any_instance` case than what the
+          # user may want, but I'm not up for putting a bunch of effort
+          # into full descriptions for `any_instance` expectations at this point :(.
+          def description_for: (untyped verb) -> ::String
+        end
+      end
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class MethodDouble
+      # @private
+      attr_reader method_name: untyped
+
+      # @private
+      attr_reader object: untyped
+
+      # @private
+      attr_reader expectations: untyped
+
+      # @private
+      attr_reader stubs: untyped
+
+      # @private
+      attr_reader method_stasher: untyped
+
+      # @private
+      def initialize: (untyped object, untyped method_name, untyped proxy) -> void
+
+      def original_implementation_callable: () -> untyped
+
+      alias save_original_implementation_callable! original_implementation_callable
+
+      def original_method: () -> untyped
+
+      # @private
+      def visibility: () -> untyped
+
+      # @private
+      def object_singleton_class: () -> untyped
+
+      # @private
+      def configure_method: () -> untyped
+
+      # @private
+      def define_proxy_method: () -> (nil | untyped)
+
+      # The implementation of the proxied method. Subclasses may override this
+      # method to perform additional operations.
+      #
+      # @private
+      def proxy_method_invoked: (untyped _obj, *untyped args) { () -> untyped } -> untyped
+
+      # @private
+      def restore_original_method: () -> (untyped | nil)
+
+      # @private
+      def show_frozen_warning: () -> untyped
+
+      # @private
+      def restore_original_visibility: () -> (nil | untyped)
+
+      # @private
+      def verify: () -> untyped
+
+      # @private
+      def reset: () -> untyped
+
+      # @private
+      def clear: () -> untyped
+
+      # The type of message expectation to create has been extracted to its own
+      # method so that subclasses can override it.
+      #
+      # @private
+      def message_expectation_class: () -> untyped
+
+      # @private
+      def add_expectation: (untyped error_generator, untyped expectation_ordering, untyped expected_from, untyped opts) { () -> untyped } -> untyped
+
+      # @private
+      def build_expectation: (untyped error_generator, untyped expectation_ordering) -> untyped
+
+      # @private
+      def add_stub: (untyped error_generator, untyped expectation_ordering, untyped expected_from, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      # A simple stub can only return a concrete value for a message, and
+      # cannot match on arguments. It is used as an optimization over
+      # `add_stub` / `add_expectation` where it is known in advance that this
+      # is all that will be required of a stub, such as when passing attributes
+      # to the `double` example method. They do not stash or restore existing method
+      # definitions.
+      #
+      # @private
+      def add_simple_stub: (untyped method_name, untyped response) -> untyped
+
+      # @private
+      def add_simple_expectation: (untyped method_name, untyped response, untyped error_generator, untyped backtrace_line) -> untyped
+
+      # @private
+      def setup_simple_method_double: (untyped method_name, untyped response, untyped collection, ?untyped? error_generator, ?untyped? backtrace_line) -> untyped
+
+      # @private
+      def add_default_stub: (*untyped args) { () -> untyped } -> (nil | untyped)
+
+      # @private
+      def remove_stub: () -> untyped
+
+      # @private
+      def remove_stub_if_present: () -> untyped
+
+      # @private
+      def raise_method_not_stubbed_error: () -> untyped
+
+      private
+
+      # We subclass `Module` in order to be able to easily detect our prepended module.
+      RSpecPrependedModule: untyped
+
+      def definition_target: () -> untyped
+
+      def usable_rspec_prepended_module: () -> (untyped | nil)
+
+      def new_rspec_prepended_module: () -> untyped
+
+      def remove_method_from_definition_target: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Raised when a message expectation is not satisfied.
+    MockExpectationError: untyped
+
+    # Raised when a test double is used after it has been torn
+    # down (typically at the end of an rspec-core example).
+    ExpiredTestDoubleError: untyped
+
+    # Raised when doubles or partial doubles are used outside of the per-test lifecycle.
+    OutsideOfExampleError: untyped
+
+    # Raised when an expectation customization method (e.g. `with`,
+    # `and_return`) is called on a message expectation which has already been
+    # invoked.
+    MockExpectationAlreadyInvokedError: untyped
+
+    # Raised for situations that RSpec cannot support due to mutations made
+    # externally on arguments that RSpec is holding onto to use for later
+    # comparisons.
+    #
+    # @deprecated We no longer raise this error but the constant remains until
+    #   RSpec 4 for SemVer reasons.
+    CannotSupportArgMutationsError: untyped
+
+    # @private
+    UnsupportedMatcherError: untyped
+
+    # @private
+    NegationUnsupportedError: untyped
+
+    # @private
+    VerifyingDoubleNotDefinedError: untyped
+
+    # @private
+    class ErrorGenerator
+      attr_writer opts: untyped
+
+      def initialize: (?untyped? target) -> void
+
+      # @private
+      def opts: () -> untyped
+
+      # @private
+      def raise_unexpected_message_error: (untyped message, untyped args) -> untyped
+
+      # @private
+      def raise_unexpected_message_args_error: (untyped expectation, untyped args_for_multiple_calls, ?untyped? source_id) -> untyped
+
+      # @private
+      def raise_missing_default_stub_error: (untyped expectation, untyped args_for_multiple_calls) -> untyped
+
+      # @private
+      def raise_similar_message_args_error: (untyped expectation, untyped args_for_multiple_calls, ?untyped? backtrace_line) -> untyped
+
+      def default_error_message: (untyped expectation, untyped expected_args, untyped actual_args) -> ::String
+
+      # rubocop:disable Metrics/ParameterLists
+      # @private
+      def raise_expectation_error: (untyped message, untyped expected_received_count, untyped argument_list_matcher, untyped actual_received_count, untyped expectation_count_type, untyped args, ?untyped? backtrace_line, ?untyped? source_id) -> untyped
+
+      # @private
+      def raise_unimplemented_error: (untyped doubled_module, untyped method_name, untyped object) -> untyped
+
+      # @private
+      def raise_non_public_error: (untyped method_name, untyped visibility) -> untyped
+
+      # @private
+      def raise_invalid_arguments_error: (untyped verifier) -> untyped
+
+      # @private
+      def raise_expired_test_double_error: () -> untyped
+
+      # @private
+      def describe_expectation: (untyped verb, untyped message, untyped expected_received_count, untyped _actual_received_count, untyped args) -> ::String
+
+      # @private
+      def raise_out_of_order_error: (untyped message) -> untyped
+
+      # @private
+      def raise_missing_block_error: (untyped args_to_yield) -> untyped
+
+      # @private
+      def raise_wrong_arity_error: (untyped args_to_yield, untyped signature) -> untyped
+
+      # @private
+      def raise_only_valid_on_a_partial_double: (untyped method) -> untyped
+
+      # @private
+      def raise_expectation_on_unstubbed_method: (untyped method) -> untyped
+
+      # @private
+      def raise_expectation_on_mocked_method: (untyped method) -> untyped
+
+      # @private
+      def raise_double_negation_error: (untyped wrapped_expression) -> untyped
+
+      # @private
+      def raise_verifying_double_not_defined_error: (untyped ref) -> untyped
+
+      # @private
+      def raise_have_received_disallowed: (untyped `type`, untyped reason) -> untyped
+
+      # @private
+      def raise_cant_constrain_count_for_negated_have_received_error: (untyped count_constraint) -> untyped
+
+      # @private
+      def raise_method_not_stubbed_error: (untyped method_name) -> untyped
+
+      # @private
+      def raise_already_invoked_error: (untyped message, untyped calling_customization) -> untyped
+
+      def raise_expectation_on_nil_error: (untyped method_name) -> untyped
+
+      def expectation_on_nil_message: (untyped method_name) -> ::String
+
+      # @private
+      def intro: (?bool unwrapped) -> untyped
+
+      # @private
+      def method_call_args_description: (untyped args, ?::String generic_prefix, ?::String matcher_prefix) { () -> untyped } -> untyped
+
+      private
+
+      def received_part_of_expectation_error: (untyped actual_received_count, untyped args) -> untyped
+
+      def expected_part_of_expectation_error: (untyped expected_received_count, untyped expectation_count_type, untyped argument_list_matcher) -> untyped
+
+      def unexpected_arguments_message: (untyped expected_args_string, untyped actual_args_string) -> ::String
+
+      def error_message: (untyped expectation, untyped args_for_multiple_calls) -> untyped
+
+      def diff_message: (untyped expected_args, untyped actual_args) -> untyped
+
+      def unpack_string_args: (untyped formatted_expected_args, untyped actual_args) -> untyped
+
+      def list_of_exactly_one_string?: (untyped args) -> untyped
+
+      def differ: () -> untyped
+
+      def __raise: (untyped message, ?untyped? backtrace_line, ?untyped? source_id) -> untyped
+
+      def prepend_to_backtrace: (untyped exception, untyped line) -> untyped
+
+      def notify: (*untyped args) -> untyped
+
+      def format_args: (untyped args) -> ("(no args)" | ::String)
+
+      def arg_list: (untyped args) -> untyped
+
+      def format_received_args: (untyped args_for_multiple_calls) -> untyped
+
+      def count_message: (untyped count, ?untyped? expectation_count_type) -> (::String | untyped)
+
+      def times: (untyped count) -> ::String
+
+      def grouped_args: (untyped args) -> untyped
+
+      def group_count: (untyped index, untyped args) -> untyped
+    end
+
+    # @private
+    def self.error_generator: () -> untyped
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    module VerifyingDouble
+      def respond_to?: (untyped message, ?bool include_private) -> untyped
+
+      def method_missing: (untyped message, *untyped args) { () -> untyped } -> untyped
+
+      def __send__: (untyped name, *untyped args) { () -> untyped } -> untyped
+
+      def send: (untyped name, *untyped args) { () -> untyped } -> untyped
+
+      def initialize: (untyped doubled_module, *untyped args) -> void
+    end
+
+    # A mock providing a custom proxy that can verify the validity of any
+    # method stubs or expectations against the public instance methods of the
+    # given class.
+    #
+    # @private
+    class InstanceVerifyingDouble
+      include TestDouble
+
+      include VerifyingDouble
+
+      def __build_mock_proxy: (untyped order_group) -> untyped
+    end
+
+    # An awkward module necessary because we cannot otherwise have
+    # ClassVerifyingDouble inherit from Module and still share these methods.
+    #
+    # @private
+    module ObjectVerifyingDoubleMethods
+      include TestDouble
+
+      include VerifyingDouble
+
+      def as_stubbed_const: (?::Hash[untyped, untyped] options) -> untyped
+
+      private
+
+      def __build_mock_proxy: (untyped order_group) -> untyped
+    end
+
+    # Similar to an InstanceVerifyingDouble, except that it verifies against
+    # public methods of the given object.
+    #
+    # @private
+    class ObjectVerifyingDouble
+      include ObjectVerifyingDoubleMethods
+    end
+
+    # Effectively the same as an ObjectVerifyingDouble (since a class is a type
+    # of object), except with Module in the inheritance chain so that
+    # transferring nested constants to work.
+    #
+    # @private
+    class ClassVerifyingDouble < Module
+      include ObjectVerifyingDoubleMethods
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class OrderGroup
+      def initialize: () -> void
+
+      # @private
+      def register: (untyped expectation) -> untyped
+
+      def invoked: (untyped message) -> untyped
+
+      # @private
+      def ready_for?: (untyped expectation) -> untyped
+
+      # @private
+      def consume: () -> (untyped | nil)
+
+      # @private
+      def handle_order_constraint: (untyped expectation) -> (nil | untyped)
+
+      def verify_invocation_order: (untyped expectation) -> true
+
+      def clear: () -> untyped
+
+      def empty?: () -> untyped
+
+      private
+
+      def remaining_expectations: () -> untyped
+
+      def expectations_invoked_in_order?: () -> untyped
+
+      def invoked_expectations: () -> untyped
+
+      def expected_invocations: () -> untyped
+
+      def expectation_for: (untyped message) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Provides information about constants that may (or may not)
+    # have been mutated by rspec-mocks.
+    class Constant
+      extend Support::RecursiveConstMethods
+
+      # @api private
+      def initialize: (untyped name) { (untyped) -> untyped } -> void
+
+      # @return [String] The fully qualified name of the constant.
+      attr_reader name: untyped
+
+      # @return [Object, nil] The original value (e.g. before it
+      #   was mutated by rspec-mocks) of the constant, or
+      #   nil if the constant was not previously defined.
+      attr_accessor original_value: untyped
+
+      # @private
+      attr_writer previously_defined: untyped
+
+      # @private
+      attr_writer stubbed: untyped
+
+      # @private
+      attr_writer hidden: untyped
+
+      # @private
+      attr_writer valid_name: untyped
+
+      # @return [Boolean] Whether or not the constant was defined
+      #   before the current example.
+      def previously_defined?: () -> untyped
+
+      # @return [Boolean] Whether or not rspec-mocks has mutated
+      #   (stubbed or hidden) this constant.
+      def mutated?: () -> untyped
+
+      # @return [Boolean] Whether or not rspec-mocks has stubbed
+      #   this constant.
+      def stubbed?: () -> untyped
+
+      # @return [Boolean] Whether or not rspec-mocks has hidden
+      #   this constant.
+      def hidden?: () -> untyped
+
+      # @return [Boolean] Whether or not the provided constant name
+      #   is a valid Ruby constant name.
+      def valid_name?: () -> untyped
+
+      # The default `to_s` isn't very useful, so a custom version is provided.
+      def to_s: () -> ::String
+
+      alias inspect to_s
+
+      # @private
+      def self.unmutated: (untyped name) -> untyped
+
+      # Queries rspec-mocks to find out information about the named constant.
+      #
+      # @param [String] name the name of the constant
+      # @return [Constant] an object contaning information about the named
+      #   constant.
+      def self.original: (untyped name) -> untyped
+    end
+
+    # Provides a means to stub constants.
+    class ConstantMutator
+      extend Support::RecursiveConstMethods
+
+      # Stubs a constant.
+      #
+      # @param (see ExampleMethods#stub_const)
+      # @option (see ExampleMethods#stub_const)
+      # @return (see ExampleMethods#stub_const)
+      #
+      # @see ExampleMethods#stub_const
+      # @note It's recommended that you use `stub_const` in your
+      #  examples. This is an alternate public API that is provided
+      #  so you can stub constants in other contexts (e.g. helper
+      #  classes).
+      def self.stub: (untyped constant_name, untyped value, ?::Hash[untyped, untyped] options) -> untyped
+
+      # Hides a constant.
+      #
+      # @param (see ExampleMethods#hide_const)
+      #
+      # @see ExampleMethods#hide_const
+      # @note It's recommended that you use `hide_const` in your
+      #  examples. This is an alternate public API that is provided
+      #  so you can hide constants in other contexts (e.g. helper
+      #  classes).
+      def self.hide: (untyped constant_name) -> nil
+
+      # Contains common functionality used by all of the constant mutators.
+      #
+      # @private
+      class BaseMutator
+        include Support::RecursiveConstMethods
+
+        attr_reader original_value: untyped
+
+        attr_reader full_constant_name: untyped
+
+        def initialize: (untyped full_constant_name, untyped mutated_value, untyped transfer_nested_constants) -> void
+
+        def to_constant: () -> untyped
+
+        def idempotently_reset: () -> untyped
+      end
+
+      # Hides a defined constant for the duration of an example.
+      #
+      # @private
+      class ConstantHider < BaseMutator
+        def mutate: () -> (nil | untyped)
+
+        def to_constant: () -> untyped
+
+        def reset: () -> (nil | untyped)
+      end
+
+      # Replaces a defined constant for the duration of an example.
+      #
+      # @private
+      class DefinedConstantReplacer < BaseMutator
+        def initialize: (*untyped args) -> void
+
+        def mutate: () -> untyped
+
+        def to_constant: () -> untyped
+
+        def reset: () -> untyped
+
+        def transfer_nested_constants: () -> untyped
+
+        def verify_constants_to_transfer!: () -> (::Array[untyped] | untyped)
+
+        def should_transfer_nested_constants?: () -> (true | false | untyped)
+      end
+
+      # Sets an undefined constant for the duration of an example.
+      #
+      # @private
+      class UndefinedConstantSetter < BaseMutator
+        def mutate: () -> untyped
+
+        def to_constant: () -> untyped
+
+        def reset: () -> untyped
+
+        private
+
+        def name_for: (untyped parent, untyped name) -> untyped
+      end
+
+      # Uses the mutator to mutate (stub or hide) a constant. Ensures that
+      # the mutator is correctly registered so it can be backed out at the end
+      # of the test.
+      #
+      # @private
+      def self.mutate: (untyped mutator) -> untyped
+
+      # Used internally by the constant stubbing to raise a helpful
+      # error when a constant like "A::B::C" is stubbed and A::B is
+      # not a module (and thus, it's impossible to define "A::B::C"
+      # since only modules can have nested constants).
+      #
+      # @api private
+      def self.raise_on_invalid_const: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Mocks
+    # Provides configuration options for rspec-mocks.
+    class Configuration
+      def initialize: () -> void
+
+      # Sets whether RSpec will warn, ignore, or fail a test when
+      # expectations are set on nil.
+      # By default, when this flag is not set, warning messages are issued when
+      # expectations are set on nil. This is to prevent false-positives and to
+      # catch potential bugs early on.
+      # When set to `true`, warning messages are suppressed.
+      # When set to `false`, it will raise an error.
+      #
+      # @example
+      #   RSpec.configure do |config|
+      #     config.mock_with :rspec do |mocks|
+      #       mocks.allow_message_expectations_on_nil = false
+      #     end
+      #   end
+      attr_accessor allow_message_expectations_on_nil: untyped
+
+      def yield_receiver_to_any_instance_implementation_blocks?: () -> untyped
+
+      # Sets whether or not RSpec will yield the receiving instance of a
+      # message to blocks that are used for any_instance stub implementations.
+      # When set, the first yielded argument will be the receiving instance.
+      # Defaults to `true`.
+      #
+      # @example
+      #   RSpec.configure do |rspec|
+      #     rspec.mock_with :rspec do |mocks|
+      #       mocks.yield_receiver_to_any_instance_implementation_blocks = false
+      #     end
+      #   end
+      attr_writer yield_receiver_to_any_instance_implementation_blocks: untyped
+
+      # Adds `stub` and `should_receive` to the given
+      # modules or classes. This is usually only necessary
+      # if you application uses some proxy classes that
+      # "strip themselves down" to a bare minimum set of
+      # methods and remove `stub` and `should_receive` in
+      # the process.
+      #
+      # @example
+      #   RSpec.configure do |rspec|
+      #     rspec.mock_with :rspec do |mocks|
+      #       mocks.add_stub_and_should_receive_to Delegator
+      #     end
+      #   end
+      #
+      def add_stub_and_should_receive_to: (*untyped modules) -> untyped
+
+      # Provides the ability to set either `expect`,
+      # `should` or both syntaxes. RSpec uses `expect`
+      # syntax by default. This is needed if you want to
+      # explicitly enable `should` syntax and/or explicitly
+      # disable `expect` syntax.
+      #
+      # @example
+      #   RSpec.configure do |rspec|
+      #     rspec.mock_with :rspec do |mocks|
+      #       mocks.syntax = [:expect, :should]
+      #     end
+      #  end
+      #
+      def syntax=: (*untyped values) -> untyped
+
+      # Returns an array with a list of syntaxes
+      # that are enabled.
+      #
+      # @example
+      #   unless RSpec::Mocks.configuration.syntax.include?(:expect)
+      #     raise "this RSpec extension gem requires the rspec-mocks `:expect` syntax"
+      #   end
+      #
+      def syntax: () -> untyped
+
+      def verify_doubled_constant_names?: () -> untyped
+
+      # When this is set to true, an error will be raised when
+      # `instance_double` or `class_double` is given the name of an undefined
+      # constant. You probably only want to set this when running your entire
+      # test suite, with all production code loaded. Setting this for an
+      # isolated unit test will prevent you from being able to isolate it!
+      attr_writer verify_doubled_constant_names: untyped
+
+      # Provides a way to perform customisations when verifying doubles.
+      #
+      # @example
+      #  RSpec::Mocks.configuration.before_verifying_doubles do |ref|
+      #    ref.some_method!
+      #  end
+      def before_verifying_doubles: () { () -> untyped } -> untyped
+
+      alias when_declaring_verifying_double before_verifying_doubles
+
+      # @api private
+      # Returns an array of blocks to call when verifying doubles
+      def verifying_double_callbacks: () -> untyped
+
+      def transfer_nested_constants?: () -> untyped
+
+      # Sets the default for the `transfer_nested_constants` option when
+      # stubbing constants.
+      attr_writer transfer_nested_constants: untyped
+
+      # When set to true, partial mocks will be verified the same as object
+      # doubles. Any stubs will have their arguments checked against the original
+      # method, and methods that do not exist cannot be stubbed.
+      def verify_partial_doubles=: (untyped val) -> untyped
+
+      def verify_partial_doubles?: () -> untyped
+
+      # @private
+      # Used to track wether we are temporarily suppressing verifying partial
+      # doubles with `without_partial_double_verification { ... }`
+      attr_accessor temporarily_suppress_partial_double_verification: untyped
+
+      def color?: () -> untyped
+
+      # Indicates whether or not diffs should be colored.
+      # Delegates to rspec-core's color option if rspec-core
+      # is loaded; otherwise you can set it here.
+      attr_writer color: untyped
+
+      # Monkey-patch `Marshal.dump` to enable dumping of mocked or stubbed
+      # objects. By default this will not work since RSpec mocks works by
+      # adding singleton methods that cannot be serialized. This patch removes
+      # these singleton methods before serialization. Setting to falsey removes
+      # the patch.
+      #
+      # This method is idempotent.
+      def patch_marshal_to_support_partial_doubles=: (untyped val) -> untyped
+
+      # @api private
+      # Resets the configured syntax to the default.
+      def reset_syntaxes_to_default: () -> untyped
+    end
+
+    # Mocks specific configuration, as distinct from `RSpec.configuration`
+    # which is core RSpec configuration.
+    def self.configuration: () -> untyped
+  end
+end
+
+module RSpec
+  module Mocks
+    # @private
+    class CallbackInvocationStrategy
+      def call: (untyped doubled_module) -> untyped
+    end
+
+    # @private
+    class NoCallbackInvocationStrategy
+      def call: (untyped _doubled_module) -> nil
+    end
+
+    # @private
+    module VerifyingProxyMethods
+      def add_stub: (untyped method_name, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      def add_simple_stub: (untyped method_name, *untyped args) -> untyped
+
+      def add_message_expectation: (untyped method_name, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+      def ensure_implemented: (untyped method_name) -> (nil | untyped)
+
+      def ensure_publicly_implemented: (untyped method_name, untyped _object) -> (nil | untyped)
+    end
+
+    # A verifying proxy mostly acts like a normal proxy, except that it
+    # contains extra logic to try and determine the validity of any expectation
+    # set on it. This includes whether or not methods have been defined and the
+    # validatiy of arguments on method calls.
+    #
+    # In all other ways this behaves like a normal proxy. It only adds the
+    # verification behaviour to specific methods then delegates to the parent
+    # implementation.
+    #
+    # These checks are only activated if the doubled class has already been
+    # loaded, otherwise they are disabled. This allows for testing in
+    # isolation.
+    #
+    # @private
+    class VerifyingProxy < TestDoubleProxy
+      include VerifyingProxyMethods
+
+      def initialize: (untyped object, untyped order_group, untyped doubled_module, untyped method_reference_class) -> void
+
+      def method_reference: () -> untyped
+
+      def visibility_for: (untyped method_name) -> untyped
+
+      def validate_arguments!: (untyped method_name, untyped args) -> untyped
+    end
+
+    # @private
+    DEFAULT_CALLBACK_INVOCATION_STRATEGY: untyped
+
+    # @private
+    class VerifyingPartialDoubleProxy < PartialDoubleProxy
+      include VerifyingProxyMethods
+
+      def initialize: (untyped object, untyped expectation_ordering, ?untyped optional_callback_invocation_strategy) -> void
+
+      def ensure_implemented: (untyped _method_name) -> (nil | untyped)
+
+      def method_reference: () -> untyped
+    end
+
+    # @private
+    class VerifyingPartialClassDoubleProxy < VerifyingPartialDoubleProxy
+      include PartialClassDoubleProxyMethods
+    end
+
+    # @private
+    class VerifyingMethodDouble < MethodDouble
+      def initialize: (untyped object, untyped method_name, untyped proxy, untyped method_reference) -> void
+
+      def message_expectation_class: () -> untyped
+
+      def add_expectation: (*untyped args) { () -> untyped } -> untyped
+
+      def add_stub: (*untyped args) { () -> untyped } -> untyped
+
+      def proxy_method_invoked: (untyped obj, *untyped args) { () -> untyped } -> untyped
+
+      def validate_arguments!: (untyped actual_args) -> untyped
+    end
+
+    # A VerifyingMethodDouble fetches the method to verify against from the
+    # original object, using a MethodReference. This works for pure doubles,
+    # but when the original object is itself the one being modified we need to
+    # collapse the reference and the method double into a single object so that
+    # we can access the original pristine method definition.
+    #
+    # @private
+    class VerifyingExistingMethodDouble < VerifyingMethodDouble
+      def initialize: (untyped object, untyped method_name, untyped proxy) -> void
+
+      def with_signature: () { (untyped) -> untyped } -> untyped
+
+      def unimplemented?: () -> untyped
+
+      def self.for: (untyped object, untyped method_name, untyped proxy) -> untyped
+    end
+
+    # Used in place of a `VerifyingExistingMethodDouble` for the specific case
+    # of mocking or stubbing a `new` method on a class. In this case, we substitute
+    # the method signature from `#initialize` since new's signature is just `*args`.
+    #
+    # @private
+    class VerifyingExistingClassNewMethodDouble < VerifyingExistingMethodDouble
+      def with_signature: () { (untyped) -> untyped } -> untyped
+    end
+  end
+end
+
+class Object
+  extend RSpec::Mocks::ExampleMethods
+end
+
+# Share the top-level RSpec namespace, because we are a core supported
+# extension.
+module RSpec
+  # Contains top-level utility methods. While this contains a few
+  # public methods, these are not generally meant to be called from
+  # a test or example. They exist primarily for integration with
+  # test frameworks (such as rspec-core).
+  module Mocks
+    # Performs per-test/example setup. This should be called before
+    # an test or example begins.
+    def self.setup: () -> untyped
+
+    # Verifies any message expectations that were set during the
+    # test or example. This should be called at the end of an example.
+    def self.verify: () -> untyped
+
+    # Cleans up all test double state (including any methods that were
+    # redefined on partial doubles). This _must_ be called after
+    # each example, even if an error was raised during the example.
+    def self.teardown: () -> untyped
+
+    # Adds an allowance (stub) on `subject`
+    #
+    # @param subject the subject to which the message will be added
+    # @param message a symbol, representing the message that will be
+    #                added.
+    # @param opts a hash of options, :expected_from is used to set the
+    #             original call site
+    # @yield an optional implementation for the allowance
+    #
+    # @example Defines the implementation of `foo` on `bar`, using the passed block
+    #   x = 0
+    #   RSpec::Mocks.allow_message(bar, :foo) { x += 1 }
+    def self.allow_message: (untyped subject, untyped message, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+    # Sets a message expectation on `subject`.
+    # @param subject the subject on which the message will be expected
+    # @param message a symbol, representing the message that will be
+    #                expected.
+    # @param opts a hash of options, :expected_from is used to set the
+    #             original call site
+    # @yield an optional implementation for the expectation
+    #
+    # @example Expect the message `foo` to receive `bar`, then call it
+    #   RSpec::Mocks.expect_message(bar, :foo)
+    #   bar.foo
+    def self.expect_message: (untyped subject, untyped message, ?::Hash[untyped, untyped] opts) { () -> untyped } -> untyped
+
+    # Call the passed block and verify mocks after it has executed. This allows
+    # mock usage in arbitrary places, such as a `before(:all)` hook.
+    #
+    # @return [Object] the return value from the block
+    def self.with_temporary_scope: () { () -> untyped } -> untyped
+
+    # @private
+    attr_reader self.space: untyped
+
+    # @private
+    IGNORED_BACKTRACE_LINE: "this backtrace line is ignored"
+
+    # Namespace for mock-related matchers.
+    module Matchers
+      # @private
+      # just a "tag" for rspec-mock matchers detection
+      module Matcher
+      end
+    end
+  end
+end
+

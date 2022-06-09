@@ -1,0 +1,4379 @@
+# RSpec's top level namespace. All of rspec-expectations is contained
+# in the `RSpec::Expectations` and `RSpec::Matchers` namespaces.
+module RSpec
+  module Matchers
+    # RSpec::Matchers provides a number of useful matchers we use to define
+    # expectations. Any object that implements the [matcher protocol](Matchers/MatcherProtocol)
+    # can be used as a matcher.
+    #
+    # ## Predicates
+    #
+    # In addition to matchers that are defined explicitly, RSpec will create
+    # custom matchers on the fly for any arbitrary predicate, giving your specs a
+    # much more natural language feel.
+    #
+    # A Ruby predicate is a method that ends with a "?" and returns true or false.
+    # Common examples are `empty?`, `nil?`, and `instance_of?`.
+    #
+    # All you need to do is write `expect(..).to be_` followed by the predicate
+    # without the question mark, and RSpec will figure it out from there.
+    # For example:
+    #
+    #     expect([]).to be_empty     # => [].empty?() | passes
+    #     expect([]).not_to be_empty # => [].empty?() | fails
+    #
+    # In addition to prefixing the predicate matchers with "be_", you can also use "be_a_"
+    # and "be_an_", making your specs read much more naturally:
+    #
+    #     expect("a string").to be_an_instance_of(String) # =>"a string".instance_of?(String) # passes
+    #
+    #     expect(3).to be_a_kind_of(Integer)          # => 3.kind_of?(Numeric)     | passes
+    #     expect(3).to be_a_kind_of(Numeric)          # => 3.kind_of?(Numeric)     | passes
+    #     expect(3).to be_an_instance_of(Integer)     # => 3.instance_of?(Integer) | passes
+    #     expect(3).not_to be_an_instance_of(Numeric) # => 3.instance_of?(Numeric) | fails
+    #
+    # RSpec will also create custom matchers for predicates like `has_key?`. To
+    # use this feature, just state that the object should have_key(:key) and RSpec will
+    # call has_key?(:key) on the target. For example:
+    #
+    #     expect(:a => "A").to have_key(:a)
+    #     expect(:a => "A").to have_key(:b) # fails
+    #
+    # You can use this feature to invoke any predicate that begins with "has_", whether it is
+    # part of the Ruby libraries (like `Hash#has_key?`) or a method you wrote on your own class.
+    #
+    # Note that RSpec does not provide composable aliases for these dynamic predicate
+    # matchers. You can easily define your own aliases, though:
+    #
+    #     RSpec::Matchers.alias_matcher :a_user_who_is_an_admin, :be_an_admin
+    #     expect(user_list).to include(a_user_who_is_an_admin)
+    #
+    # ## Alias Matchers
+    #
+    # With {RSpec::Matchers.alias_matcher}, you can easily create an
+    # alternate name for a given matcher.
+    #
+    # The description will also change according to the new name:
+    #
+    #     RSpec::Matchers.alias_matcher :a_list_that_sums_to, :sum_to
+    #     sum_to(3).description # => "sum to 3"
+    #     a_list_that_sums_to(3).description # => "a list that sums to 3"
+    #
+    # or you can specify a custom description like this:
+    #
+    #     RSpec::Matchers.alias_matcher :a_list_sorted_by, :be_sorted_by do |description|
+    #       description.sub("be sorted by", "a list sorted by")
+    #     end
+    #
+    #     be_sorted_by(:age).description # => "be sorted by age"
+    #     a_list_sorted_by(:age).description # => "a list sorted by age"
+    #
+    # ## Custom Matchers
+    #
+    # When you find that none of the stock matchers provide a natural feeling
+    # expectation, you can very easily write your own using RSpec's matcher DSL
+    # or writing one from scratch.
+    #
+    # ### Matcher DSL
+    #
+    # Imagine that you are writing a game in which players can be in various
+    # zones on a virtual board. To specify that bob should be in zone 4, you
+    # could say:
+    #
+    #     expect(bob.current_zone).to eql(Zone.new("4"))
+    #
+    # But you might find it more expressive to say:
+    #
+    #     expect(bob).to be_in_zone("4")
+    #
+    # and/or
+    #
+    #     expect(bob).not_to be_in_zone("3")
+    #
+    # You can create such a matcher like so:
+    #
+    #     RSpec::Matchers.define :be_in_zone do |zone|
+    #       match do |player|
+    #         player.in_zone?(zone)
+    #       end
+    #     end
+    #
+    # This will generate a <tt>be_in_zone</tt> method that returns a matcher
+    # with logical default messages for failures. You can override the failure
+    # messages and the generated description as follows:
+    #
+    #     RSpec::Matchers.define :be_in_zone do |zone|
+    #       match do |player|
+    #         player.in_zone?(zone)
+    #       end
+    #
+    #       failure_message do |player|
+    #         # generate and return the appropriate string.
+    #       end
+    #
+    #       failure_message_when_negated do |player|
+    #         # generate and return the appropriate string.
+    #       end
+    #
+    #       description do
+    #         # generate and return the appropriate string.
+    #       end
+    #     end
+    #
+    # Each of the message-generation methods has access to the block arguments
+    # passed to the <tt>create</tt> method (in this case, <tt>zone</tt>). The
+    # failure message methods (<tt>failure_message</tt> and
+    # <tt>failure_message_when_negated</tt>) are passed the actual value (the
+    # receiver of <tt>expect(..)</tt> or <tt>expect(..).not_to</tt>).
+    #
+    # ### Custom Matcher from scratch
+    #
+    # You could also write a custom matcher from scratch, as follows:
+    #
+    #     class BeInZone
+    #       def initialize(expected)
+    #         @expected = expected
+    #       end
+    #
+    #       def matches?(target)
+    #         @target = target
+    #         @target.current_zone.eql?(Zone.new(@expected))
+    #       end
+    #
+    #       def failure_message
+    #         "expected #{@target.inspect} to be in Zone #{@expected}"
+    #       end
+    #
+    #       def failure_message_when_negated
+    #         "expected #{@target.inspect} not to be in Zone #{@expected}"
+    #       end
+    #     end
+    #
+    # ... and a method like this:
+    #
+    #     def be_in_zone(expected)
+    #       BeInZone.new(expected)
+    #     end
+    #
+    # And then expose the method to your specs. This is normally done
+    # by including the method and the class in a module, which is then
+    # included in your spec:
+    #
+    #     module CustomGameMatchers
+    #       class BeInZone
+    #         # ...
+    #       end
+    #
+    #       def be_in_zone(expected)
+    #         # ...
+    #       end
+    #     end
+    #
+    #     describe "Player behaviour" do
+    #       include CustomGameMatchers
+    #       # ...
+    #     end
+    #
+    # or you can include in globally in a spec_helper.rb file <tt>require</tt>d
+    # from your spec file(s):
+    #
+    #     RSpec::configure do |config|
+    #       config.include(CustomGameMatchers)
+    #     end
+    #
+    # ### Making custom matchers composable
+    #
+    # RSpec's built-in matchers are designed to be composed, in expressions like:
+    #
+    #     expect(["barn", 2.45]).to contain_exactly(
+    #       a_value_within(0.1).of(2.5),
+    #       a_string_starting_with("bar")
+    #     )
+    #
+    # Custom matchers can easily participate in composed matcher expressions like these.
+    # Include {RSpec::Matchers::Composable} in your custom matcher to make it support
+    # being composed (matchers defined using the DSL have this included automatically).
+    # Within your matcher's `matches?` method (or the `match` block, if using the DSL),
+    # use `values_match?(expected, actual)` rather than `expected == actual`.
+    # Under the covers, `values_match?` is able to match arbitrary
+    # nested data structures containing a mix of both matchers and non-matcher objects.
+    # It uses `===` and `==` to perform the matching, considering the values to
+    # match if either returns `true`. The `Composable` mixin also provides some helper
+    # methods for surfacing the matcher descriptions within your matcher's description
+    # or failure messages.
+    #
+    # RSpec's built-in matchers each have a number of aliases that rephrase the matcher
+    # from a verb phrase (such as `be_within`) to a noun phrase (such as `a_value_within`),
+    # which reads better when the matcher is passed as an argument in a composed matcher
+    # expressions, and also uses the noun-phrase wording in the matcher's `description`,
+    # for readable failure messages. You can alias your custom matchers in similar fashion
+    # using {RSpec::Matchers.alias_matcher}.
+    #
+    # ## Negated Matchers
+    #
+    # Sometimes if you want to test for the opposite using a more descriptive name
+    # instead of using `not_to`, you can use {RSpec::Matchers.define_negated_matcher}:
+    #
+    #     RSpec::Matchers.define_negated_matcher :exclude, :include
+    #     include(1, 2).description # => "include 1 and 2"
+    #     exclude(1, 2).description # => "exclude 1 and 2"
+    #
+    # While the most obvious negated form may be to add a `not_` prefix,
+    # the failure messages you get with that form can be confusing (e.g.
+    # "expected [actual] to not [verb], but did not"). We've found it works
+    # best to find a more positive name for the negated form, such as
+    # `avoid_changing` rather than `not_change`.
+    #
+    # rubocop:disable Metrics/ModuleLength
+    extend ::RSpec::Matchers::DSL
+
+    # @!macro [attach] alias_matcher
+    #   @!parse
+    #     alias $1 $2
+    # @!visibility private
+    # We define this override here so we can attach a YARD macro to it.
+    # It ensures that our docs list all the matcher aliases.
+    def self.alias_matcher: (*untyped args) { () -> untyped } -> untyped
+
+    # Allows multiple expectations in the provided block to fail, and then
+    # aggregates them into a single exception, rather than aborting on the
+    # first expectation failure like normal. This allows you to see all
+    # failures from an entire set of expectations without splitting each
+    # off into its own example (which may slow things down if the example
+    # setup is expensive).
+    #
+    # @param label [String] label for this aggregation block, which will be
+    #   included in the aggregated exception message.
+    # @param metadata [Hash] additional metadata about this failure aggregation
+    #   block. If multiple expectations fail, it will be exposed from the
+    #   {Expectations::MultipleExpectationsNotMetError} exception. Mostly
+    #   intended for internal RSpec use but you can use it as well.
+    # @yield Block containing as many expectation as you want. The block is
+    #   simply yielded to, so you can trust that anything that works outside
+    #   the block should work within it.
+    # @raise [Expectations::MultipleExpectationsNotMetError] raised when
+    #   multiple expectations fail.
+    # @raise [Expectations::ExpectationNotMetError] raised when a single
+    #   expectation fails.
+    # @raise [Exception] other sorts of exceptions will be raised as normal.
+    #
+    # @example
+    #   aggregate_failures("verifying response") do
+    #     expect(response.status).to eq(200)
+    #     expect(response.headers).to include("Content-Type" => "text/plain")
+    #     expect(response.body).to include("Success")
+    #   end
+    #
+    # @note The implementation of this feature uses a thread-local variable,
+    #   which means that if you have an expectation failure in another thread,
+    #   it'll abort like normal.
+    def aggregate_failures: (?untyped? label, ?::Hash[untyped, untyped] metadata) { () -> untyped } -> untyped
+
+    # Passes if actual is truthy (anything but false or nil)
+    def be_truthy: () -> untyped
+
+    # Passes if actual is falsey (false or nil)
+    def be_falsey: () -> untyped
+
+    # Passes if actual is nil
+    def be_nil: () -> untyped
+
+    # @example
+    #   expect(actual).to     be_truthy
+    #   expect(actual).to     be_falsey
+    #   expect(actual).to     be_nil
+    #   expect(actual).to     be_[arbitrary_predicate](*args)
+    #   expect(actual).not_to be_nil
+    #   expect(actual).not_to be_[arbitrary_predicate](*args)
+    #
+    # Given true, false, or nil, will pass if actual value is true, false or
+    # nil (respectively). Given no args means the caller should satisfy an if
+    # condition (to be or not to be).
+    #
+    # Predicates are any Ruby method that ends in a "?" and returns true or
+    # false.  Given be_ followed by arbitrary_predicate (without the "?"),
+    # RSpec will match convert that into a query against the target object.
+    #
+    # The arbitrary_predicate feature will handle any predicate prefixed with
+    # "be_an_" (e.g. be_an_instance_of), "be_a_" (e.g. be_a_kind_of) or "be_"
+    # (e.g. be_empty), letting you choose the prefix that best suits the
+    # predicate.
+    def be: (*untyped args) -> untyped
+
+    # passes if target.kind_of?(klass)
+    def be_a: (untyped klass) -> untyped
+
+    alias be_an be_a
+
+    # Passes if actual.instance_of?(expected)
+    #
+    # @example
+    #   expect(5).to     be_an_instance_of(Integer)
+    #   expect(5).not_to be_an_instance_of(Numeric)
+    #   expect(5).not_to be_an_instance_of(Float)
+    def be_an_instance_of: (untyped expected) -> untyped
+
+    alias be_instance_of be_an_instance_of
+
+    # Passes if actual.kind_of?(expected)
+    #
+    # @example
+    #   expect(5).to     be_a_kind_of(Integer)
+    #   expect(5).to     be_a_kind_of(Numeric)
+    #   expect(5).not_to be_a_kind_of(Float)
+    def be_a_kind_of: (untyped expected) -> untyped
+
+    alias be_kind_of be_a_kind_of
+
+    # Passes if actual.between?(min, max). Works with any Comparable object,
+    # including String, Symbol, Time, or Numeric (Fixnum, Bignum, Integer,
+    # Float, Complex, and Rational).
+    #
+    # By default, `be_between` is inclusive (i.e. passes when given either the max or min value),
+    # but you can make it `exclusive` by chaining that off the matcher.
+    #
+    # @example
+    #   expect(5).to      be_between(1, 10)
+    #   expect(11).not_to be_between(1, 10)
+    #   expect(10).not_to be_between(1, 10).exclusive
+    def be_between: (untyped min, untyped max) -> untyped
+
+    # Passes if actual == expected +/- delta
+    #
+    # @example
+    #   expect(result).to     be_within(0.5).of(3.0)
+    #   expect(result).not_to be_within(0.5).of(3.0)
+    def be_within: (untyped delta) -> untyped
+
+    # Applied to a proc, specifies that its execution will cause some value to
+    # change.
+    #
+    # @param [Object] receiver
+    # @param [Symbol] message the message to send the receiver
+    #
+    # You can either pass <tt>receiver</tt> and <tt>message</tt>, or a block,
+    # but not both.
+    #
+    # When passing a block, it must use the `{ ... }` format, not
+    # do/end, as `{ ... }` binds to the `change` method, whereas do/end
+    # would errantly bind to the `expect(..).to` or `expect(...).not_to` method.
+    #
+    # You can chain any of the following off of the end to specify details
+    # about the change:
+    #
+    # * `from`
+    # * `to`
+    #
+    # or any one of:
+    #
+    # * `by`
+    # * `by_at_least`
+    # * `by_at_most`
+    #
+    # @example
+    #   expect {
+    #     team.add_player(player)
+    #   }.to change(roster, :count)
+    #
+    #   expect {
+    #     team.add_player(player)
+    #   }.to change(roster, :count).by(1)
+    #
+    #   expect {
+    #     team.add_player(player)
+    #   }.to change(roster, :count).by_at_least(1)
+    #
+    #   expect {
+    #     team.add_player(player)
+    #   }.to change(roster, :count).by_at_most(1)
+    #
+    #   string = "string"
+    #   expect {
+    #     string.reverse!
+    #   }.to change { string }.from("string").to("gnirts")
+    #
+    #   string = "string"
+    #   expect {
+    #     string
+    #   }.not_to change { string }.from("string")
+    #
+    #   expect {
+    #     person.happy_birthday
+    #   }.to change(person, :birthday).from(32).to(33)
+    #
+    #   expect {
+    #     employee.develop_great_new_social_networking_app
+    #   }.to change(employee, :title).from("Mail Clerk").to("CEO")
+    #
+    #   expect {
+    #     doctor.leave_office
+    #   }.to change(doctor, :sign).from(/is in/).to(/is out/)
+    #
+    #   user = User.new(:type => "admin")
+    #   expect {
+    #     user.symbolize_type
+    #   }.to change(user, :type).from(String).to(Symbol)
+    #
+    # == Notes
+    #
+    # Evaluates `receiver.message` or `block` before and after it
+    # evaluates the block passed to `expect`. If the value is the same
+    # object, its before/after `hash` value is used to see if it has changed.
+    # Therefore, your object needs to properly implement `hash` to work correctly
+    # with this matcher.
+    #
+    # `expect( ... ).not_to change` supports the form that specifies `from`
+    # (which specifies what you expect the starting, unchanged value to be)
+    # but does not support forms with subsequent calls to `by`, `by_at_least`,
+    # `by_at_most` or `to`.
+    def change: (?untyped? receiver, ?untyped? message) { () -> untyped } -> untyped
+
+    # Passes if actual contains all of the expected regardless of order.
+    # This works for collections. Pass in multiple args and it will only
+    # pass if all args are found in collection.
+    #
+    # @note This is also available using the `=~` operator with `should`,
+    #       but `=~` is not supported with `expect`.
+    #
+    # @example
+    #   expect([1, 2, 3]).to contain_exactly(1, 2, 3)
+    #   expect([1, 2, 3]).to contain_exactly(1, 3, 2)
+    #
+    # @see #match_array
+    def contain_exactly: (*untyped items) -> untyped
+
+    # Passes if actual covers expected. This works for
+    # Ranges. You can also pass in multiple args
+    # and it will only pass if all args are found in Range.
+    #
+    # @example
+    #   expect(1..10).to     cover(5)
+    #   expect(1..10).to     cover(4, 6)
+    #   expect(1..10).to     cover(4, 6, 11) # fails
+    #   expect(1..10).not_to cover(11)
+    #   expect(1..10).not_to cover(5)        # fails
+    #
+    # ### Warning:: Ruby >= 1.9 only
+    def cover: (*untyped values) -> untyped
+
+    # Matches if the actual value ends with the expected value(s). In the case
+    # of a string, matches against the last `expected.length` characters of the
+    # actual string. In the case of an array, matches against the last
+    # `expected.length` elements of the actual array.
+    #
+    # @example
+    #   expect("this string").to   end_with "string"
+    #   expect([0, 1, 2, 3, 4]).to end_with 4
+    #   expect([0, 2, 3, 4, 4]).to end_with 3, 4
+    def end_with: (*untyped expected) -> untyped
+
+    # Passes if <tt>actual == expected</tt>.
+    #
+    # See http://www.ruby-doc.org/core/classes/Object.html#M001057 for more
+    # information about equality in Ruby.
+    #
+    # @example
+    #   expect(5).to     eq(5)
+    #   expect(5).not_to eq(3)
+    def eq: (untyped expected) -> untyped
+
+    # Passes if `actual.eql?(expected)`
+    #
+    # See http://www.ruby-doc.org/core/classes/Object.html#M001057 for more
+    # information about equality in Ruby.
+    #
+    # @example
+    #   expect(5).to     eql(5)
+    #   expect(5).not_to eql(3)
+    def eql: (untyped expected) -> untyped
+
+    # Passes if <tt>actual.equal?(expected)</tt> (object identity).
+    #
+    # See http://www.ruby-doc.org/core/classes/Object.html#M001057 for more
+    # information about equality in Ruby.
+    #
+    # @example
+    #   expect(5).to       equal(5)   # Integers are equal
+    #   expect("5").not_to equal("5") # Strings that look the same are not the same object
+    def equal: (untyped expected) -> untyped
+
+    # Passes if `actual.exist?` or `actual.exists?`
+    #
+    # @example
+    #   expect(File).to exist("path/to/file")
+    def exist: (*untyped args) -> untyped
+
+    # Passes if actual's attribute values match the expected attributes hash.
+    # This works no matter how you define your attribute readers.
+    #
+    # @example
+    #   Person = Struct.new(:name, :age)
+    #   person = Person.new("Bob", 32)
+    #
+    #   expect(person).to have_attributes(:name => "Bob", :age => 32)
+    #   expect(person).to have_attributes(:name => a_string_starting_with("B"), :age => (a_value > 30) )
+    #
+    # @note It will fail if actual doesn't respond to any of the expected attributes.
+    #
+    # @example
+    #   expect(person).to have_attributes(:color => "red")
+    def have_attributes: (untyped expected) -> untyped
+
+    # Passes if actual includes expected. This works for
+    # collections and Strings. You can also pass in multiple args
+    # and it will only pass if all args are found in collection.
+    #
+    # @example
+    #   expect([1,2,3]).to      include(3)
+    #   expect([1,2,3]).to      include(2,3)
+    #   expect([1,2,3]).to      include(2,3,4) # fails
+    #   expect([1,2,3]).not_to  include(4)
+    #   expect("spread").to     include("read")
+    #   expect("spread").not_to include("red")
+    #   expect(:a => 1, :b => 2).to include(:a)
+    #   expect(:a => 1, :b => 2).to include(:a, :b)
+    #   expect(:a => 1, :b => 2).to include(:a => 1)
+    #   expect(:a => 1, :b => 2).to include(:b => 2, :a => 1)
+    #   expect(:a => 1, :b => 2).to include(:c) # fails
+    #   expect(:a => 1, :b => 2).not_to include(:a => 2)
+    def include: (*untyped expected) -> untyped
+
+    # Passes if the provided matcher passes when checked against all
+    # elements of the collection.
+    #
+    # @example
+    #   expect([1, 3, 5]).to all be_odd
+    #   expect([1, 3, 6]).to all be_odd # fails
+    #
+    # @note The negative form `not_to all` is not supported. Instead
+    #   use `not_to include` or pass a negative form of a matcher
+    #   as the argument (e.g. `all exclude(:foo)`).
+    #
+    # @note You can also use this with compound matchers as well.
+    #
+    # @example
+    #   expect([1, 3, 5]).to all( be_odd.and be_an(Integer) )
+    def all: (untyped expected) -> untyped
+
+    # Given a `Regexp` or `String`, passes if `actual.match(pattern)`
+    # Given an arbitrary nested data structure (e.g. arrays and hashes),
+    # matches if `expected === actual` || `actual == expected` for each
+    # pair of elements.
+    #
+    # @example
+    #   expect(email).to match(/^([^\s]+)((?:[-a-z0-9]+\.)+[a-z]{2,})$/i)
+    #   expect(email).to match("@example.com")
+    #
+    # @example
+    #   hash = {
+    #     :a => {
+    #       :b => ["foo", 5],
+    #       :c => { :d => 2.05 }
+    #     }
+    #   }
+    #
+    #   expect(hash).to match(
+    #     :a => {
+    #       :b => a_collection_containing_exactly(
+    #         a_string_starting_with("f"),
+    #         an_instance_of(Integer)
+    #       ),
+    #       :c => { :d => (a_value < 3) }
+    #     }
+    #   )
+    #
+    # @note The `match_regex` alias is deprecated and is not recommended for use.
+    #       It was added in 2.12.1 to facilitate its use from within custom
+    #       matchers (due to how the custom matcher DSL was evaluated in 2.x,
+    #       `match` could not be used there), but is no longer needed in 3.x.
+    def match: (untyped expected) -> untyped
+
+    # An alternate form of `contain_exactly` that accepts
+    # the expected contents as a single array arg rather
+    # that splatted out as individual items.
+    #
+    # @example
+    #   expect(results).to contain_exactly(1, 2)
+    #   # is identical to:
+    #   expect(results).to match_array([1, 2])
+    #
+    # @see #contain_exactly
+    def match_array: (untyped items) -> untyped
+
+    # With no arg, passes if the block outputs `to_stdout` or `to_stderr`.
+    # With a string, passes if the block outputs that specific string `to_stdout` or `to_stderr`.
+    # With a regexp or matcher, passes if the block outputs a string `to_stdout` or `to_stderr` that matches.
+    #
+    # To capture output from any spawned subprocess as well, use `to_stdout_from_any_process` or
+    # `to_stderr_from_any_process`. Output from any process that inherits the main process's corresponding
+    # standard stream will be captured.
+    #
+    # @example
+    #   expect { print 'foo' }.to output.to_stdout
+    #   expect { print 'foo' }.to output('foo').to_stdout
+    #   expect { print 'foo' }.to output(/foo/).to_stdout
+    #
+    #   expect { do_something }.to_not output.to_stdout
+    #
+    #   expect { warn('foo') }.to output.to_stderr
+    #   expect { warn('foo') }.to output('foo').to_stderr
+    #   expect { warn('foo') }.to output(/foo/).to_stderr
+    #
+    #   expect { do_something }.to_not output.to_stderr
+    #
+    #   expect { system('echo foo') }.to output("foo\n").to_stdout_from_any_process
+    #   expect { system('echo foo', out: :err) }.to output("foo\n").to_stderr_from_any_process
+    #
+    # @note `to_stdout` and `to_stderr` work by temporarily replacing `$stdout` or `$stderr`,
+    #   so they're not able to intercept stream output that explicitly uses `STDOUT`/`STDERR`
+    #   or that uses a reference to `$stdout`/`$stderr` that was stored before the
+    #   matcher was used.
+    # @note `to_stdout_from_any_process` and `to_stderr_from_any_process` use Tempfiles, and
+    #   are thus significantly (~30x) slower than `to_stdout` and `to_stderr`.
+    def output: (?untyped? expected) -> untyped
+
+    # With no args, matches if any error is raised.
+    # With a named error, matches only if that specific error is raised.
+    # With a named error and message specified as a String, matches only if both match.
+    # With a named error and message specified as a Regexp, matches only if both match.
+    # Pass an optional block to perform extra verifications on the exception matched
+    #
+    # @example
+    #   expect { do_something_risky }.to raise_error
+    #   expect { do_something_risky }.to raise_error(PoorRiskDecisionError)
+    #   expect { do_something_risky }.to raise_error(PoorRiskDecisionError) { |error| expect(error.data).to eq 42 }
+    #   expect { do_something_risky }.to raise_error { |error| expect(error.data).to eq 42 }
+    #   expect { do_something_risky }.to raise_error(PoorRiskDecisionError, "that was too risky")
+    #   expect { do_something_risky }.to raise_error(PoorRiskDecisionError, /oo ri/)
+    #   expect { do_something_risky }.to raise_error("that was too risky")
+    #
+    #   expect { do_something_risky }.not_to raise_error
+    def raise_error: (?untyped error, ?untyped? message) { () -> untyped } -> untyped
+
+    alias raise_exception raise_error
+
+    # Matches if the target object responds to all of the names
+    # provided. Names can be Strings or Symbols.
+    #
+    # @example
+    #   expect("string").to respond_to(:length)
+    #
+    def respond_to: (*untyped names) -> untyped
+
+    # Passes if the submitted block returns true. Yields target to the
+    # block.
+    #
+    # Generally speaking, this should be thought of as a last resort when
+    # you can't find any other way to specify the behaviour you wish to
+    # specify.
+    #
+    # If you do find yourself in such a situation, you could always write
+    # a custom matcher, which would likely make your specs more expressive.
+    #
+    # @param description [String] optional description to be used for this matcher.
+    #
+    # @example
+    #   expect(5).to satisfy { |n| n > 3 }
+    #   expect(5).to satisfy("be greater than 3") { |n| n > 3 }
+    def satisfy: (?untyped? description) { () -> untyped } -> untyped
+
+    # Matches if the actual value starts with the expected value(s). In the
+    # case of a string, matches against the first `expected.length` characters
+    # of the actual string. In the case of an array, matches against the first
+    # `expected.length` elements of the actual array.
+    #
+    # @example
+    #   expect("this string").to   start_with "this s"
+    #   expect([0, 1, 2, 3, 4]).to start_with 0
+    #   expect([0, 2, 3, 4, 4]).to start_with 0, 1
+    def start_with: (*untyped expected) -> untyped
+
+    # Given no argument, matches if a proc throws any Symbol.
+    #
+    # Given a Symbol, matches if the given proc throws the specified Symbol.
+    #
+    # Given a Symbol and an arg, matches if the given proc throws the
+    # specified Symbol with the specified arg.
+    #
+    # @example
+    #   expect { do_something_risky }.to throw_symbol
+    #   expect { do_something_risky }.to throw_symbol(:that_was_risky)
+    #   expect { do_something_risky }.to throw_symbol(:that_was_risky, 'culprit')
+    #
+    #   expect { do_something_risky }.not_to throw_symbol
+    #   expect { do_something_risky }.not_to throw_symbol(:that_was_risky)
+    #   expect { do_something_risky }.not_to throw_symbol(:that_was_risky, 'culprit')
+    def throw_symbol: (?untyped? expected_symbol, ?untyped? expected_arg) -> untyped
+
+    # Passes if the method called in the expect block yields, regardless
+    # of whether or not arguments are yielded.
+    #
+    # @example
+    #   expect { |b| 5.tap(&b) }.to yield_control
+    #   expect { |b| "a".to_sym(&b) }.not_to yield_control
+    #
+    # @note Your expect block must accept a parameter and pass it on to
+    #   the method-under-test as a block.
+    def yield_control: () -> untyped
+
+    # Passes if the method called in the expect block yields with
+    # no arguments. Fails if it does not yield, or yields with arguments.
+    #
+    # @example
+    #   expect { |b| User.transaction(&b) }.to yield_with_no_args
+    #   expect { |b| 5.tap(&b) }.not_to yield_with_no_args # because it yields with `5`
+    #   expect { |b| "a".to_sym(&b) }.not_to yield_with_no_args # because it does not yield
+    #
+    # @note Your expect block must accept a parameter and pass it on to
+    #   the method-under-test as a block.
+    # @note This matcher is not designed for use with methods that yield
+    #   multiple times.
+    def yield_with_no_args: () -> untyped
+
+    # Given no arguments, matches if the method called in the expect
+    # block yields with arguments (regardless of what they are or how
+    # many there are).
+    #
+    # Given arguments, matches if the method called in the expect block
+    # yields with arguments that match the given arguments.
+    #
+    # Argument matching is done using `===` (the case match operator)
+    # and `==`. If the expected and actual arguments match with either
+    # operator, the matcher will pass.
+    #
+    # @example
+    #   expect { |b| 5.tap(&b) }.to yield_with_args # because #tap yields an arg
+    #   expect { |b| 5.tap(&b) }.to yield_with_args(5) # because 5 == 5
+    #   expect { |b| 5.tap(&b) }.to yield_with_args(Integer) # because Integer === 5
+    #   expect { |b| File.open("f.txt", &b) }.to yield_with_args(/txt/) # because /txt/ === "f.txt"
+    #
+    #   expect { |b| User.transaction(&b) }.not_to yield_with_args # because it yields no args
+    #   expect { |b| 5.tap(&b) }.not_to yield_with_args(1, 2, 3)
+    #
+    # @note Your expect block must accept a parameter and pass it on to
+    #   the method-under-test as a block.
+    # @note This matcher is not designed for use with methods that yield
+    #   multiple times.
+    def yield_with_args: (*untyped args) -> untyped
+
+    # Designed for use with methods that repeatedly yield (such as
+    # iterators). Passes if the method called in the expect block yields
+    # multiple times with arguments matching those given.
+    #
+    # Argument matching is done using `===` (the case match operator)
+    # and `==`. If the expected and actual arguments match with either
+    # operator, the matcher will pass.
+    #
+    # @example
+    #   expect { |b| [1, 2, 3].each(&b) }.to yield_successive_args(1, 2, 3)
+    #   expect { |b| { :a => 1, :b => 2 }.each(&b) }.to yield_successive_args([:a, 1], [:b, 2])
+    #   expect { |b| [1, 2, 3].each(&b) }.not_to yield_successive_args(1, 2)
+    #
+    # @note Your expect block must accept a parameter and pass it on to
+    #   the method-under-test as a block.
+    def yield_successive_args: (*untyped args) -> untyped
+
+    # Delegates to {RSpec::Expectations.configuration}.
+    # This is here because rspec-core's `expect_with` option
+    # looks for a `configuration` method on the mixin
+    # (`RSpec::Matchers`) to yield to a block.
+    # @return [RSpec::Expectations::Configuration] the configuration object
+    def self.configuration: () -> untyped
+
+    private
+
+    BE_PREDICATE_REGEX: ::Regexp
+
+    HAS_REGEX: ::Regexp
+
+    DYNAMIC_MATCHER_REGEX: untyped
+
+    def method_missing: (untyped method, *untyped args) { () -> untyped } -> untyped
+
+    def respond_to_missing?: (untyped method) -> untyped
+
+    public
+
+    # for 1.8.7
+    # :nocov:
+    def respond_to?: (untyped method) -> untyped
+
+    private
+
+    # @api private
+    def self.is_a_matcher?: (untyped obj) -> (true | false | untyped)
+
+    # @api private
+    def self.is_a_describable_matcher?: (untyped obj) -> untyped
+
+    # Note that `included` doesn't work for this because it is triggered
+    # _after_ `RSpec::Matchers` is an ancestor of the inclusion host, rather
+    # than _before_, like `append_features`. It's important we check this before
+    # in order to find the cases where it was already previously included.
+    # @api private
+    def self.append_features: (untyped mod) -> untyped
+  end
+end
+
+module RSpec
+  # RSpec::Expectations provides a simple, readable API to express
+  # the expected outcomes in a code example. To express an expected
+  # outcome, wrap an object or block in `expect`, call `to` or `to_not`
+  # (aliased as `not_to`) and pass it a matcher object:
+  #
+  #     expect(order.total).to eq(Money.new(5.55, :USD))
+  #     expect(list).to include(user)
+  #     expect(message).not_to match(/foo/)
+  #     expect { do_something }.to raise_error
+  #
+  # The last form (the block form) is needed to match against ruby constructs
+  # that are not objects, but can only be observed when executing a block
+  # of code. This includes raising errors, throwing symbols, yielding,
+  # and changing values.
+  #
+  # When `expect(...).to` is invoked with a matcher, it turns around
+  # and calls `matcher.matches?(<object wrapped by expect>)`.  For example,
+  # in the expression:
+  #
+  #     expect(order.total).to eq(Money.new(5.55, :USD))
+  #
+  # ...`eq(Money.new(5.55, :USD))` returns a matcher object, and it results
+  # in the equivalent of `eq.matches?(order.total)`. If `matches?` returns
+  # `true`, the expectation is met and execution continues. If `false`, then
+  # the spec fails with the message returned by `eq.failure_message`.
+  #
+  # Given the expression:
+  #
+  #     expect(order.entries).not_to include(entry)
+  #
+  # ...the `not_to` method (also available as `to_not`) invokes the equivalent of
+  # `include.matches?(order.entries)`, but it interprets `false` as success, and
+  # `true` as a failure, using the message generated by
+  # `include.failure_message_when_negated`.
+  #
+  # rspec-expectations ships with a standard set of useful matchers, and writing
+  # your own matchers is quite simple.
+  #
+  # See [RSpec::Matchers](../RSpec/Matchers) for more information about the
+  # built-in matchers that ship with rspec-expectations, and how to write your
+  # own custom matchers.
+  module Expectations
+    # Exception raised when an expectation fails.
+    #
+    # @note We subclass Exception so that in a stub implementation if
+    # the user sets an expectation, it can't be caught in their
+    # code by a bare `rescue`.
+    # @api public
+    class ExpectationNotMetError < Exception
+    end
+
+    # Exception raised from `aggregate_failures` when multiple expectations fail.
+    #
+    # @note The constant is defined here but the extensive logic of this class
+    #   is lazily defined when `FailureAggregator` is autoloaded, since we do
+    #   not need to waste time defining that functionality unless
+    #   `aggregate_failures` is used.
+    class MultipleExpectationsNotMetError < ExpectationNotMetError
+    end
+  end
+end
+
+module RSpec
+  module Expectations
+    # @api private
+    # Provides methods for enabling and disabling the available
+    # syntaxes provided by rspec-expectations.
+    module Syntax
+      # @api private
+      # Determines where we add `should` and `should_not`.
+      def self?.default_should_host: () -> untyped
+
+      # @api private
+      # Instructs rspec-expectations to warn on first usage of `should` or `should_not`.
+      # Enabled by default. This is largely here to facilitate testing.
+      def self?.warn_about_should!: () -> untyped
+
+      # @api private
+      # Generates a deprecation warning for the given method if no warning
+      # has already been issued.
+      def self?.warn_about_should_unless_configured: (untyped method_name) -> (nil | untyped)
+
+      # @api private
+      # Enables the `should` syntax.
+      def self?.enable_should: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Disables the `should` syntax.
+      def self?.disable_should: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Enables the `expect` syntax.
+      def self?.enable_expect: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Disables the `expect` syntax.
+      def self?.disable_expect: (?untyped syntax_host) -> (nil | untyped)
+
+      # @api private
+      # Indicates whether or not the `should` syntax is enabled.
+      def self?.should_enabled?: (?untyped syntax_host) -> untyped
+
+      # @api private
+      # Indicates whether or not the `expect` syntax is enabled.
+      def self?.expect_enabled?: (?untyped syntax_host) -> untyped
+    end
+  end
+end
+
+# The legacy `:should` syntax adds the following methods directly to
+# `BasicObject` so that they are available off of any object. Note, however,
+# that this syntax does not always play nice with delegate/proxy objects.
+# We recommend you use the non-monkeypatching `:expect` syntax instead.
+class BasicObject
+end
+
+module RSpec
+  module Expectations
+    # Wraps the target of an expectation.
+    #
+    # @example
+    #   expect(something)       # => ExpectationTarget wrapping something
+    #   expect { do_something } # => ExpectationTarget wrapping the block
+    #
+    #   # used with `to`
+    #   expect(actual).to eq(3)
+    #
+    #   # with `not_to`
+    #   expect(actual).not_to eq(3)
+    #
+    # @note `ExpectationTarget` is not intended to be instantiated
+    #   directly by users. Use `expect` instead.
+    class ExpectationTarget
+      # @private
+      # Used as a sentinel value to be able to tell when the user
+      # did not pass an argument. We can't use `nil` for that because
+      # `nil` is a valid value to pass.
+      UndefinedValue: untyped
+
+      # @note this name aligns with `Minitest::Expectation` so that our
+      #   {InstanceMethods} module can be included in that class when
+      #   used in a Minitest context.
+      # @return [Object] the target of the expectation
+      attr_reader target: untyped
+
+      # @api private
+      def initialize: (untyped value) -> void
+
+      # @private
+      def self.for: (untyped value, untyped block) -> untyped
+
+      # Defines instance {ExpectationTarget} instance methods. These are defined
+      # in a module so we can include it in `Minitest::Expectation` when
+      # `rspec/expectations/minitest_integration` is loaded in order to
+      # support usage with Minitest.
+      module InstanceMethods
+        # Runs the given expectation, passing if `matcher` returns true.
+        # @example
+        #   expect(value).to eq(5)
+        #   expect { perform }.to raise_error
+        # @param [Matcher]
+        #   matcher
+        # @param [String, Proc] message optional message to display when the expectation fails
+        # @return [Boolean] true if the expectation succeeds (else raises)
+        # @see RSpec::Matchers
+        def to: (?untyped? matcher, ?untyped? message) { () -> untyped } -> untyped
+
+        # Runs the given expectation, passing if `matcher` returns false.
+        # @example
+        #   expect(value).not_to eq(5)
+        # @param [Matcher]
+        #   matcher
+        # @param [String, Proc] message optional message to display when the expectation fails
+        # @return [Boolean] false if the negative expectation succeeds (else raises)
+        # @see RSpec::Matchers
+        def not_to: (?untyped? matcher, ?untyped? message) { () -> untyped } -> untyped
+
+        alias to_not not_to
+
+        private
+
+        def prevent_operator_matchers: (untyped verb) -> untyped
+      end
+
+      include InstanceMethods
+    end
+
+    # @private
+    # Validates the provided matcher to ensure it supports block
+    # expectations, in order to avoid user confusion when they
+    # use a block thinking the expectation will be on the return
+    # value of the block rather than the block itself.
+    class ValueExpectationTarget < ExpectationTarget
+      def to: (?untyped? matcher, ?untyped? message) { () -> untyped } -> untyped
+
+      def not_to: (?untyped? matcher, ?untyped? message) { () -> untyped } -> untyped
+
+      private
+
+      def enforce_value_expectation: (untyped matcher) -> (nil | untyped)
+
+      def supports_value_expectations?: (untyped matcher) -> untyped
+    end
+
+    # @private
+    # Validates the provided matcher to ensure it supports block
+    # expectations, in order to avoid user confusion when they
+    # use a block thinking the expectation will be on the return
+    # value of the block rather than the block itself.
+    class BlockExpectationTarget < ExpectationTarget
+      def to: (untyped matcher, ?untyped? message) { () -> untyped } -> untyped
+
+      def not_to: (untyped matcher, ?untyped? message) { () -> untyped } -> untyped
+
+      alias to_not not_to
+
+      private
+
+      def enforce_block_expectation: (untyped matcher) -> (nil | untyped)
+
+      def supports_block_expectations?: (untyped matcher) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Expectations
+  end
+end
+
+class Object
+  include ::RSpec::Matchers
+
+  # This `expect` will only be called if the user is using Minitest < 5.6
+  # or if they are _not_ using Minitest::Spec on 5.6+. Minitest::Spec on 5.6+
+  # defines its own `expect` and will have the assertions incremented via our
+  # definitions of `to`/`not_to`/`to_not` below.
+  def expect: (*untyped a) { () -> untyped } -> untyped
+
+  # Convert a `MultipleExpectationsNotMetError` to a `Minitest::Assertion` error so
+  # it gets counted in minitest's summary stats as a failure rather than an error.
+  # It would be nice to make `MultipleExpectationsNotMetError` subclass
+  # `Minitest::Assertion`, but Minitest's implementation does not treat subclasses
+  # the same, so this is the best we can do.
+  def aggregate_failures: (*untyped args) { () -> untyped } -> untyped
+
+  include RSpec::Expectations::ExpectationTarget::InstanceMethods
+
+  def to: (*untyped args) -> untyped
+
+  def not_to: (*untyped args) -> untyped
+
+  def to_not: (*untyped args) -> untyped
+end
+
+module RSpec
+  module Expectations
+    # @private
+    module ExpectationHelper
+      def self.check_message: (untyped msg) -> untyped
+
+      # Returns an RSpec-3+ compatible matcher, wrapping a legacy one
+      # in an adapter if necessary.
+      #
+      # @private
+      def self.modern_matcher_from: (untyped matcher) -> untyped
+
+      def self.with_matcher: (untyped handler, untyped matcher, untyped message) { (untyped) -> untyped } -> untyped
+
+      def self.handle_failure: (untyped matcher, untyped message, untyped failure_message_method) -> untyped
+    end
+
+    # @private
+    class PositiveExpectationHandler
+      def self.handle_matcher: (untyped actual, untyped initial_matcher, ?untyped? custom_message) { () -> untyped } -> untyped
+
+      def self.verb: () -> "is expected to"
+
+      def self.should_method: () -> :should
+
+      def self.opposite_should_method: () -> :should_not
+    end
+
+    # @private
+    class NegativeExpectationHandler
+      def self.handle_matcher: (untyped actual, untyped initial_matcher, ?untyped? custom_message) { () -> untyped } -> untyped
+
+      def self.does_not_match?: (untyped matcher, untyped actual) { () -> untyped } -> untyped
+
+      def self.verb: () -> "is expected not to"
+
+      def self.should_method: () -> :should_not
+
+      def self.opposite_should_method: () -> :should
+    end
+
+    # Wraps a matcher written against one of the legacy protocols in
+    # order to present the current protocol.
+    #
+    # @private
+    class LegacyMatcherAdapter < Matchers::MatcherDelegator
+      def initialize: (untyped matcher) -> void
+
+      def self.wrap: (untyped matcher) -> untyped
+
+      # Starting in RSpec 1.2 (and continuing through all 2.x releases),
+      # the failure message protocol was:
+      #   * `failure_message_for_should`
+      #   * `failure_message_for_should_not`
+      # @private
+      class RSpec2 < 
+        def failure_message: () -> untyped
+
+        def failure_message_when_negated: () -> untyped
+
+        def self.interface_matches?: (untyped matcher) -> untyped
+      end
+
+      # Before RSpec 1.2, the failure message protocol was:
+      #   * `failure_message`
+      #   * `negative_failure_message`
+      # @private
+      class RSpec1 < 
+        def failure_message: () -> untyped
+
+        def failure_message_when_negated: () -> untyped
+
+        # Note: `failure_message` is part of the RSpec 3 protocol
+        # (paired with `failure_message_when_negated`), so we don't check
+        # for `failure_message` here.
+        def self.interface_matches?: (untyped matcher) -> untyped
+      end
+    end
+
+    # RSpec 3.0 was released with the class name misspelled. For SemVer compatibility,
+    # we will provide this misspelled alias until 4.0.
+    # @deprecated Use LegacyMatcherAdapter instead.
+    # @private
+    LegacyMacherAdapter: untyped
+  end
+end
+
+module RSpec
+  module Expectations
+    # @private
+    module Version
+      STRING: "3.12.0.pre"
+    end
+  end
+end
+
+module RSpec
+  module Expectations
+    # @private
+    class FailureAggregator
+      attr_reader block_label: untyped
+
+      attr_reader metadata: untyped
+
+      def aggregate: () { () -> untyped } -> untyped
+
+      def failures: () -> untyped
+
+      def other_errors: () -> untyped
+
+      # This method is defined to satisfy the callable interface
+      # expected by `RSpec::Support.with_failure_notifier`.
+      def call: (untyped failure, untyped options) -> (nil | untyped)
+
+      private
+
+      # On JRuby 9.1.x.x and before, `caller` and `raise` produce different backtraces with
+      # regards to `.java` stack frames. It's important that we use `raise` for JRuby to produce
+      # a backtrace that has a continuous common section with the raised `MultipleExpectationsNotMetError`,
+      # so that rspec-core's truncation logic can work properly on it to list the backtrace
+      # relative to the `aggregate_failures` block.
+      def assign_backtrace: (untyped failure) -> untyped
+
+      def initialize: (untyped block_label, untyped metadata) -> void
+
+      def notify_aggregated_failures: () -> untyped
+    end
+
+    # Exception raised from `aggregate_failures` when multiple expectations fail.
+    class MultipleExpectationsNotMetError
+      # @return [String] The fully formatted exception message.
+      def message: () -> untyped
+
+      # @return [Array<RSpec::Expectations::ExpectationNotMetError>] The list of expectation failures.
+      def failures: () -> untyped
+
+      # @return [Array<Exception>] The list of other exceptions.
+      def other_errors: () -> untyped
+
+      # @return [Array<Exception>] The list of expectation failures and other exceptions, combined.
+      attr_reader all_exceptions: untyped
+
+      # @return [String] The user-assigned label for the aggregation block.
+      def aggregation_block_label: () -> untyped
+
+      # @return [Hash] The metadata hash passed to `aggregate_failures`.
+      def aggregation_metadata: () -> untyped
+
+      # @return [String] A summary of the failure, including the block label and a count of failures.
+      def summary: () -> ::String
+
+      # return [String] A description of the failure/error counts.
+      def exception_count_description: () -> (untyped | ::String)
+
+      private
+
+      def initialize: (untyped failure_aggregator) -> void
+
+      def block_description: () -> ::String
+
+      def pluralize: (untyped noun, untyped count) -> ::String
+
+      def enumerated: (untyped exceptions, untyped index_offset) { (untyped) -> untyped } -> untyped
+
+      def exclusion_patterns: () -> untyped
+
+      def format_backtrace: (untyped backtrace) -> untyped
+
+      def backtrace_line: (untyped line) -> (nil | untyped)
+
+      def enumerated_failures: () -> untyped
+
+      def enumerated_errors: () -> untyped
+
+      def indented: (untyped failure_message, untyped index) -> untyped
+
+      def indentation: () -> untyped
+
+      def longest_index_label_width: () -> untyped
+
+      def width_of_label: (untyped index) -> untyped
+
+      def index_label: (untyped index) -> ::String
+    end
+  end
+end
+
+module RSpec
+  module Expectations
+    class BlockSnippetExtractor
+      attr_reader proc: untyped
+
+      attr_reader method_name: untyped
+
+      def self.try_extracting_single_line_body_of: (untyped proc, untyped method_name) -> untyped
+
+      def initialize: (untyped proc, untyped method_name) -> void
+
+      # Ideally we should properly handle indentations of multiline snippet,
+      # but it's not implemented yet since because we use result of this method only when it's a
+      # single line and implementing the logic introduces additional complexity.
+      def body_content_lines: () -> untyped
+
+      private
+
+      def raw_body_lines: () -> untyped
+
+      def raw_body_snippet: () -> untyped
+
+      def block_token_extractor: () -> untyped
+
+      def source: () -> untyped
+
+      def file_path: () -> untyped
+
+      def beginning_line_number: () -> untyped
+
+      def source_location: () -> untyped
+
+      Error: untyped
+
+      TargetNotFoundError: untyped
+
+      AmbiguousTargetError: untyped
+
+      # @private
+      # Performs extraction of block body snippet using tokens,
+      # which cannot be done with node information.
+      BlockTokenExtractor: untyped
+
+      # @private
+      # Locates target block with node information (semantics), which tokens don't have.
+      BlockLocator: untyped
+    end
+  end
+end
+
+module RSpec
+  module Expectations
+    # Provides configuration options for rspec-expectations.
+    # If you are using rspec-core, you can access this via a
+    # block passed to `RSpec::Core::Configuration#expect_with`.
+    # Otherwise, you can access it via RSpec::Expectations.configuration.
+    #
+    # @example
+    #   RSpec.configure do |rspec|
+    #     rspec.expect_with :rspec do |c|
+    #       # c is the config object
+    #     end
+    #   end
+    #
+    #   # or
+    #
+    #   RSpec::Expectations.configuration
+    class Configuration
+      # @private
+      FALSE_POSITIVE_BEHAVIOURS: { warn: untyped, raise: untyped, nothing: untyped }
+
+      def initialize: () -> void
+
+      # Configures the supported syntax.
+      # @param [Array<Symbol>, Symbol] values the syntaxes to enable
+      # @example
+      #   RSpec.configure do |rspec|
+      #     rspec.expect_with :rspec do |c|
+      #       c.syntax = :should
+      #       # or
+      #       c.syntax = :expect
+      #       # or
+      #       c.syntax = [:should, :expect]
+      #     end
+      #   end
+      def syntax=: (untyped values) -> untyped
+
+      # Configures the maximum character length that RSpec will print while
+      # formatting an object. You can set length to nil to prevent RSpec from
+      # doing truncation.
+      # @param [Fixnum] length the number of characters to limit the formatted output to.
+      # @example
+      #   RSpec.configure do |rspec|
+      #     rspec.expect_with :rspec do |c|
+      #       c.max_formatted_output_length = 200
+      #     end
+      #   end
+      def max_formatted_output_length=: (untyped length) -> untyped
+
+      # The list of configured syntaxes.
+      # @return [Array<Symbol>] the list of configured syntaxes.
+      # @example
+      #   unless RSpec::Matchers.configuration.syntax.include?(:expect)
+      #     raise "this RSpec extension gem requires the rspec-expectations `:expect` syntax"
+      #   end
+      def syntax: () -> untyped
+
+      def color?: () -> untyped
+
+      # Indicates whether or not diffs should be colored.
+      # Delegates to rspec-core's color option if rspec-core
+      # is loaded; otherwise you can set it here.
+      attr_writer color: untyped
+
+      # Adds `should` and `should_not` to the given classes
+      # or modules. This can be used to ensure `should` works
+      # properly on things like proxy objects (particular
+      # `Delegator`-subclassed objects on 1.8).
+      #
+      # @param [Array<Module>] modules the list of classes or modules
+      #   to add `should` and `should_not` to.
+      def add_should_and_should_not_to: (*untyped modules) -> untyped
+
+      # Sets or gets the backtrace formatter. The backtrace formatter should
+      # implement `#format_backtrace(Array<String>)`. This is used
+      # to format backtraces of errors handled by the `raise_error`
+      # matcher.
+      #
+      # If you are using rspec-core, rspec-core's backtrace formatting
+      # will be used (including respecting the presence or absence of
+      # the `--backtrace` option).
+      #
+      # @!attribute [rw] backtrace_formatter
+      attr_writer backtrace_formatter: untyped
+
+      def backtrace_formatter: () -> untyped
+
+      # Sets if custom matcher descriptions and failure messages
+      # should include clauses from methods defined using `chain`.
+      # @param value [Boolean]
+      attr_writer include_chain_clauses_in_custom_matcher_descriptions: untyped
+
+      # Indicates whether or not custom matcher descriptions and failure messages
+      # should include clauses from methods defined using `chain`. It is
+      # false by default for backwards compatibility.
+      def include_chain_clauses_in_custom_matcher_descriptions?: () -> untyped
+
+      # @private
+      def reset_syntaxes_to_default: () -> untyped
+
+      # @api private
+      # Null implementation of a backtrace formatter used by default
+      # when rspec-core is not loaded. Does no filtering.
+      NullBacktraceFormatter: untyped
+
+      # Configures whether RSpec will warn about matcher use which will
+      # potentially cause false positives in tests.
+      #
+      # @param [Boolean] boolean
+      def warn_about_potential_false_positives=: (untyped boolean) -> untyped
+
+      #
+      # Configures what RSpec will do about matcher use which will
+      # potentially cause false positives in tests.
+      #
+      # @param [Symbol] behavior can be set to :warn, :raise or :nothing
+      def on_potential_false_positives=: (untyped behavior) -> untyped
+
+      # Configures RSpec to check predicate matchers to `be(true)` / `be(false)` (strict),
+      # or `be_truthy` / `be_falsey` (not strict).
+      # Historically, the default was `false`, but `true` is recommended.
+      def strict_predicate_matchers=: (untyped flag) -> untyped
+
+      attr_reader strict_predicate_matchers: untyped
+
+      def strict_predicate_matchers?: () -> untyped
+
+      # Indicates what RSpec will do about matcher use which will
+      # potentially cause false positives in tests, generally you want to
+      # avoid such scenarios so this defaults to `true`.
+      attr_reader on_potential_false_positives: untyped
+
+      # Indicates whether RSpec will warn about matcher use which will
+      # potentially cause false positives in tests, generally you want to
+      # avoid such scenarios so this defaults to `true`.
+      def warn_about_potential_false_positives?: () -> untyped
+
+      # @private
+      def false_positives_handler: () -> untyped
+    end
+
+    # The configuration object.
+    # @return [RSpec::Expectations::Configuration] the configuration object
+    def self.configuration: () -> untyped
+  end
+end
+
+module RSpec
+  module Expectations
+    # @private
+    class Differ
+      # @private
+      OBJECT_PREPARER: untyped
+    end
+
+    # @private
+    def self.differ: () -> untyped
+
+    # Raises an RSpec::Expectations::ExpectationNotMetError with message.
+    # @param [String] message
+    # @param [Object] expected
+    # @param [Object] actual
+    #
+    # Adds a diff to the failure message when `expected` and `actual` are
+    # both present.
+    def self.fail_with: (untyped message, ?untyped? expected, ?untyped? actual) -> untyped
+  end
+end
+
+module RSpec
+  module Matchers
+    # @private
+    attr_accessor self.last_matcher: untyped
+
+    # @private
+    attr_accessor self.last_expectation_handler: untyped
+
+    # @api private
+    # Used by rspec-core to clear the state used to generate
+    # descriptions after an example.
+    def self.clear_generated_description: () -> untyped
+
+    # @api private
+    # Generates an an example description based on the last expectation.
+    # Used by rspec-core's one-liner syntax.
+    def self.generated_description: () -> (nil | ::String)
+
+    # @private
+    def self.last_description: () -> untyped
+  end
+end
+
+module RSpec
+  module Matchers
+    # Provides the necessary plumbing to wrap a matcher with a decorator.
+    # @private
+    class MatcherDelegator
+      include Composable
+
+      attr_reader base_matcher: untyped
+
+      def initialize: (untyped base_matcher) -> void
+
+      def method_missing: (*untyped args) { () -> untyped } -> untyped
+
+      def respond_to_missing?: (untyped name, ?bool include_all) -> untyped
+
+      # :nocov:
+      def respond_to?: (untyped name, ?bool include_all) -> untyped
+
+      def initialize_copy: (untyped other) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # rspec-expectations can work with any matcher object that implements this protocol.
+    #
+    # @note This class is not loaded at runtime by rspec-expectations. It exists
+    #   purely to provide documentation for the matcher protocol.
+    class MatcherProtocol
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Mixin designed to support the composable matcher features
+    # of RSpec 3+. Mix it into your custom matcher classes to
+    # allow them to be used in a composable fashion.
+    #
+    # @api public
+    module Composable
+      # Creates a compound `and` expectation. The matcher will
+      # only pass if both sub-matchers pass.
+      # This can be chained together to form an arbitrarily long
+      # chain of matchers.
+      #
+      # @example
+      #   expect(alphabet).to start_with("a").and end_with("z")
+      #   expect(alphabet).to start_with("a") & end_with("z")
+      #
+      # @note The negative form (`expect(...).not_to matcher.and other`)
+      #   is not supported at this time.
+      def and: (untyped matcher) -> untyped
+
+      alias & and
+
+      # Creates a compound `or` expectation. The matcher will
+      # pass if either sub-matcher passes.
+      # This can be chained together to form an arbitrarily long
+      # chain of matchers.
+      #
+      # @example
+      #   expect(stoplight.color).to eq("red").or eq("green").or eq("yellow")
+      #   expect(stoplight.color).to eq("red") | eq("green") | eq("yellow")
+      #
+      # @note The negative form (`expect(...).not_to matcher.or other`)
+      #   is not supported at this time.
+      def or: (untyped matcher) -> untyped
+
+      alias | or
+
+      # Delegates to `#matches?`. Allows matchers to be used in composable
+      # fashion and also supports using matchers in case statements.
+      def ===: (untyped value) -> untyped
+
+      private
+
+      # This provides a generic way to fuzzy-match an expected value against
+      # an actual value. It understands nested data structures (e.g. hashes
+      # and arrays) and is able to match against a matcher being used as
+      # the expected value or within the expected value at any level of
+      # nesting.
+      #
+      # Within a custom matcher you are encouraged to use this whenever your
+      # matcher needs to match two values, unless it needs more precise semantics.
+      # For example, the `eq` matcher _does not_ use this as it is meant to
+      # use `==` (and only `==`) for matching.
+      #
+      # @param expected [Object] what is expected
+      # @param actual [Object] the actual value
+      #
+      # @!visibility public
+      def values_match?: (untyped expected, untyped actual) -> untyped
+
+      # Returns the description of the given object in a way that is
+      # aware of composed matchers. If the object is a matcher with
+      # a `description` method, returns the description; otherwise
+      # returns `object.inspect`.
+      #
+      # You are encouraged to use this in your custom matcher's
+      # `description`, `failure_message` or
+      # `failure_message_when_negated` implementation if you are
+      # supporting matcher arguments.
+      #
+      # @!visibility public
+      def description_of: (untyped object) -> untyped
+
+      # Transforms the given data structue (typically a hash or array)
+      # into a new data structure that, when `#inspect` is called on it,
+      # will provide descriptions of any contained matchers rather than
+      # the normal `#inspect` output.
+      #
+      # You are encouraged to use this in your custom matcher's
+      # `description`, `failure_message` or
+      # `failure_message_when_negated` implementation if you are
+      # supporting any arguments which may be a data structure
+      # containing matchers.
+      #
+      # @!visibility public
+      def self?.surface_descriptions_in: (untyped item) -> untyped
+
+      # @private
+      # Historically, a single matcher instance was only checked
+      # against a single value. Given that the matcher was only
+      # used once, it's been common to memoize some intermediate
+      # calculation that is derived from the `actual` value in
+      # order to reuse that intermediate result in the failure
+      # message.
+      #
+      # This can cause a problem when using such a matcher as an
+      # argument to another matcher in a composed matcher expression,
+      # since the matcher instance may be checked against multiple
+      # values and produce invalid results due to the memoization.
+      #
+      # To deal with this, we clone any matchers in `expected` via
+      # this method when using `values_match?`, so that any memoization
+      # does not "leak" between checks.
+      def with_matchers_cloned: (untyped object) -> untyped
+
+      # @api private
+      # We should enumerate arrays as long as they are not recursive.
+      def self?.should_enumerate?: (untyped item) -> untyped
+
+      # @api private
+      def self?.unreadable_io?: (untyped object) -> untyped
+
+      # Wraps an item in order to surface its `description` via `inspect`.
+      # @api private
+      DescribableItem: untyped
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `change`.
+      # Not intended to be instantiated directly.
+      class Change < BaseMatcher
+        # @api public
+        # Specifies the delta of the expected change.
+        def by: (untyped expected_delta) -> untyped
+
+        # @api public
+        # Specifies a minimum delta of the expected change.
+        def by_at_least: (untyped minimum) -> untyped
+
+        # @api public
+        # Specifies a maximum delta of the expected change.
+        def by_at_most: (untyped maximum) -> untyped
+
+        # @api public
+        # Specifies the new value you expect.
+        def to: (untyped value) -> untyped
+
+        # @api public
+        # Specifies the original value.
+        def from: (untyped value) -> untyped
+
+        # @private
+        def matches?: (untyped event_proc) -> untyped
+
+        def does_not_match?: (untyped event_proc) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def initialize: (?untyped? receiver, ?untyped? message) { () -> untyped } -> void
+
+        def change_details: () -> untyped
+
+        def perform_change: (untyped event_proc) -> untyped
+
+        def raise_block_syntax_error: () -> untyped
+
+        def positive_failure_reason: () -> ("was not given a block" | ::String)
+
+        def negative_failure_reason: () -> ("was not given a block" | ::String)
+      end
+
+      # Used to specify a relative change.
+      # @api private
+      class ChangeRelatively < BaseMatcher
+        def initialize: (untyped change_details, untyped expected_delta, untyped relativity) { () -> untyped } -> void
+
+        # @private
+        def failure_message: () -> ::String
+
+        # @private
+        def matches?: (untyped event_proc) -> untyped
+
+        # @private
+        def does_not_match?: (untyped _event_proc) -> untyped
+
+        # @private
+        def description: () -> ::String
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def failure_reason: () -> ("was not given a block" | ::String)
+      end
+
+      # @api private
+      # Base class for specifying a change from and/or to specific values.
+      class SpecificValuesChange < BaseMatcher
+        # @private
+        MATCH_ANYTHING: untyped
+
+        def initialize: (untyped change_details, untyped from, untyped to) -> void
+
+        # @private
+        def matches?: (untyped event_proc) -> untyped
+
+        # @private
+        def description: () -> ::String
+
+        # @private
+        def failure_message: () -> untyped
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def perform_change: (untyped event_proc) -> untyped
+
+        def matches_after?: () -> untyped
+
+        def before_value_failure: () -> ::String
+
+        def after_value_failure: () -> ::String
+
+        def did_not_change_failure: () -> ::String
+
+        def did_change_failure: () -> ::String
+
+        def not_given_a_block_failure: () -> ::String
+      end
+
+      # @api private
+      # Used to specify a change from a specific value
+      # (and, optionally, to a specific value).
+      class ChangeFromValue < SpecificValuesChange
+        def initialize: (untyped change_details, untyped expected_before) -> void
+
+        # @api public
+        # Specifies the new value you expect.
+        def to: (untyped value) -> untyped
+
+        # @private
+        def does_not_match?: (untyped event_proc) -> untyped
+
+        # @private
+        def failure_message_when_negated: () -> untyped
+
+        private
+
+        def change_description: () -> ::String
+      end
+
+      # @api private
+      # Used to specify a change to a specific value
+      # (and, optionally, from a specific value).
+      class ChangeToValue < SpecificValuesChange
+        def initialize: (untyped change_details, untyped expected_after) -> void
+
+        # @api public
+        # Specifies the original value.
+        def from: (untyped value) -> untyped
+
+        # @private
+        def does_not_match?: (untyped _event_proc) -> untyped
+
+        private
+
+        def change_description: () -> ::String
+      end
+
+      # @private
+      # Encapsulates the details of the before/after values.
+      #
+      # Note that this class exposes the `actual_after` value, to allow the
+      # matchers above to derive failure messages, etc from the value on demand
+      # as needed, but it intentionally does _not_ expose the `actual_before`
+      # value. Some usages of the `change` matcher mutate a specific object
+      # returned by the value proc, which means that failure message snippets,
+      # etc, which are derived from the `before` value may not be accurate if
+      # they are lazily computed as needed. We must pre-compute them before
+      # applying the change in the `expect` block. To ensure that all `change`
+      # matchers do that properly, we do not expose the `actual_before` value.
+      # Instead, matchers must pass a block to `perform_change`, which yields
+      # the `actual_before` value before applying the change.
+      class ChangeDetails
+        attr_reader actual_after: untyped
+
+        UNDEFINED: untyped
+
+        def initialize: (untyped matcher_name, ?untyped? receiver, ?untyped? message) { () -> untyped } -> void
+
+        def value_representation: () -> untyped
+
+        def perform_change: (untyped event_proc) { (untyped) -> untyped } -> (false | true)
+
+        def changed?: () -> untyped
+
+        def actual_delta: () -> untyped
+
+        private
+
+        def evaluate_value_proc: () -> untyped
+
+        def message_notation: (untyped receiver, untyped message) -> untyped
+
+        def extract_value_block_snippet: () -> (nil | untyped)
+
+        def extract_value_block_snippet: () -> nil
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `match`.
+      # Not intended to be instantiated directly.
+      class Match < BaseMatcher
+        def initialize: (untyped expected) -> void
+
+        # @api private
+        # @return [String]
+        def description: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> true
+
+        # Used to specify the captures we match against
+        # @return [self]
+        def with_captures: (*untyped captures) -> untyped
+
+        private
+
+        def match: (untyped expected, untyped actual) -> (untyped | true | false)
+
+        def can_safely_call_match?: (untyped expected, untyped actual) -> (false | untyped)
+
+        def match_captures: (untyped expected, untyped actual) -> untyped
+      end
+
+      # @api private
+      # Used to wrap match data and make it reliable for 1.8.7
+      class ReliableMatchData
+        def initialize: (untyped match_data) -> void
+
+        # @api private
+        # Returns match data names for named captures
+        # @return Array
+        def names: () -> ::Array[untyped]
+
+        # @api private
+        # Returns match data names for named captures
+        # @return Array
+        def names: () -> untyped
+
+        # @api private
+        # returns an array of captures from the match data
+        # @return Array
+        def captures: () -> untyped
+
+        attr_reader match_data: untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `output`.
+      # Not intended to be instantiated directly.
+      class Output < BaseMatcher
+        def initialize: (untyped expected) -> void
+
+        def matches?: (untyped block) -> (false | untyped)
+
+        def does_not_match?: (untyped block) -> untyped
+
+        # @api public
+        # Tells the matcher to match against stdout.
+        # Works only when the main Ruby process prints to stdout
+        def to_stdout: () -> untyped
+
+        # @api public
+        # Tells the matcher to match against stderr.
+        # Works only when the main Ruby process prints to stderr
+        def to_stderr: () -> untyped
+
+        # @api public
+        # Tells the matcher to match against stdout.
+        # Works when subprocesses print to stdout as well.
+        # This is significantly (~30x) slower than `to_stdout`
+        def to_stdout_from_any_process: () -> untyped
+
+        # @api public
+        # Tells the matcher to match against stderr.
+        # Works when subprocesses print to stderr as well.
+        # This is significantly (~30x) slower than `to_stderr`
+        def to_stderr_from_any_process: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> true
+
+        # @api private
+        # Indicates this matcher matches against a block.
+        # @return [True]
+        def supports_block_expectations?: () -> true
+
+        # @api private
+        # Indicates this matcher matches against a block only.
+        # @return [False]
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def captured?: () -> untyped
+
+        def positive_failure_reason: () -> ("was not a block" | ::String | "did not")
+
+        def negative_failure_reason: () -> ("was not a block" | ::String)
+
+        def actual_output_description: () -> ("nothing" | untyped)
+      end
+
+      # @private
+      module NullCapture
+        def self.name: () -> "some stream"
+
+        def self.capture: (untyped _block) -> untyped
+      end
+
+      # @private
+      module CaptureStdout
+        def self.name: () -> "stdout"
+
+        def self.capture: (untyped block) -> untyped
+      end
+
+      # @private
+      module CaptureStderr
+        def self.name: () -> "stderr"
+
+        def self.capture: (untyped block) -> untyped
+      end
+
+      # @private
+      class CaptureStreamToTempfile < 
+        def capture: (untyped block) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `be_an_instance_of`.
+      # Not intended to be instantiated directly.
+      class BeAnInstanceOf < BaseMatcher
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def match: (untyped expected, untyped actual) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `have_attributes`.
+      # Not intended to be instantiated directly.
+      class HaveAttributes < BaseMatcher
+        # @private
+        attr_reader respond_to_failed: untyped
+
+        def initialize: (untyped expected) -> void
+
+        # @private
+        def actual: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def matches?: (untyped actual) -> (false | untyped)
+
+        # @api private
+        # @return [Boolean]
+        def does_not_match?: (untyped actual) -> (false | untyped)
+
+        # @api private
+        # @return [String]
+        def description: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        private
+
+        def cache_all_values: () -> untyped
+
+        def perform_match: (untyped predicate) -> untyped
+
+        def actual_has_attribute?: (untyped attribute_key, untyped attribute_value) -> untyped
+
+        def respond_to_attributes?: () -> untyped
+
+        def respond_to_matcher: () -> untyped
+
+        def respond_to_failure_message_or: () { () -> untyped } -> untyped
+
+        def formatted_values: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `be_truthy`.
+      # Not intended to be instantiated directly.
+      class BeTruthy < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        private
+
+        def match: (untyped _, untyped actual) -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `be_falsey`.
+      # Not intended to be instantiated directly.
+      class BeFalsey < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        private
+
+        def match: (untyped _, untyped actual) -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `be_nil`.
+      # Not intended to be instantiated directly.
+      class BeNil < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        private
+
+        def match: (untyped _, untyped actual) -> untyped
+      end
+
+      # @private
+      module BeHelpers
+        private
+
+        def args_to_s: () -> untyped
+
+        def parenthesize: (untyped string) -> ::String
+
+        def inspected_args: () -> untyped
+
+        def expected_to_sentence: () -> untyped
+
+        def args_to_sentence: () -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `be`.
+      # Not intended to be instantiated directly.
+      class Be < BaseMatcher
+        include BeHelpers
+
+        def initialize: (*untyped args) -> void
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        private
+
+        def match: (untyped _, untyped actual) -> untyped
+      end
+
+      # @api private
+      # Provides the implementation of `be <operator> value`.
+      # Not intended to be instantiated directly.
+      class BeComparedTo < BaseMatcher
+        include BeHelpers
+
+        def initialize: (untyped operand, untyped operator) -> void
+
+        def matches?: (untyped actual) -> untyped
+
+        def does_not_match?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def perform_match: (untyped actual) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @private
+      # Object that is yielded to `expect` when one of the
+      # yield matchers is used. Provides information about
+      # the yield behavior of the object-under-test.
+      class YieldProbe
+        def self.probe: (untyped block) { () -> untyped } -> untyped
+
+        attr_accessor num_yields: untyped
+
+        attr_accessor yielded_args: untyped
+
+        def initialize: (untyped block) { () -> untyped } -> void
+
+        def has_block?: () -> untyped
+
+        def probe: () -> untyped
+
+        def to_proc: () -> untyped
+
+        def single_yield_args: () -> untyped
+
+        def yielded_once?: (untyped matcher_name) -> untyped
+
+        def assert_used!: () -> (nil | untyped)
+
+        def assert_valid_expect_block!: () -> (nil | untyped)
+
+        # :nocov:
+        # On 1.8.7, `lambda { }.arity` and `lambda { |*a| }.arity` both return -1,
+        # so we can't distinguish between accepting no args and an arg splat.
+        # It's OK to skip, this, though; it just provides a nice error message
+        # when the user forgets to accept an arg in their block. They'll still get
+        # the `assert_used!` error message from above, which is sufficient.
+        def assert_valid_expect_block!: () -> nil
+      end
+
+      # @api private
+      # Provides the implementation for `yield_control`.
+      # Not intended to be instantiated directly.
+      class YieldControl < BaseMatcher
+        include CountExpectation
+
+        # @private
+        def matches?: (untyped block) -> (false | untyped)
+
+        # @private
+        def does_not_match?: (untyped block) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def failure_reason: () -> (" but was not a block" | ::String | untyped)
+      end
+
+      # @api private
+      # Provides the implementation for `yield_with_no_args`.
+      # Not intended to be instantiated directly.
+      class YieldWithNoArgs < BaseMatcher
+        # @private
+        def matches?: (untyped block) -> (false | untyped)
+
+        # @private
+        def does_not_match?: (untyped block) -> untyped
+
+        # @private
+        def failure_message: () -> ::String
+
+        # @private
+        def failure_message_when_negated: () -> ::String
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def positive_failure_reason: () -> ("was not a block" | "did not yield" | ::String)
+
+        def negative_failure_reason: () -> ("was not a block" | "did")
+      end
+
+      # @api private
+      # Provides the implementation for `yield_with_args`.
+      # Not intended to be instantiated directly.
+      class YieldWithArgs < BaseMatcher
+        def initialize: (*untyped args) -> void
+
+        # @private
+        def matches?: (untyped block) -> (false | untyped)
+
+        # @private
+        def does_not_match?: (untyped block) -> untyped
+
+        # @private
+        def failure_message: () -> ::String
+
+        # @private
+        def failure_message_when_negated: () -> ::String
+
+        # @private
+        def description: () -> untyped
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def positive_failure_reason: () -> ("was not a block" | "did not yield" | untyped)
+
+        def expected_arg_description: () -> untyped
+
+        def negative_failure_reason: () -> untyped
+
+        def args_currently_match?: () -> untyped
+
+        def all_args_match?: () -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `yield_successive_args`.
+      # Not intended to be instantiated directly.
+      class YieldSuccessiveArgs < BaseMatcher
+        def initialize: (*untyped args) -> void
+
+        # @private
+        def matches?: (untyped block) -> (false | untyped)
+
+        def does_not_match?: (untyped block) -> untyped
+
+        # @private
+        def failure_message: () -> ::String
+
+        # @private
+        def failure_message_when_negated: () -> ::String
+
+        # @private
+        def description: () -> ::String
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        private
+
+        def expected_arg_description: () -> untyped
+
+        def positive_failure_reason: () -> ("was not a block" | ::String)
+
+        def negative_failure_reason: () -> ("was not a block" | ::String)
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for dynamic predicate matchers.
+      # Not intended to be inherited directly.
+      class DynamicPredicate < BaseMatcher
+        include BeHelpers
+
+        def initialize: (untyped method_name, *untyped args) { () -> untyped } -> void
+
+        # @private
+        def matches?: (untyped actual) { () -> untyped } -> untyped
+
+        # @private
+        def does_not_match?: (untyped actual) { () -> untyped } -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def predicate_accessible?: () -> untyped
+
+        # :nocov:
+        def private_predicate?: () -> untyped
+
+        def predicate_result: () -> untyped
+
+        def predicate_method_name: () -> untyped
+
+        def predicate_matches?: (?bool value) -> untyped
+
+        def root: () -> untyped
+
+        def method_description: () -> untyped
+
+        def failure_message_expecting: (untyped value) -> untyped
+
+        def expectation_of: (untyped value) -> untyped
+
+        def validity_message: () -> (nil | ::String)
+
+        def failure_to_respond_explanation: () -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `has_<predicate>`.
+      # Not intended to be instantiated directly.
+      class Has < DynamicPredicate
+        # :nodoc:
+        REGEX: untyped
+
+        private
+
+        def predicate: () -> untyped
+      end
+
+      # @api private
+      # Provides the implementation of `be_<predicate>`.
+      # Not intended to be instantiated directly.
+      class BePredicate < DynamicPredicate
+        # :nodoc:
+        REGEX: untyped
+
+        private
+
+        def predicate: () -> untyped
+
+        def predicate_method_name: () -> untyped
+
+        def failure_to_respond_explanation: () -> untyped
+
+        def predicate_accessible?: () -> untyped
+
+        def present_tense_predicate: () -> ::Symbol
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Abstract class to implement `once`, `at_least` and other
+      # count constraints.
+      module CountExpectation
+        # @api public
+        # Specifies that the method is expected to match once.
+        def once: () -> untyped
+
+        # @api public
+        # Specifies that the method is expected to match twice.
+        def twice: () -> untyped
+
+        # @api public
+        # Specifies that the method is expected to match thrice.
+        def thrice: () -> untyped
+
+        # @api public
+        # Specifies that the method is expected to match the given number of times.
+        def exactly: (untyped number) -> untyped
+
+        # @api public
+        # Specifies the maximum number of times the method is expected to match
+        def at_most: (untyped number) -> untyped
+
+        # @api public
+        # Specifies the minimum number of times the method is expected to match
+        def at_least: (untyped number) -> untyped
+
+        # @api public
+        # No-op. Provides syntactic sugar.
+        def times: () -> untyped
+
+        # @api private
+        attr_reader count_expectation_type: untyped
+
+        # @api private
+        attr_reader expected_count: untyped
+
+        private
+
+        def cover?: (untyped count, untyped number) -> untyped
+
+        def expected_count_matches?: (untyped actual_count) -> untyped
+
+        def has_expected_count?: () -> untyped
+
+        def set_expected_count: (untyped relativity, untyped n) -> untyped
+
+        def raise_impossible_count_expectation: (untyped count) -> untyped
+
+        def raise_unsupported_count_expectation: () -> untyped
+
+        def count_constraint_to_number: (untyped n) -> untyped
+
+        def unsupported_count_expectation?: (untyped relativity) -> (true | untyped)
+
+        def count_expectation_description: () -> ::String
+
+        def count_failure_reason: (untyped action) -> ::String
+
+        def human_readable_expectation_type: () -> untyped
+
+        def human_readable_count: (untyped count) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Base class for the `end_with` and `start_with` matchers.
+      # Not intended to be instantiated directly.
+      class StartOrEndWith < BaseMatcher
+        def initialize: (*untyped expected) -> void
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> (untyped | ::String)
+
+        private
+
+        def match: (untyped _expected, untyped actual) -> (false | true | untyped)
+
+        def subsets_comparable?: () -> (false | untyped)
+      end
+
+      # For RSpec 3.1, the base class was named `StartAndEndWith`. For SemVer reasons,
+      # we still provide this constant until 4.0.
+      # @deprecated Use StartOrEndWith instead.
+      # @private
+      StartAndEndWith: untyped
+
+      # @api private
+      # Provides the implementation for `start_with`.
+      # Not intended to be instantiated directly.
+      class StartWith < StartOrEndWith
+        private
+
+        def subset_matches?: () -> untyped
+
+        def element_matches?: () -> untyped
+      end
+
+      # @api private
+      # Provides the implementation for `end_with`.
+      # Not intended to be instantiated directly.
+      class EndWith < StartOrEndWith
+        private
+
+        def subset_matches?: () -> untyped
+
+        def element_matches?: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for operator matchers.
+      # Not intended to be instantiated directly.
+      # Only available for use with `should`.
+      class OperatorMatcher
+        # @private
+        def self.registry: () -> untyped
+
+        # @private
+        def self.register: (untyped klass, untyped operator, untyped matcher) -> untyped
+
+        # @private
+        def self.unregister: (untyped klass, untyped operator) -> untyped
+
+        # @private
+        def self.get: (untyped klass, untyped operator) -> (untyped | nil)
+
+        def initialize: (untyped actual) -> void
+
+        # @private
+        def self.use_custom_matcher_or_delegate: (untyped operator) -> untyped
+
+        # @private
+        def fail_with_message: (untyped message) -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def has_non_generic_implementation_of?: (untyped op) -> untyped
+
+        def eval_match: (untyped actual, untyped operator, untyped expected) -> untyped
+      end
+
+      # @private
+      # Handles operator matcher for `should`.
+      class PositiveOperatorMatcher < OperatorMatcher
+        def __delegate_operator: (untyped actual, untyped operator, untyped expected) -> untyped
+      end
+
+      # @private
+      # Handles operator matcher for `should_not`.
+      class NegativeOperatorMatcher < OperatorMatcher
+        def __delegate_operator: (untyped actual, untyped operator, untyped expected) -> (false | untyped)
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      #
+      # Used _internally_ as a base class for matchers that ship with
+      # rspec-expectations and rspec-rails.
+      #
+      # ### Warning:
+      #
+      # This class is for internal use, and subject to change without notice.
+      # We strongly recommend that you do not base your custom matchers on this
+      # class. If/when this changes, we will announce it and remove this warning.
+      class BaseMatcher
+        include RSpec::Matchers::Composable
+
+        # @api private
+        # Used to detect when no arg is passed to `initialize`.
+        # `nil` cannot be used because it's a valid value to pass.
+        UNDEFINED: untyped
+
+        # @private
+        attr_reader actual: untyped
+
+        # @private
+        attr_reader expected: untyped
+
+        # @private
+        attr_reader rescued_exception: untyped
+
+        # @private
+        attr_writer matcher_name: untyped
+
+        def initialize: (?untyped expected) -> void
+
+        # @api private
+        # Indicates if the match is successful. Delegates to `match`, which
+        # should be defined on a subclass. Takes care of consistently
+        # initializing the `actual` attribute.
+        def matches?: (untyped actual) -> untyped
+
+        # @api private
+        # Used to wrap a block of code that will indicate failure by
+        # raising one of the named exceptions.
+        #
+        # This is used by rspec-rails for some of its matchers that
+        # wrap rails' assertions.
+        def match_unless_raises: (*untyped exceptions) { () -> untyped } -> untyped
+
+        # @api private
+        # Generates a description using {EnglishPhrasing}.
+        # @return [String]
+        def description: () -> untyped
+
+        # @api private
+        # Matchers are not diffable by default. Override this to make your
+        # subclass diffable.
+        def diffable?: () -> false
+
+        # @api private
+        # Most matchers are value matchers (i.e. meant to work with `expect(value)`)
+        # rather than block matchers (i.e. meant to work with `expect { }`), so
+        # this defaults to false. Block matchers must override this to return true.
+        def supports_block_expectations?: () -> false
+
+        # @private
+        def supports_value_expectations?: () -> true
+
+        # @api private
+        def expects_call_stack_jump?: () -> false
+
+        # @private
+        def expected_formatted: () -> untyped
+
+        # @private
+        def actual_formatted: () -> untyped
+
+        # @private
+        def self.matcher_name: () -> untyped
+
+        # @private
+        def matcher_name: () -> untyped
+
+        # @private
+        # Borrowed from ActiveSupport.
+        def self.underscore: (untyped camel_cased_word) -> untyped
+
+        private
+
+        def assert_ivars: (*untyped expected_ivars) -> (nil | untyped)
+
+        # :nocov:
+        def present_ivars: () -> untyped
+
+        alias present_ivars instance_variables
+
+        # @private
+        module HashFormatting
+          # `{ :a => 5, :b => 2 }.inspect` produces:
+          #
+          #     {:a=>5, :b=>2}
+          #
+          # ...but it looks much better as:
+          #
+          #     {:a => 5, :b => 2}
+          #
+          # This is idempotent and safe to run on a string multiple times.
+          def self?.improve_hash_formatting: (untyped inspect_string) -> untyped
+        end
+
+        include HashFormatting
+
+        # @api private
+        # Provides default implementations of failure messages, based on the `description`.
+        module DefaultFailureMessages
+          # @api private
+          # Provides a good generic failure message. Based on `description`.
+          # When subclassing, if you are not satisfied with this failure message
+          # you often only need to override `description`.
+          # @return [String]
+          def failure_message: () -> ::String
+
+          # @api private
+          # Provides a good generic negative failure message. Based on `description`.
+          # When subclassing, if you are not satisfied with this failure message
+          # you often only need to override `description`.
+          # @return [String]
+          def failure_message_when_negated: () -> ::String
+
+          # @private
+          def self.has_default_failure_messages?: (untyped matcher) -> untyped
+        end
+
+        include DefaultFailureMessages
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      class Include < BaseMatcher
+        # @api private
+        # Provides the implementation for `include`.
+        # Not intended to be instantiated directly.
+        # rubocop:disable Metrics/ClassLength
+        include CountExpectation
+
+        # @private
+        attr_reader expecteds: untyped
+
+        # @api private
+        def initialize: (*untyped expecteds) -> void
+
+        # @api private
+        # @return [Boolean]
+        def matches?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def does_not_match?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> untyped
+
+        # @api private
+        # @return [Array, Hash]
+        def expected: () -> untyped
+
+        private
+
+        def check_actual?: (untyped actual) -> untyped
+
+        def check_expected_count?: () -> (false | true)
+
+        def format_failure_message: (untyped preposition) { () -> untyped } -> untyped
+
+        def readable_list_of: (untyped items) -> untyped
+
+        def perform_match: () { () -> untyped } -> untyped
+
+        def excluded_from_actual: () { (untyped) -> untyped } -> (::Array[untyped] | untyped)
+
+        def comparing_hash_to_a_subset?: (untyped expected_item) -> untyped
+
+        def actual_hash_includes?: (untyped expected_key, untyped expected_value) -> (false | untyped)
+
+        def comparing_hash_keys?: (untyped expected_item) -> untyped
+
+        def actual_hash_has_key?: (untyped expected_key) -> untyped
+
+        def actual_collection_includes?: (untyped expected_item) -> (true | false | untyped)
+
+        def count_enumerable: (untyped expected_item) -> untyped
+
+        def count_inclusions: () -> untyped
+
+        def diff_would_wrongly_highlight_matched_item?: () -> (false | untyped)
+
+        def convert_to_hash?: (untyped obj) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # rubocop:disable Metrics/ClassLength
+      # @api private
+      # Provides the implementation for `contain_exactly` and `match_array`.
+      # Not intended to be instantiated directly.
+      class ContainExactly < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        def matches?: (untyped actual) -> untyped
+
+        private
+
+        def generate_failure_message: () -> untyped
+
+        def expected_collection_line: () -> untyped
+
+        def actual_collection_line: () -> untyped
+
+        def missing_elements_line: () -> untyped
+
+        def extra_elements_line: () -> untyped
+
+        def describe_collection: (untyped collection, ?bool surface_descriptions) -> untyped
+
+        def message_line: (untyped prefix, untyped collection, ?bool surface_descriptions) -> untyped
+
+        def match: (untyped _expected, untyped _actual) -> (false | untyped)
+
+        # This cannot always work (e.g. when dealing with unsortable items,
+        # or matchers as expected items), but it's practically free compared to
+        # the slowness of the full matching algorithm, and in common cases this
+        # works, so it's worth a try.
+        def match_when_sorted?: () -> untyped
+
+        def convert_actual_to_an_array: () -> untyped
+
+        def safe_sort: (untyped array) -> untyped
+
+        def to_a_disallowed?: (untyped object) -> untyped
+
+        def missing_items: () -> untyped
+
+        def extra_items: () -> untyped
+
+        def best_solution: () -> untyped
+
+        def pairings_maximizer: () -> untyped
+
+        # Once we started supporting composing matchers, the algorithm for this matcher got
+        # much more complicated. Consider this expression:
+        #
+        #   expect(["fool", "food"]).to contain_exactly(/foo/, /fool/)
+        #
+        # This should pass (because we can pair /fool/ with "fool" and /foo/ with "food"), but
+        # the original algorithm used by this matcher would pair the first elements it could
+        # (/foo/ with "fool"), which would leave /fool/ and "food" unmatched.  When we have
+        # an expected element which is a matcher that matches a superset of actual items
+        # compared to another expected element matcher, we need to consider every possible pairing.
+        #
+        # This class is designed to maximize the number of actual/expected pairings -- or,
+        # conversely, to minimize the number of unpaired items. It's essentially a brute
+        # force solution, but with a few heuristics applied to reduce the size of the
+        # problem space:
+        #
+        #   * Any items which match none of the items in the other list are immediately
+        #     placed into the `unmatched_expected_indexes` or `unmatched_actual_indexes` array.
+        #     The extra items and missing items in the matcher failure message are derived
+        #     from these arrays.
+        #   * Any items which reciprocally match only each other are paired up and not
+        #     considered further.
+        #
+        # What's left is only the items which match multiple items from the other list
+        # (or vice versa). From here, it performs a brute-force depth-first search,
+        # looking for a solution which pairs all elements in both lists, or, barring that,
+        # that produces the fewest unmatched items.
+        #
+        # @private
+        class PairingsMaximizer
+          # @private
+          Solution: untyped
+
+          attr_reader expected_to_actual_matched_indexes: untyped
+
+          attr_reader actual_to_expected_matched_indexes: untyped
+
+          attr_reader solution: untyped
+
+          def initialize: (untyped expected_to_actual_matched_indexes, untyped actual_to_expected_matched_indexes) -> void
+
+          def find_best_solution: () -> untyped
+
+          private
+
+          # @private
+          # Starting solution that is worse than any other real solution.
+          NullSolution: untyped
+
+          def categorize_indexes: (untyped indexes_to_categorize, untyped other_indexes) -> untyped
+
+          def reciprocal_single_match?: (untyped matches, untyped index, untyped other_list) -> (false | untyped)
+
+          def best_solution_for_pairing: (untyped expected_index, untyped actual_index) -> untyped
+
+          def apply_pairing_to: (untyped indeterminates, untyped original_matches, untyped other_list_index) -> untyped
+        end
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `be_a_kind_of`.
+      # Not intended to be instantiated directly.
+      class BeAKindOf < BaseMatcher
+        private
+
+        def match: (untyped expected, untyped actual) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Base class for `and` and `or` compound matchers.
+      class Compound < BaseMatcher
+        # @private
+        attr_reader matcher_1: untyped
+
+        # @private
+        attr_reader matcher_2: untyped
+
+        # @private
+        attr_reader evaluator: untyped
+
+        def initialize: (untyped matcher_1, untyped matcher_2) -> void
+
+        # @private
+        def does_not_match?: (untyped _actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        # @api private
+        def supports_block_expectations?: () -> untyped
+
+        # @api private
+        def supports_value_expectations?: () -> untyped
+
+        # @api private
+        def expects_call_stack_jump?: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> untyped
+
+        # @api private
+        # @return [RSpec::Matchers::ExpectedsForMultipleDiffs]
+        def expected: () -> (nil | untyped)
+
+        def diffable_matcher_list: () -> untyped
+
+        private
+
+        def initialize_copy: (untyped other) -> untyped
+
+        def match: (untyped _expected, untyped actual) -> untyped
+
+        def indent_multiline_message: (untyped message) -> untyped
+
+        def compound_failure_message: () -> ::String
+
+        def matcher_1_matches?: () -> untyped
+
+        def matcher_2_matches?: () -> untyped
+
+        def matcher_supports_block_expectations?: (untyped matcher) -> untyped
+
+        def matcher_supports_value_expectations?: (untyped matcher) -> untyped
+
+        def matcher_is_diffable?: (untyped matcher) -> untyped
+
+        def diffable_matcher_list_for: (untyped matcher) -> (::Array[untyped] | untyped)
+
+        # For value expectations, we can evaluate the matchers sequentially.
+        class SequentialEvaluator
+          def initialize: (untyped actual) -> void
+
+          def matcher_matches?: (untyped matcher) -> untyped
+        end
+
+        # Normally, we evaluate the matching sequentially. For an expression like
+        # `expect(x).to foo.and bar`, this becomes:
+        #
+        #   expect(x).to foo
+        #   expect(x).to bar
+        #
+        # For block expectations, we need to nest them instead, so that
+        # `expect { x }.to foo.and bar` becomes:
+        #
+        #   expect {
+        #     expect { x }.to foo
+        #   }.to bar
+        #
+        # This is necessary so that the `expect` block is only executed once.
+        class NestedEvaluator
+          def initialize: (untyped actual, untyped matcher_1, untyped matcher_2) -> void
+
+          def matcher_matches?: (untyped matcher) -> untyped
+
+          private
+
+          # Some block matchers (such as `yield_xyz`) pass args to the `expect` block.
+          # When such a matcher is used as the outer matcher, we need to forward the
+          # the args on to the `expect` block.
+          def inner_matcher_block: (untyped outer_args) -> untyped
+
+          # For a matcher like `raise_error` or `throw_symbol`, where the block will jump
+          # up the call stack, we need to order things so that it is the inner matcher.
+          # For example, we need it to be this:
+          #
+          #   expect {
+          #     expect {
+          #       x += 1
+          #       raise "boom"
+          #     }.to raise_error("boom")
+          #   }.to change { x }.by(1)
+          #
+          # ...rather than:
+          #
+          #   expect {
+          #     expect {
+          #       x += 1
+          #       raise "boom"
+          #     }.to change { x }.by(1)
+          #   }.to raise_error("boom")
+          #
+          # In the latter case, the after-block logic in the `change` matcher would never
+          # get executed because the `raise "boom"` line would jump to the `rescue` in the
+          # `raise_error` logic, so only the former case will work properly.
+          #
+          # This method figures out which matcher should be the inner matcher and which
+          # should be the outer matcher.
+          def order_block_matchers: () -> untyped
+
+          def self.matcher_expects_call_stack_jump?: (untyped matcher) -> untyped
+        end
+
+        # @api public
+        # Matcher used to represent a compound `and` expectation.
+        class And < 
+          # @api private
+          # @return [String]
+          def failure_message: () -> untyped
+
+          private
+
+          def match: () -> untyped
+
+          def conjunction: () -> "and"
+        end
+
+        # @api public
+        # Matcher used to represent a compound `or` expectation.
+        class Or < 
+          # @api private
+          # @return [String]
+          def failure_message: () -> untyped
+
+          private
+
+          def match: () -> untyped
+
+          def conjunction: () -> "or"
+        end
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `throw_symbol`.
+      # Not intended to be instantiated directly.
+      class ThrowSymbol
+        include Composable
+
+        def initialize: (?untyped? expected_symbol, ?untyped? expected_arg) -> void
+
+        # rubocop:disable Metrics/MethodLength
+        # @private
+        def matches?: (untyped given_proc) -> (false | untyped)
+
+        def does_not_match?: (untyped given_proc) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        # @api private
+        # Indicates this matcher matches against a block.
+        # @return [True]
+        def supports_block_expectations?: () -> true
+
+        # @api private
+        def supports_value_expectations?: () -> false
+
+        # @api private
+        def expects_call_stack_jump?: () -> true
+
+        private
+
+        def actual_result: () -> ("but was not a block" | ::String)
+
+        def expected: (?::String symbol_desc) -> untyped
+
+        def caught: () -> untyped
+
+        def throw_description: (untyped symbol, untyped arg) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `eq`.
+      # Not intended to be instantiated directly.
+      class Eq < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> true
+
+        private
+
+        def match: (untyped expected, untyped actual) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `satisfy`.
+      # Not intended to be instantiated directly.
+      class Satisfy < BaseMatcher
+        def initialize: (?untyped? description) { () -> untyped } -> void
+
+        # @private
+        def matches?: (untyped actual) { () -> untyped } -> untyped
+
+        # @private
+        def description: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        private
+
+        def block_representation: () -> untyped
+
+        def extract_block_snippet: () -> (nil | untyped)
+
+        def block_representation: () -> "block"
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `be_between`.
+      # Not intended to be instantiated directly.
+      class BeBetween < BaseMatcher
+        def initialize: (untyped min, untyped max) -> void
+
+        # @api public
+        # Makes the between comparison inclusive.
+        #
+        # @example
+        #   expect(3).to be_between(2, 3).inclusive
+        #
+        # @note The matcher is inclusive by default; this simply provides
+        #       a way to be more explicit about it.
+        def inclusive: () -> untyped
+
+        # @api public
+        # Makes the between comparison exclusive.
+        #
+        # @example
+        #   expect(3).to be_between(2, 4).exclusive
+        def exclusive: () -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def matches?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def comparable?: () -> untyped
+
+        def not_comparable_clause: () -> untyped
+
+        def compare: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `all`.
+      # Not intended to be instantiated directly.
+      class All < BaseMatcher
+        # @private
+        attr_reader matcher: untyped
+
+        # @private
+        attr_reader failed_objects: untyped
+
+        def initialize: (untyped matcher) -> void
+
+        # @private
+        def does_not_match?: (untyped _actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> (::String | untyped)
+
+        # @api private
+        # @return [String]
+        def description: () -> untyped
+
+        private
+
+        def match: (untyped _expected, untyped _actual) -> (false | untyped)
+
+        def index_failed_objects: () -> untyped
+
+        def failure_message_for_item: (untyped index, untyped failure_message) -> untyped
+
+        def add_new_line_if_needed: (untyped message) -> untyped
+
+        def indent_multiline_message: (untyped message) -> untyped
+
+        def initialize_copy: (untyped other) -> untyped
+
+        def iterable?: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `be_within`.
+      # Not intended to be instantiated directly.
+      class BeWithin < BaseMatcher
+        def initialize: (untyped delta) -> void
+
+        # @api public
+        # Sets the expected value.
+        def of: (untyped expected) -> untyped
+
+        # @api public
+        # Sets the expected value, and makes the matcher do
+        # a percent comparison.
+        def percent_of: (untyped expected) -> untyped
+
+        # @private
+        def matches?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def numeric?: () -> untyped
+
+        def needs_expected: () -> untyped
+
+        def not_numeric_clause: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `respond_to`.
+      # Not intended to be instantiated directly.
+      class RespondTo < BaseMatcher
+        def initialize: (*untyped names) -> void
+
+        # @api public
+        # Specifies the number of expected arguments.
+        #
+        # @example
+        #   expect(obj).to respond_to(:message).with(3).arguments
+        def with: (untyped n) -> untyped
+
+        # @api public
+        # Specifies keyword arguments, if any.
+        #
+        # @example
+        #   expect(obj).to respond_to(:message).with_keywords(:color, :shape)
+        # @example with an expected number of arguments
+        #   expect(obj).to respond_to(:message).with(3).arguments.and_keywords(:color, :shape)
+        def with_keywords: (*untyped keywords) -> untyped
+
+        alias and_keywords with_keywords
+
+        # @api public
+        # Specifies that the method accepts any keyword, i.e. the method has
+        #   a splatted keyword parameter of the form **kw_args.
+        #
+        # @example
+        #   expect(obj).to respond_to(:message).with_any_keywords
+        def with_any_keywords: () -> untyped
+
+        alias and_any_keywords with_any_keywords
+
+        # @api public
+        # Specifies that the number of arguments has no upper limit, i.e. the
+        #   method has a splatted parameter of the form *args.
+        #
+        # @example
+        #   expect(obj).to respond_to(:message).with_unlimited_arguments
+        def with_unlimited_arguments: () -> untyped
+
+        alias and_unlimited_arguments with_unlimited_arguments
+
+        # @api public
+        # No-op. Intended to be used as syntactic sugar when using `with`.
+        #
+        # @example
+        #   expect(obj).to respond_to(:message).with(3).arguments
+        def argument: () -> untyped
+
+        alias arguments argument
+
+        # @private
+        def matches?: (untyped actual) -> untyped
+
+        # @private
+        def does_not_match?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> untyped
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        # @api private
+        # Used by other matchers to suppress a check
+        def ignoring_method_signature_failure!: () -> untyped
+
+        private
+
+        def find_failing_method_names: (untyped actual, untyped filter_method) -> untyped
+
+        def matches_arity?: (untyped actual, untyped name) -> untyped
+
+        def with_arity: () -> untyped
+
+        def with_arity_string: () -> ::String
+
+        def with_keywords_string: () -> ::String
+
+        def pp_names: () -> untyped
+
+        # @private
+        class ArityCheck
+          def initialize: (untyped expected_arity, untyped expected_keywords, untyped arbitrary_keywords, untyped unlimited_arguments) -> void
+
+          def matches?: (untyped actual, untyped name) -> (true | untyped)
+
+          def verifier_for: (untyped actual, untyped name) -> untyped
+
+          def method_signature_for: (untyped actual, untyped name) -> untyped
+        end
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `equal`.
+      # Not intended to be instantiated directly.
+      class Equal < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> untyped
+
+        private
+
+        def match: (untyped expected, untyped actual) -> untyped
+
+        LITERAL_SINGLETONS: ::Array[true | false | nil]
+
+        def expected_is_a_literal_singleton?: () -> untyped
+
+        def actual_inspected: () -> untyped
+
+        def simple_failure_message: () -> ::String
+
+        def detailed_failure_message: () -> ::String
+
+        def inspect_object: (untyped o) -> ::String
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `exist`.
+      # Not intended to be instantiated directly.
+      class Exist < BaseMatcher
+        def initialize: (*untyped expected) -> void
+
+        # @api private
+        # @return [Boolean]
+        def matches?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [Boolean]
+        def does_not_match?: (untyped actual) -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # Simple class for memoizing actual/expected for this matcher
+        # and examining the match
+        class ExistenceTest < 
+          # @api private
+          # @return [Boolean]
+          def valid_test?: () -> untyped
+
+          # @api private
+          # @return [Boolean]
+          def actual_exists?: () -> untyped
+
+          # @api private
+          # @return [String]
+          def validity_message: () -> untyped
+
+          private
+
+          def uniq_truthy_values: () -> untyped
+
+          def existence_values: () -> untyped
+
+          def predicates: () -> untyped
+
+          def deprecated: (untyped predicate, untyped actual) -> untyped
+        end
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `eql`.
+      # Not intended to be instantiated directly.
+      class Eql < BaseMatcher
+        # @api private
+        # @return [String]
+        def failure_message: () -> ::String
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [Boolean]
+        def diffable?: () -> true
+
+        private
+
+        def match: (untyped expected, untyped actual) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `raise_error`.
+      # Not intended to be instantiated directly.
+      # rubocop:disable Metrics/ClassLength
+      # rubocop:disable Lint/RescueException
+      class RaiseError
+        include Composable
+
+        # Used as a sentinel value to be able to tell when the user did not pass an
+        # argument. We can't use `nil` for that because we need to warn when `nil` is
+        # passed in a different way. It's an Object, not a Module, since Module's `===`
+        # does not evaluate to true when compared to itself.
+        UndefinedValue: untyped
+
+        def initialize: (untyped expected_error_or_message, untyped expected_message) { () -> untyped } -> void
+
+        # @api public
+        # Specifies the expected error message.
+        def with_message: (untyped expected_message) -> untyped
+
+        # rubocop:disable Metrics/MethodLength
+        # @private
+        def matches?: (untyped given_proc, ?bool negative_expectation) { () -> untyped } -> (false | untyped)
+
+        # @private
+        def does_not_match?: (untyped given_proc) -> untyped
+
+        # @private
+        def supports_block_expectations?: () -> true
+
+        # @private
+        def supports_value_expectations?: () -> false
+
+        # @private
+        def expects_call_stack_jump?: () -> true
+
+        # @api private
+        # @return [String]
+        def failure_message: () -> untyped
+
+        # @api private
+        # @return [String]
+        def failure_message_when_negated: () -> ::String
+
+        # @api private
+        # @return [String]
+        def description: () -> ::String
+
+        private
+
+        def actual_error_message: () -> (nil | untyped)
+
+        def expectation_matched?: () -> untyped
+
+        def error_and_message_match?: () -> untyped
+
+        def block_matches?: () -> untyped
+
+        def ready_to_eval_block?: () -> untyped
+
+        def eval_block: () -> untyped
+
+        def verify_message: () -> (true | untyped)
+
+        def warn_for_negative_false_positives!: () -> (nil | untyped)
+
+        def handle_warning: (untyped message) -> untyped
+
+        def warn_about_bare_error?: () -> untyped
+
+        def warn_about_nil_error?: () -> untyped
+
+        def warn_about_bare_error!: () -> untyped
+
+        def warn_about_nil_error!: () -> untyped
+
+        def warn_about_negative_false_positive!: (untyped expression) -> untyped
+
+        def expected_error: () -> untyped
+
+        def format_backtrace: (untyped backtrace) -> untyped
+
+        def given_error: () -> (" but was not given a block" | " but nothing was raised" | untyped)
+
+        def expecting_specific_exception?: () -> untyped
+
+        def raise_message_already_set: () -> untyped
+
+        def warning: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    module BuiltIn
+      # @api private
+      # Provides the implementation for `cover`.
+      # Not intended to be instantiated directly.
+      class Cover < BaseMatcher
+        def initialize: (*untyped expected) -> void
+
+        def matches?: (untyped range) -> untyped
+
+        def does_not_match?: (untyped range) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Facilitates converting ruby objects to English phrases.
+    module EnglishPhrasing
+      # Converts a symbol into an English expression.
+      #
+      #     split_words(:banana_creme_pie) #=> "banana creme pie"
+      #
+      def self.split_words: (untyped sym) -> untyped
+
+      # @note The returned string has a leading space except
+      # when given an empty list.
+      #
+      # Converts an object (often a collection of objects)
+      # into an English list.
+      #
+      #     list(['banana', 'kiwi', 'mango'])
+      #     #=> " \"banana\", \"kiwi\", and \"mango\""
+      #
+      # Given an empty collection, returns the empty string.
+      #
+      #     list([]) #=> ""
+      #
+      def self.list: (untyped obj) -> (::String | untyped)
+
+      # Not sure why, but on travis on 1.8.7 we have gotten these warnings:
+      # lib/rspec/matchers/english_phrasing.rb:28: warning: default `to_a' will be obsolete
+      # So it appears that `Array` can trigger that (e.g. by calling `to_a` on the passed object?)
+      # So here we replace `Kernel#Array` with our own warning-free implementation for 1.8.7.
+      # @private
+      # rubocop:disable Naming/MethodName
+      def self.Array: (untyped obj) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Decorator that wraps a matcher and overrides `description`
+    # using the provided block in order to support an alias
+    # of a matcher. This is intended for use when composing
+    # matchers, so that you can use an expression like
+    # `include( a_value_within(0.1).of(3) )` rather than
+    # `include( be_within(0.1).of(3) )`, and have the corresponding
+    # description read naturally.
+    #
+    # @api private
+    class AliasedMatcher < MatcherDelegator
+      def initialize: (untyped base_matcher, untyped description_block) -> void
+
+      # Forward messages on to the wrapped matcher.
+      # Since many matchers provide a fluent interface
+      # (e.g. `a_value_within(0.1).of(3)`), we need to wrap
+      # the returned value if it responds to `description`,
+      # so that our override can be applied when it is eventually
+      # used.
+      def method_missing: () -> untyped
+
+      # Provides the description of the aliased matcher. Aliased matchers
+      # are designed to behave identically to the original matcher except
+      # for the description and failure messages. The description is different
+      # to reflect the aliased name.
+      #
+      # @api private
+      def description: () -> untyped
+
+      # Provides the failure_message of the aliased matcher. Aliased matchers
+      # are designed to behave identically to the original matcher except
+      # for the description and failure messages. The failure_message is different
+      # to reflect the aliased name.
+      #
+      # @api private
+      def failure_message: () -> untyped
+
+      # Provides the failure_message_when_negated of the aliased matcher. Aliased matchers
+      # are designed to behave identically to the original matcher except
+      # for the description and failure messages. The failure_message_when_negated is different
+      # to reflect the aliased name.
+      #
+      # @api private
+      def failure_message_when_negated: () -> untyped
+    end
+
+    # Decorator used for matchers that have special implementations of
+    # operators like `==` and `===`.
+    # @private
+    class AliasedMatcherWithOperatorSupport < AliasedMatcher
+    end
+
+    # @private
+    class AliasedNegatedMatcher < AliasedMatcher
+      def matches?: (*untyped args) { () -> untyped } -> untyped
+
+      def does_not_match?: (*untyped args) { () -> untyped } -> untyped
+
+      def failure_message: () -> untyped
+
+      def failure_message_when_negated: () -> untyped
+
+      private
+
+      DefaultFailureMessages: untyped
+
+      # For a matcher that uses the default failure messages, we prefer to
+      # use the override provided by the `description_block`, because it
+      # includes the phrasing that the user has expressed a preference for
+      # by going through the effort of defining a negated matcher.
+      #
+      # However, if the override didn't actually change anything, then we
+      # should return the opposite failure message instead -- the overriden
+      # message is going to be confusing if we return it as-is, as it represents
+      # the non-negated failure message for a negated match (or vice versa).
+      def optimal_failure_message: (untyped same, untyped inverted) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Matchers for testing RSpec matchers. Include them with:
+    #
+    #     require 'rspec/matchers/fail_matchers'
+    #     RSpec.configure do |config|
+    #       config.include RSpec::Matchers::FailMatchers
+    #     end
+    #
+    module FailMatchers
+      # Matches if an expectation fails
+      #
+      # @example
+      #   expect { some_expectation }.to fail
+      def fail: () { () -> untyped } -> untyped
+
+      # Matches if an expectation fails with the provided message
+      #
+      # @example
+      #   expect { some_expectation }.to fail_with("some failure message")
+      #   expect { some_expectation }.to fail_with(/some failure message/)
+      def fail_with: (untyped message) -> untyped
+
+      # Matches if an expectation fails including the provided message
+      #
+      # @example
+      #   expect { some_expectation }.to fail_including("portion of some failure message")
+      def fail_including: (*untyped snippets) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Container module for all built-in matchers. The matcher classes are here
+    # (rather than directly under `RSpec::Matchers`) in order to prevent name
+    # collisions, since `RSpec::Matchers` gets included into the user's namespace.
+    #
+    # Autoloading is used to delay when the matcher classes get loaded, allowing
+    # rspec-matchers to boot faster, and avoiding loading matchers the user is
+    # not using.
+    module BuiltIn
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # Defines the custom matcher DSL.
+    module DSL
+      # Defines a matcher alias. The returned matcher's `description` will be overriden
+      # to reflect the phrasing of the new name, which will be used in failure messages
+      # when passed as an argument to another matcher in a composed matcher expression.
+      #
+      # @example
+      #   RSpec::Matchers.alias_matcher :a_list_that_sums_to, :sum_to
+      #   sum_to(3).description # => "sum to 3"
+      #   a_list_that_sums_to(3).description # => "a list that sums to 3"
+      #
+      # @example
+      #   RSpec::Matchers.alias_matcher :a_list_sorted_by, :be_sorted_by do |description|
+      #     description.sub("be sorted by", "a list sorted by")
+      #   end
+      #
+      #   be_sorted_by(:age).description # => "be sorted by age"
+      #   a_list_sorted_by(:age).description # => "a list sorted by age"
+      #
+      # @param new_name [Symbol] the new name for the matcher
+      # @param old_name [Symbol] the original name for the matcher
+      # @param options  [Hash] options for the aliased matcher
+      # @option options [Class] :klass the ruby class to use as the decorator. (Not normally used).
+      # @yield [String] optional block that, when given, is used to define the overriden
+      #   logic. The yielded arg is the original description or failure message. If no
+      #   block is provided, a default override is used based on the old and new names.
+      # @see RSpec::Matchers
+      def alias_matcher: (untyped new_name, untyped old_name, ?::Hash[untyped, untyped] options) { () -> untyped } -> untyped
+
+      # Defines a negated matcher. The returned matcher's `description` and `failure_message`
+      # will be overriden to reflect the phrasing of the new name, and the match logic will
+      # be based on the original matcher but negated.
+      #
+      # @example
+      #   RSpec::Matchers.define_negated_matcher :exclude, :include
+      #   include(1, 2).description # => "include 1 and 2"
+      #   exclude(1, 2).description # => "exclude 1 and 2"
+      #
+      # @param negated_name [Symbol] the name for the negated matcher
+      # @param base_name [Symbol] the name of the original matcher that will be negated
+      # @yield [String] optional block that, when given, is used to define the overriden
+      #   logic. The yielded arg is the original description or failure message. If no
+      #   block is provided, a default override is used based on the old and new names.
+      # @see RSpec::Matchers
+      def define_negated_matcher: (untyped negated_name, untyped base_name) { () -> untyped } -> untyped
+
+      # Defines a custom matcher.
+      #
+      # @param name [Symbol] the name for the matcher
+      # @yield [Object] block that is used to define the matcher.
+      #   The block is evaluated in the context of your custom matcher class.
+      #   When args are passed to your matcher, they will be yielded here,
+      #   usually representing the expected value(s).
+      # @see RSpec::Matchers
+      def define: (untyped name) { () -> untyped } -> untyped
+
+      alias matcher define
+
+      private
+
+      def warn_about_block_args: (untyped name, untyped declarations) -> untyped
+
+      # :nocov:
+      def warn_about_block_args: () -> nil
+
+      # Contains the methods that are available from within the
+      # `RSpec::Matchers.define` DSL for creating custom matchers.
+      module Macros
+        # Stores the block that is used to determine whether this matcher passes
+        # or fails. The block should return a boolean value. When the matcher is
+        # passed to `expect(...).to` and the block returns `true`, then the expectation
+        # passes. Similarly, when the matcher is passed to `expect(...).not_to` and the
+        # block returns `false`, then the expectation passes.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :be_even do
+        #       match do |actual|
+        #         actual.even?
+        #       end
+        #     end
+        #
+        #     expect(4).to be_even     # passes
+        #     expect(3).not_to be_even # passes
+        #     expect(3).to be_even     # fails
+        #     expect(4).not_to be_even # fails
+        #
+        # By default the match block will swallow expectation errors (e.g.
+        # caused by using an expectation such as `expect(1).to eq 2`), if you
+        # wish to allow these to bubble up, pass in the option
+        # `:notify_expectation_failures => true`.
+        #
+        # @param [Hash] options for defining the behavior of the match block.
+        # @yield [Object] actual the actual value (i.e. the value wrapped by `expect`)
+        def match: (?::Hash[untyped, untyped] options) { () -> untyped } -> untyped
+
+        # @private
+        RAISE_NOTIFIER: untyped
+
+        # Use this to define the block for a negative expectation (`expect(...).not_to`)
+        # when the positive and negative forms require different handling. This
+        # is rarely necessary, but can be helpful, for example, when specifying
+        # asynchronous processes that require different timeouts.
+        #
+        # By default the match block will swallow expectation errors (e.g.
+        # caused by using an expectation such as `expect(1).to eq 2`), if you
+        # wish to allow these to bubble up, pass in the option
+        # `:notify_expectation_failures => true`.
+        #
+        # @param [Hash] options for defining the behavior of the match block.
+        # @yield [Object] actual the actual value (i.e. the value wrapped by `expect`)
+        def match_when_negated: (?::Hash[untyped, untyped] options) { () -> untyped } -> untyped
+
+        # Use this instead of `match` when the block will raise an exception
+        # rather than returning false to indicate a failure.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :accept_as_valid do |candidate_address|
+        #       match_unless_raises ValidationException do |validator|
+        #         validator.validate(candidate_address)
+        #       end
+        #     end
+        #
+        #     expect(email_validator).to accept_as_valid("person@company.com")
+        #
+        # @yield [Object] actual the actual object (i.e. the value wrapped by `expect`)
+        def match_unless_raises: (?untyped expected_exception) { () -> untyped } -> untyped
+
+        # Customizes the failure messsage to use when this matcher is
+        # asked to positively match. Only use this when the message
+        # generated by default doesn't suit your needs.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :have_strength do |expected|
+        #       match { your_match_logic }
+        #
+        #       failure_message do |actual|
+        #         "Expected strength of #{expected}, but had #{actual.strength}"
+        #       end
+        #     end
+        #
+        # @yield [Object] actual the actual object (i.e. the value wrapped by `expect`)
+        def failure_message: () { () -> untyped } -> untyped
+
+        # Customize the failure messsage to use when this matcher is asked
+        # to negatively match. Only use this when the message generated by
+        # default doesn't suit your needs.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :have_strength do |expected|
+        #       match { your_match_logic }
+        #
+        #       failure_message_when_negated do |actual|
+        #         "Expected not to have strength of #{expected}, but did"
+        #       end
+        #     end
+        #
+        # @yield [Object] actual the actual object (i.e. the value wrapped by `expect`)
+        def failure_message_when_negated: () { () -> untyped } -> untyped
+
+        # Customize the description to use for one-liners.  Only use this when
+        # the description generated by default doesn't suit your needs.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :qualify_for do |expected|
+        #       match { your_match_logic }
+        #
+        #       description do
+        #         "qualify for #{expected}"
+        #       end
+        #     end
+        #
+        # @yield [Object] actual the actual object (i.e. the value wrapped by `expect`)
+        def description: () { () -> untyped } -> untyped
+
+        # Tells the matcher to diff the actual and expected values in the failure
+        # message.
+        def diffable: () -> untyped
+
+        # Declares that the matcher can be used in a block expectation.
+        # Users will not be able to use your matcher in a block
+        # expectation without declaring this.
+        # (e.g. `expect { do_something }.to matcher`).
+        def supports_block_expectations: () -> untyped
+
+        # Convenience for defining methods on this matcher to create a fluent
+        # interface. The trick about fluent interfaces is that each method must
+        # return self in order to chain methods together. `chain` handles that
+        # for you. If the method is invoked and the
+        # `include_chain_clauses_in_custom_matcher_descriptions` config option
+        # hash been enabled, the chained method name and args will be added to the
+        # default description and failure message.
+        #
+        # In the common case where you just want the chained method to store some
+        # value(s) for later use (e.g. in `match`), you can provide one or more
+        # attribute names instead of a block; the chained method will store its
+        # arguments in instance variables with those names, and the values will
+        # be exposed via getters.
+        #
+        # @example
+        #
+        #     RSpec::Matchers.define :have_errors_on do |key|
+        #       chain :with do |message|
+        #         @message = message
+        #       end
+        #
+        #       match do |actual|
+        #         actual.errors[key] == @message
+        #       end
+        #     end
+        #
+        #     expect(minor).to have_errors_on(:age).with("Not old enough to participate")
+        def chain: (untyped method_name, *untyped attr_names) { () -> untyped } -> untyped
+
+        private
+
+        def assign_attributes: (untyped attr_names) -> untyped
+
+        # Does the following:
+        #
+        # - Defines the named method using a user-provided block
+        #   in @user_method_defs, which is included as an ancestor
+        #   in the singleton class in which we eval the `define` block.
+        # - Defines an overriden definition for the same method
+        #   usign the provided `our_def` block.
+        # - Provides a default `our_def` block for the common case
+        #   of needing to call the user's definition with `@actual`
+        #   as an arg, but only if their block's arity can handle it.
+        #
+        # This compiles the user block into an actual method, allowing
+        # them to use normal method constructs like `return`
+        # (e.g. for an early guard statement), while allowing us to define
+        # an override that can provide the wrapped handling
+        # (e.g. assigning `@actual`, rescueing errors, etc) and
+        # can `super` to the user's definition.
+        def define_user_override: (untyped method_name, untyped user_def) { () -> untyped } -> untyped
+
+        # Defines deprecated macro methods from RSpec 2 for backwards compatibility.
+        # @deprecated Use the methods from {Macros} instead.
+        module Deprecated
+          # @deprecated Use {Macros#match} instead.
+          def match_for_should: () { () -> untyped } -> untyped
+
+          # @deprecated Use {Macros#match_when_negated} instead.
+          def match_for_should_not: () { () -> untyped } -> untyped
+
+          # @deprecated Use {Macros#failure_message} instead.
+          def failure_message_for_should: () { () -> untyped } -> untyped
+
+          # @deprecated Use {Macros#failure_message_when_negated} instead.
+          def failure_message_for_should_not: () { () -> untyped } -> untyped
+        end
+      end
+
+      # Defines default implementations of the matcher
+      # protocol methods for custom matchers. You can
+      # override any of these using the {RSpec::Matchers::DSL::Macros Macros} methods
+      # from within an `RSpec::Matchers.define` block.
+      module DefaultImplementations
+        include BuiltIn::BaseMatcher::DefaultFailureMessages
+
+        # @api private
+        # Used internally by objects returns by `should` and `should_not`.
+        def diffable?: () -> false
+
+        # The default description.
+        def description: () -> ::String
+
+        # Matchers do not support block expectations by default. You
+        # must opt-in.
+        def supports_block_expectations?: () -> false
+
+        def supports_value_expectations?: () -> true
+
+        # Most matchers do not expect call stack jumps.
+        def expects_call_stack_jump?: () -> false
+
+        private
+
+        def chained_method_clause_sentences: () -> (::String | untyped)
+      end
+
+      # The class used for custom matchers. The block passed to
+      # `RSpec::Matchers.define` will be evaluated in the context
+      # of the singleton class of an instance, and will have the
+      # {RSpec::Matchers::DSL::Macros Macros} methods available.
+      class Matcher
+        # Provides default implementations for the matcher protocol methods.
+        include DefaultImplementations
+
+        # Allows expectation expressions to be used in the match block.
+        include RSpec::Matchers
+
+        # Supports the matcher composability features of RSpec 3+.
+        include Composable
+
+        # Makes the macro methods available to an `RSpec::Matchers.define` block.
+        extend Macros
+
+        extend Macros::Deprecated
+
+        # Exposes the value being matched against -- generally the object
+        # object wrapped by `expect`.
+        attr_reader actual: untyped
+
+        # Exposes the exception raised during the matching by `match_unless_raises`.
+        # Could be useful to extract details for a failure message.
+        attr_reader rescued_exception: untyped
+
+        # The block parameter used in the expectation
+        attr_reader block_arg: untyped
+
+        # The name of the matcher.
+        attr_reader name: untyped
+
+        # @api private
+        def initialize: (untyped name, untyped declarations, untyped matcher_execution_context, *untyped expected) { () -> untyped } -> void
+
+        # Provides the expected value. This will return an array if
+        # multiple arguments were passed to the matcher; otherwise it
+        # will return a single value.
+        # @see #expected_as_array
+        def expected: () -> untyped
+
+        # Returns the expected value as an an array. This exists primarily
+        # to aid in upgrading from RSpec 2.x, since in RSpec 2, `expected`
+        # always returned an array.
+        # @see #expected
+        attr_reader expected_as_array: untyped
+
+        # Adds the name (rather than a cryptic hex number)
+        # so we can identify an instance of
+        # the matcher in error messages (e.g. for `NoMethodError`)
+        def inspect: () -> ::String
+
+        # Indicates that this matcher responds to messages
+        # from the `@matcher_execution_context` as well.
+        # Also, supports getting a method object for such methods.
+        def respond_to_missing?: (untyped method, ?bool include_private) -> untyped
+
+        # for 1.8.7
+        # :nocov:
+        # Indicates that this matcher responds to messages
+        # from the `@matcher_execution_context` as well.
+        def respond_to?: (untyped method, ?bool include_private) -> untyped
+
+        private
+
+        def actual_arg_for: (untyped block) -> untyped
+
+        # Takes care of forwarding unhandled messages to the
+        # `@matcher_execution_context` (typically the current
+        # running `RSpec::Core::Example`). This is needed by
+        # rspec-rails so that it can define matchers that wrap
+        # Rails' test helper methods, but it's also a useful
+        # feature in its own right.
+        def method_missing: (untyped method, *untyped args) { () -> untyped } -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Matchers
+    # @api private
+    # Handles list of expected values when there is a need to render
+    # multiple diffs. Also can handle one value.
+    class ExpectedsForMultipleDiffs
+      # @private
+      # Default diff label when there is only one matcher in diff
+      # output
+      DEFAULT_DIFF_LABEL: "Diff:"
+
+      # @private
+      # Maximum readable matcher description length
+      DESCRIPTION_MAX_LENGTH: 65
+
+      def initialize: (untyped expected_list) -> void
+
+      # @api private
+      # Wraps provided expected value in instance of
+      # ExpectedForMultipleDiffs. If provided value is already an
+      # ExpectedForMultipleDiffs then it just returns it.
+      # @param [Any] expected value to be wrapped
+      # @return [RSpec::Matchers::ExpectedsForMultipleDiffs]
+      def self.from: (untyped expected) -> untyped
+
+      # @api private
+      # Wraps provided matcher list in instance of
+      # ExpectedForMultipleDiffs.
+      # @param [Array<Any>] matchers list of matchers to wrap
+      # @return [RSpec::Matchers::ExpectedsForMultipleDiffs]
+      def self.for_many_matchers: (untyped matchers) -> untyped
+
+      # @api private
+      # Returns message with diff(s) appended for provided differ
+      # factory and actual value if there are any
+      # @param [String] message original failure message
+      # @param [Proc] differ
+      # @param [Any] actual value
+      # @return [String]
+      def message_with_diff: (untyped message, untyped differ, untyped actual) -> untyped
+
+      private
+
+      def self.diff_label_for: (untyped matcher) -> ::String
+
+      def self.truncated: (untyped description) -> untyped
+
+      def diffs: (untyped differ, untyped actual) -> untyped
+    end
+  end
+end
+

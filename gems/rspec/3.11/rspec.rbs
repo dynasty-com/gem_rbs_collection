@@ -1,0 +1,9 @@
+
+module RSpec
+  module Version
+    # :nodoc:
+    # :nodoc:
+    STRING: "3.12.0.pre"
+  end
+end
+
