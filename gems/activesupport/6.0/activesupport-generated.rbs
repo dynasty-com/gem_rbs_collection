@@ -3410,7 +3410,7 @@ class Hash[unchecked out K, unchecked out V]
   #
   #  hash.deep_transform_keys{ |key| key.to_s.upcase }
   #  # => {"PERSON"=>{"NAME"=>"Rob", "AGE"=>"28"}}
-  def deep_transform_keys: () { () -> untyped } -> Hash[K, V]
+  def deep_transform_keys: () { () -> untyped } -> Hash[untyped, untyped]
 
   # Destructively converts all keys by using the block operation.
   # This includes the keys from the root hash and from all
