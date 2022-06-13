@@ -1,0 +1,1242 @@
+module RSpec
+  module Support
+    class ObjectFormatter
+      # Provide additional output details beyond what `inspect` provides when
+      # printing Time, DateTime, or BigDecimal
+      # @api private
+      # rubocop:disable Metrics/ClassLength
+      ELLIPSIS: "..."
+
+      attr_accessor max_formatted_output_length: untyped
+
+      # Methods are deferred to a default instance of the class to maintain the interface
+      # For example, calling ObjectFormatter.format is still possible
+      def self.default_instance: () -> untyped
+
+      def self.format: (untyped object) -> untyped
+
+      def self.prepare_for_inspection: (untyped object) -> untyped
+
+      def initialize: (?::Integer max_formatted_output_length) -> void
+
+      def format: (untyped object) -> untyped
+
+      # Prepares the provided object to be formatted by wrapping it as needed
+      # in something that, when `inspect` is called on it, will produce the
+      # desired output.
+      #
+      # This allows us to apply the desired formatting to hash/array data structures
+      # at any level of nesting, simply by walking that structure and replacing items
+      # with custom items that have `inspect` defined to return the desired output
+      # for that item. Then we can just use `Array#inspect` or `Hash#inspect` to
+      # format the entire thing.
+      def prepare_for_inspection: (untyped object) -> untyped
+
+      def prepare_array: (untyped array) -> untyped
+
+      def prepare_hash: (untyped input_hash) -> untyped
+
+      def sort_hash_keys: (untyped input_hash) -> untyped
+
+      def prepare_element: (untyped element) -> untyped
+
+      def with_entering_structure: (untyped structure) { () -> untyped } -> untyped
+
+      def recursive_structure?: (untyped object) -> untyped
+
+      InspectableItem: untyped
+
+      BaseInspector: untyped
+
+      class TimeInspector # < BaseInspector
+        FORMAT: "%Y-%m-%d %H:%M:%S"
+
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> untyped
+      end
+
+      class DateTimeInspector # < BaseInspector
+        FORMAT: "%a, %d %b %Y %H:%M:%S.%N %z"
+
+        def self.can_inspect?: (untyped object) -> untyped
+
+        # ActiveSupport sometimes overrides inspect. If `ActiveSupport` is
+        # defined use a custom format string that includes more time precision.
+        def inspect: () -> untyped
+      end
+
+      class BigDecimalInspector # < BaseInspector
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> ::String
+      end
+
+      class DescribableMatcherInspector # < BaseInspector
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> untyped
+      end
+
+      class UninspectableObjectInspector # < BaseInspector
+        OBJECT_ID_FORMAT: "%#016x"
+
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> ::String
+
+        def klass: () -> untyped
+
+        # http://stackoverflow.com/a/2818916
+        def native_object_id: () -> untyped
+      end
+
+      class DelegatorInspector # < BaseInspector
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> ::String
+      end
+
+      class InspectableObjectInspector # < BaseInspector
+        def self.can_inspect?: (untyped object) -> untyped
+
+        def inspect: () -> untyped
+      end
+
+      INSPECTOR_CLASSES: untyped
+
+      private
+
+      # Returns the substring defined by the start_index and end_index
+      # If the string ends with a partial ANSI code code then that
+      # will be removed as printing partial ANSI
+      # codes to the terminal can lead to corruption
+      def truncate_string: (untyped str, untyped start_index, untyped end_index) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # Provides recursive constant lookup methods useful for
+    # constant stubbing.
+    module RecursiveConstMethods
+      def const_defined_on?: (untyped mod, untyped const_name) -> untyped
+
+      def get_const_defined_on: (untyped mod, untyped const_name) -> untyped
+
+      def constants_defined_on: (untyped mod) -> untyped
+
+      def recursive_const_get: (untyped const_name) -> untyped
+
+      def recursive_const_defined?: (untyped const_name) { (untyped, untyped) -> untyped } -> (false | untyped)
+
+      def normalize_const_name: (untyped const_name) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @private
+    # Represents a Ruby source file and provides access to AST and tokens.
+    class Source
+      attr_reader source: untyped
+
+      attr_reader path: untyped
+
+      # This class protects us against having File read and expand_path
+      # stubbed out within tests.
+      class File
+      end
+
+      def self.from_file: (untyped path) -> untyped
+
+      def initialize: (untyped source_string, ?untyped? path) -> void
+
+      def lines: () -> untyped
+
+      def inspect: () -> ::String
+
+      def ast: () -> untyped
+
+      def tokens: () -> untyped
+
+      def nodes_by_line_number: () -> untyped
+
+      def tokens_by_line_number: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # On 1.8.7, it's in the stdlib.
+    # We don't want to load the stdlib, b/c this is a test tool, and can affect
+    # the test environment, causing tests to pass where they should fail.
+    #
+    # So we're transcribing/modifying it from
+    # https://github.com/ruby/ruby/blob/v1_8_7_374/lib/thread.rb#L56
+    # Some methods we don't need are deleted. Anything I don't
+    # understand (there's quite a bit, actually) is left in.
+    #
+    # Some formating changes are made to appease the robot overlord:
+    #   https://travis-ci.org/rspec/rspec-core/jobs/54410874
+    # @private
+    class Mutex
+      def initialize: () -> void
+
+      # @private
+      def lock: () -> untyped
+
+      # @private
+      def unlock: () -> (nil | untyped)
+
+      # @private
+      def synchronize: () { () -> untyped } -> untyped
+
+      private
+
+      def wakeup_and_run_waiting_thread: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @api private
+    #
+    # Provides query methods for different OS or OS features.
+    module OS
+      def self?.windows?: () -> untyped
+
+      def self?.windows_file_path?: () -> untyped
+    end
+
+    # @api private
+    #
+    # Provides query methods for different rubies
+    module Ruby
+      def self?.jruby?: () -> untyped
+
+      def self?.jruby_version: () -> untyped
+
+      def self?.jruby_9000?: () -> untyped
+
+      def self?.rbx?: () -> untyped
+
+      def self?.non_mri?: () -> untyped
+
+      def self?.mri?: () -> untyped
+
+      def self?.truffleruby?: () -> untyped
+    end
+
+    # @api private
+    #
+    # Provides query methods for ruby features that differ among
+    # implementations.
+    module RubyFeatures
+      # On JRuby 1.7 `--1.8` mode, `Process.respond_to?(:fork)` returns true,
+      # but when you try to fork, it raises an error:
+      #   NotImplementedError: fork is not available on this platform
+      #
+      # When we drop support for JRuby 1.7 and/or Ruby 1.8, we can drop
+      # this special case.
+      # def self?.fork_supported?: () -> false
+
+      def self?.fork_supported?: () -> untyped
+
+      def self?.optional_and_splat_args_supported?: () -> untyped
+
+      def self?.caller_locations_supported?: () -> untyped
+
+      # def self?.supports_exception_cause?: () -> true
+
+      def self?.supports_exception_cause?: () -> false
+
+      # def self?.supports_taint?: () -> false
+
+      def self?.supports_taint?: () -> true
+
+      # def self?.ripper_supported?: () -> true
+
+      def self?.ripper_supported?: () -> false
+
+      def self?.distincts_kw_args_from_positional_hash?: () -> untyped
+
+      # def self?.kw_args_supported?: () -> untyped
+
+      # def self?.required_kw_args_supported?: () -> untyped
+
+      # def self?.supports_rebinding_module_methods?: () -> untyped
+
+      # def self?.kw_args_supported?: () -> true
+
+      def self?.kw_args_supported?: () -> false
+
+      # def self?.required_kw_args_supported?: () -> true
+
+      def self?.required_kw_args_supported?: () -> false
+
+      def self?.foo: () -> nil
+
+      # def self?.supports_rebinding_module_methods?: () -> true
+
+      def self?.supports_rebinding_module_methods?: () -> false
+
+      def self?.module_refinement_supported?: () -> untyped
+
+      def self?.module_prepends_supported?: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # Allows a thread to lock out other threads from a critical section of code,
+    # while allowing the thread with the lock to reenter that section.
+    #
+    # Based on Monitor as of 2.2 -
+    # https://github.com/ruby/ruby/blob/eb7ddaa3a47bf48045d26c72eb0f263a53524ebc/lib/monitor.rb#L9
+    #
+    # Depends on Mutex, but Mutex is only available as part of core since 1.9.1:
+    #   exists - http://ruby-doc.org/core-1.9.1/Mutex.html
+    #   dne    - http://ruby-doc.org/core-1.9.0/Mutex.html
+    #
+    # @private
+    class ReentrantMutex
+      def initialize: () -> void
+
+      def synchronize: () { () -> untyped } -> untyped
+
+      private
+
+      def enter: () -> untyped
+
+      # def exit: () -> untyped
+
+      def exit: () -> (nil | untyped)
+    end
+
+    # On 1.9 and up, this is in core, so we just use the real one
+    class Mutex # < ::Mutex
+      # If you mock Mutex.new you break our usage of Mutex, so
+      # instead we capture the original method to return Mutexs.
+      NEW_MUTEX_METHOD: untyped
+
+      def self.new: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @private
+    class ComparableVersion
+      include Comparable
+
+      attr_reader string: untyped
+
+      def initialize: (untyped string) -> void
+
+      def <=>: (untyped other) -> (0 | untyped)
+
+      def segments: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @private
+    class EncodedString
+      # Reduce allocations by storing constants.
+      UTF_8: "UTF-8"
+
+      US_ASCII: "US-ASCII"
+
+      # Ruby's default replacement string is:
+      #   U+FFFD ("\xEF\xBF\xBD"), for Unicode encoding forms, else
+      #   ?      ("\x3F")
+      REPLACE: "?"
+
+      def initialize: (untyped string, ?untyped? encoding) -> void
+
+      attr_reader source_encoding: untyped
+
+      def <<: (untyped string) -> untyped
+
+      def split: (untyped regex_or_string) -> untyped
+
+      def to_s: () -> untyped
+
+      alias to_str to_s
+
+      private
+
+      # Encoding Exceptions:
+      #
+      # Raised by Encoding and String methods:
+      #   Encoding::UndefinedConversionError:
+      #     when a transcoding operation fails
+      #     if the String contains characters invalid for the target encoding
+      #     e.g. "\x80".encode('UTF-8','ASCII-8BIT')
+      #     vs "\x80".encode('UTF-8','ASCII-8BIT', undef: :replace, replace: '<undef>')
+      #     # => '<undef>'
+      #   Encoding::CompatibilityError
+      #     when Encoding.compatibile?(str1, str2) is nil
+      #     e.g. utf_16le_emoji_string.split("\n")
+      #     e.g. valid_unicode_string.encode(utf8_encoding) << ascii_string
+      #   Encoding::InvalidByteSequenceError:
+      #     when the string being transcoded contains a byte invalid for
+      #     either the source or target encoding
+      #     e.g. "\x80".encode('UTF-8','US-ASCII')
+      #     vs "\x80".encode('UTF-8','US-ASCII', invalid: :replace, replace: '<byte>')
+      #     # => '<byte>'
+      #   ArgumentError
+      #     when operating on a string with invalid bytes
+      #     e.g."\x80".split("\n")
+      #   TypeError
+      #     when a symbol is passed as an encoding
+      #     Encoding.find(:"UTF-8")
+      #     when calling force_encoding on an object
+      #     that doesn't respond to #to_str
+      #
+      # Raised by transcoding methods:
+      #   Encoding::ConverterNotFoundError:
+      #     when a named encoding does not correspond with a known converter
+      #     e.g. 'abc'.force_encoding('UTF-8').encode('foo')
+      #     or a converter path cannot be found
+      #     e.g. "\x80".force_encoding('ASCII-8BIT').encode('Emacs-Mule')
+      #
+      # Raised by byte <-> char conversions
+      #   RangeError: out of char range
+      #     e.g. the UTF-16LE emoji: 128169.chr
+      def matching_encoding: (untyped string) -> untyped
+
+      # https://github.com/ruby/ruby/blob/eeb05e8c11/doc/NEWS-2.1.0#L120-L123
+      # https://github.com/ruby/ruby/blob/v2_1_0/string.c#L8242
+      # https://github.com/hsbt/string-scrub
+      # https://github.com/rubinius/rubinius/blob/v2.5.2/kernel/common/string.rb#L1913-L1972
+      def remove_invalid_bytes: (untyped string) -> untyped
+
+      # def detect_source_encoding: (untyped string) -> untyped
+
+      # def self.pick_encoding: (untyped source_a, untyped source_b) -> untyped
+
+      def self.pick_encoding: (untyped _source_a, untyped _source_b) -> nil
+
+      def detect_source_encoding: (untyped _string) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    class Source
+      # @private
+      # A wrapper for Ripper AST node which is generated with `Ripper.sexp`.
+      class Node
+        include Enumerable[untyped]
+
+        attr_reader sexp: untyped
+
+        attr_reader parent: untyped
+
+        def self.sexp?: (untyped array) -> untyped
+
+        def initialize: (untyped ripper_sexp, ?untyped? parent) -> void
+
+        def type: () -> untyped
+
+        def args: () -> untyped
+
+        def children: () -> untyped
+
+        def location: () -> untyped
+
+        # We use a loop here (instead of recursion) to prevent SystemStackError
+        def each: () { (untyped) -> untyped } -> untyped
+
+        def each_ancestor: () { (untyped) -> untyped } -> untyped
+
+        def inspect: () -> ::String
+
+        private
+
+        def raw_args: () -> untyped
+      end
+
+      # @private
+      # Basically `Ripper.sexp` generates arrays whose first element is a symbol (type of sexp),
+      # but it exceptionally generates typeless arrays for expression sequence:
+      #
+      # Ripper.sexp('foo; bar')
+      # => [
+      #      :program,
+      #      [ # Typeless array
+      #        [:vcall, [:@ident, "foo", [1, 0]]],
+      #        [:vcall, [:@ident, "bar", [1, 5]]]
+      #      ]
+      #    ]
+      #
+      # We wrap typeless arrays in this pseudo type node
+      # so that it can be handled in the same way as other type node.
+      class ExpressionSequenceNode < Node
+        def type: () -> :_expression_sequence
+
+        private
+
+        def raw_args: () -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Support
+    class Source
+      # @private
+      # Represents a source location of node or token.
+      Location: untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    class Source
+      # @private
+      # A wrapper for Ripper token which is generated with `Ripper.lex`.
+      class Token
+        CLOSING_TYPES_BY_OPENING_TYPE: { on_lbracket: :on_rbracket, on_lparen: :on_rparen, on_lbrace: :on_rbrace, on_heredoc_beg: :on_heredoc_end }
+
+        CLOSING_KEYWORDS_BY_OPENING_KEYWORD: ::Hash[::String, "end"]
+
+        attr_reader token: untyped
+
+        def self.tokens_from_ripper_tokens: (untyped ripper_tokens) -> untyped
+
+        def initialize: (untyped ripper_token) -> void
+
+        def location: () -> untyped
+
+        def type: () -> untyped
+
+        def string: () -> untyped
+
+        def ==: (untyped other) -> untyped
+
+        alias eql? ==
+
+        def inspect: () -> ::String
+
+        def keyword?: () -> untyped
+
+        def equals_operator?: () -> untyped
+
+        def opening?: () -> untyped
+
+        def closed_by?: (untyped other) -> untyped
+
+        private
+
+        def opening_delimiter?: () -> untyped
+
+        def opening_keyword?: () -> (false | untyped)
+
+        def delimiter_closed_by?: (untyped other) -> untyped
+
+        def keyword_closed_by?: (untyped other) -> (false | true | untyped)
+      end
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module FormattingSupport
+      def dedent: (untyped string) -> untyped
+    end
+  end
+end
+
+class Object
+  # Depends on chaining :with_same_encoding for it to
+  # check for string encoding.
+  def expected_encoding?: () -> untyped
+end
+
+module RSpec
+  module Support
+    class StdErrSplitter
+      def initialize: (untyped original) -> void
+
+      def method_missing: (untyped name, *untyped args) { () -> untyped } -> untyped
+
+      def ==: (untyped other) -> untyped
+
+      def reopen: (*untyped args) -> untyped
+
+      # To work around JRuby error:
+      # can't convert RSpec::Support::StdErrSplitter into String
+      def to_io: () -> untyped
+
+      # To work around JRuby error:
+      # TypeError: $stderr must have write method, RSpec::StdErrSplitter given
+      def write: (untyped line) -> untyped
+
+      def has_output?: () -> untyped
+
+      def reset!: () -> untyped
+
+      def verify_no_warnings!: () -> untyped
+
+      def output: () -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module Spec
+      module DiffHelpers
+        # def one_line_header: (?::Integer line_number) -> ::String
+
+        def one_line_header: (?::Integer _) -> "-1 +1"
+
+        # def removing_two_line_header: () -> "-1,3 +1"
+
+        def removing_two_line_header: () -> "-1,3 +1,5"
+      end
+    end
+  end
+end
+
+module RSpecHelpers
+  def expect_deprecation_with_call_site: (untyped file, untyped line, ?untyped snippet) -> untyped
+
+  def expect_deprecation_without_call_site: (?untyped snippet) -> untyped
+
+  def expect_warn_deprecation_with_call_site: (untyped file, untyped line, ?untyped snippet) -> untyped
+
+  def expect_warn_deprecation: (?untyped snippet) -> untyped
+
+  def allow_deprecation: () -> untyped
+
+  def expect_no_deprecations: () -> untyped
+
+  alias expect_no_deprecation expect_no_deprecations
+
+  def expect_warning_without_call_site: (?untyped expected) -> untyped
+
+  def expect_warning_with_call_site: (untyped file, untyped line, ?untyped expected) -> untyped
+
+  def expect_no_warnings: () -> untyped
+
+  def allow_warning: () -> untyped
+end
+
+module RSpec
+  module Support
+    module InSubProcess
+      UnmarshableObject: untyped
+
+      # def in_sub_process: (?bool prevent_warnings) { () -> untyped } -> untyped
+
+      # alias in_sub_process_if_possible in_sub_process
+
+      def marshal_dump_with_unmarshable_object_handling: (untyped object) -> untyped
+
+      def in_sub_process: () -> untyped
+
+      def in_sub_process_if_possible: () { () -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module WhitespaceChecks : BasicObject
+      # This malformed whitespace detection logic has been borrowed from bundler:
+      # https://github.com/bundler/bundler/blob/v1.8.0/spec/quality_spec.rb
+      def check_for_tab_characters: (untyped filename) -> (nil | ::String)
+
+      def check_for_extra_spaces: (untyped filename) -> (nil | ::String)
+    end
+  end
+end
+
+class Object
+  include RSpec::Support::ShellOut
+
+  include RSpec::Support::WhitespaceChecks
+
+  def command_from: (untyped code_lines) -> untyped
+
+  def load_all_files: (untyped files, untyped preamble, ?untyped? postamble) -> ::Array[untyped]
+
+  attr_reader all_lib_files: untyped
+
+  attr_reader lib_test_env_files: untyped
+
+  attr_reader lib_file_results: untyped
+
+  attr_reader spec_file_results: untyped
+
+  def have_successful_no_warnings_output: () -> untyped
+end
+
+
+module RSpec
+  module Support
+    module WithIsolatedStdErr
+      def with_isolated_stderr: () { () -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module ShellOut : BasicObject
+      def with_env: (untyped vars) { () -> untyped } -> untyped
+
+      # 1.9+
+      def shell_out: (*untyped command) -> untyped
+
+      # 1.8.7
+      # popen3 doesn't provide the exit status so we fake it out.
+      FakeProcessStatus: untyped
+
+      def run_ruby_with_current_load_path: (untyped ruby_command, *untyped flags) -> untyped
+
+      LINES_TO_IGNORE: ::Array[::Regexp]
+
+      def strip_known_warnings: (untyped input) -> untyped
+
+      private
+
+      def filter: (untyped output) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # Provides a means to fuzzy-match between two arbitrary objects.
+    # Understands array/hash nesting. Uses `===` or `==` to
+    # perform the matching.
+    module FuzzyMatcher
+      # @api private
+      def self.values_match?: (untyped expected, untyped actual) -> (untyped | true)
+
+      # @private
+      def self.arrays_match?: (untyped expected_list, untyped actual_list) -> (false | untyped)
+
+      # @private
+      def self.hashes_match?: (untyped expected_hash, untyped actual_hash) -> (false | untyped)
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @private
+    def self.matcher_definitions: () -> untyped
+
+    # Used internally to break cyclic dependency between mocks, expectations,
+    # and support. We don't currently have a consistent implementation of our
+    # matchers, though we are considering changing that:
+    # https://github.com/rspec/rspec-mocks/issues/513
+    #
+    # @private
+    def self.register_matcher_definition: () { () -> untyped } -> untyped
+
+    # Remove a previously registered matcher. Useful for cleaning up after
+    # yourself in specs.
+    #
+    # @private
+    def self.deregister_matcher_definition: () { () -> untyped } -> untyped
+
+    # @private
+    def self.is_a_matcher?: (untyped object) -> untyped
+
+    # @api private
+    #
+    # gives a string representation of an object for use in RSpec descriptions
+    def self.rspec_description_for_object: (untyped object) -> untyped
+  end
+end
+
+module RSpec
+  module Support
+    # @api private
+    #
+    # Replacement for fileutils#mkdir_p because we don't want to require parts
+    # of stdlib in RSpec.
+    class DirectoryMaker
+      # @api private
+      #
+      # Implements nested directory construction
+      def self.mkdir_p: (untyped path) -> untyped
+
+      def self.generate_stack: (untyped path) -> untyped
+
+      def self.generate_path: (untyped stack, untyped part) -> untyped
+
+      def self.directory_exists?: (untyped dirname) -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module WithKeywordsWhenNeeded
+      def self?.class_exec: (untyped klass, *untyped args) { () -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @private
+    class HunkGenerator
+      def initialize: (untyped actual, untyped expected) -> void
+
+      def hunks: () -> untyped
+
+      private
+
+      def diffs: () -> untyped
+
+      def expected_lines: () -> untyped
+
+      def actual_lines: () -> untyped
+
+      def build_hunk: (untyped piece) -> untyped
+
+      def context_lines: () -> 3
+    end
+  end
+end
+
+module RSpec
+  module Support
+    module Spec
+      def self.setup_simplecov: () { () -> untyped } -> untyped
+
+      def self.start_simplecov: () { () -> untyped } -> untyped
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # rubocop:disable Metrics/ClassLength
+    class Differ
+      def diff: (untyped actual, untyped expected) -> untyped
+
+      # rubocop:disable Metrics/MethodLength
+      def diff_as_string: (untyped actual, untyped expected) -> untyped
+
+      def diff_as_object: (untyped actual, untyped expected) -> untyped
+
+      def color?: () -> untyped
+
+      def initialize: (?::Hash[untyped, untyped] opts) -> void
+
+      private
+
+      def no_procs?: (*untyped args) -> untyped
+
+      def all_strings?: (*untyped args) -> untyped
+
+      def any_multiline_strings?: (*untyped args) -> untyped
+
+      def no_numbers?: (*untyped args) -> untyped
+
+      def coerce_to_string: (untyped string_or_array) -> untyped
+
+      def diffably_stringify: (untyped array) -> untyped
+
+      def multiline?: (untyped string) -> untyped
+
+      def build_hunks: (untyped actual, untyped expected) -> untyped
+
+      def finalize_output: (untyped output, untyped final_line) -> untyped
+
+      def add_to_output: (untyped output, untyped string) -> untyped
+
+      def add_old_hunk_to_hunk: (untyped hunk, untyped oldhunk) -> untyped
+
+      def safely_flatten: (untyped array) -> untyped
+
+      def format_type: () -> :unified
+
+      def color: (untyped text, untyped color_code) -> ::String
+
+      def red: (untyped text) -> untyped
+
+      def green: (untyped text) -> untyped
+
+      def blue: (untyped text) -> untyped
+
+      def normal: (untyped text) -> untyped
+
+      def color_diff: (untyped diff) -> untyped
+
+      def object_to_string: (untyped object) -> untyped
+
+      def hash_to_string: (untyped hash) -> untyped
+
+      def handle_encoding_errors: (untyped actual, untyped expected) -> untyped
+    end
+  end
+end
+
+module RSpec
+  # Consistent implementation for "cleaning" the caller method to strip out
+  # non-rspec lines. This enables errors to be reported at the call site in
+  # the code using the library, which is far more useful than the particular
+  # internal method that raised an error.
+  class CallerFilter
+    RSPEC_LIBS: ::Array["core" | "mocks" | "expectations" | "support" | "matchers" | "rails"]
+
+    ADDITIONAL_TOP_LEVEL_FILES: ::Array["autorun"]
+
+    LIB_REGEX: ::Regexp
+
+    # rubygems/core_ext/kernel_require.rb isn't actually part of rspec (obviously) but we want
+    # it ignored when we are looking for the first meaningful line of the backtrace outside
+    # of RSpec. It can show up in the backtrace as the immediate first caller
+    # when `CallerFilter.first_non_rspec_line` is called from the top level of a required
+    # file, but it depends on if rubygems is loaded or not. We don't want to have to deal
+    # with this complexity in our `RSpec.deprecate` calls, so we ignore it here.
+    IGNORE_REGEX: untyped
+
+    # This supports args because it's more efficient when the caller specifies
+    # these. It allows us to skip frames the caller knows are part of RSpec,
+    # and to decrease the increment size if the caller is confident the line will
+    # be found in a small number of stack frames from `skip_frames`.
+    #
+    # Note that there is a risk to passing a `skip_frames` value that is too high:
+    # If it skippped the first non-rspec line, then this method would return the
+    # 2nd or 3rd (or whatever) non-rspec line. Thus, you generally shouldn't pass
+    # values for these parameters, particularly since most places that use this are
+    # not hot spots (generally it gets used for deprecation warnings). However,
+    # if you do have a hot spot that calls this, passing `skip_frames` can make
+    # a significant difference. Just make sure that that particular use is tested
+    # so that if the provided `skip_frames` changes to no longer be accurate in
+    # such a way that would return the wrong stack frame, a test will fail to tell you.
+    #
+    # See benchmarks/skip_frames_for_caller_filter.rb for measurements.
+    # def self.first_non_rspec_line: (?::Integer skip_frames, ?::Integer increment) -> untyped
+
+    # Earlier rubies do not support the two argument form of `caller`. This
+    # fallback is logically the same, but slower.
+    def self.first_non_rspec_line: () -> untyped
+  end
+end
+
+module RSpec
+  module Support
+    module Warnings
+      def deprecate: (untyped deprecated, ?::Hash[untyped, untyped] options) -> untyped
+
+      # @private
+      #
+      # Used internally to print deprecation warnings
+      # when rspec-core isn't loaded
+      def warn_deprecation: (untyped message, ?::Hash[untyped, untyped] options) -> untyped
+
+      # @private
+      #
+      # Used internally to print warnings
+      def warning: (untyped text, ?::Hash[untyped, untyped] options) -> untyped
+
+      # @private
+      #
+      # Used internally to print longer warnings
+      def warn_with: (untyped message, ?::Hash[untyped, untyped] options) -> untyped
+    end
+  end
+
+  extend RSpec::Support::Warnings
+end
+
+module RSpec
+  module Support
+    module Version
+      STRING: "3.12.0.pre"
+    end
+  end
+end
+
+module RSpec
+  module Support
+    class MethodSignature
+      # Extracts info about the number of arguments and allowed/required
+      # keyword args of a given method.
+      #
+      # @private
+      # rubocop:disable Metrics/ClassLength
+      attr_reader min_non_kw_args: untyped
+
+      # Extracts info about the number of arguments and allowed/required
+      # keyword args of a given method.
+      #
+      # @private
+      # rubocop:disable Metrics/ClassLength
+      attr_reader max_non_kw_args: untyped
+
+      # Extracts info about the number of arguments and allowed/required
+      # keyword args of a given method.
+      #
+      # @private
+      # rubocop:disable Metrics/ClassLength
+      attr_reader optional_kw_args: untyped
+
+      # Extracts info about the number of arguments and allowed/required
+      # keyword args of a given method.
+      #
+      # @private
+      # rubocop:disable Metrics/ClassLength
+      attr_reader required_kw_args: untyped
+
+      def initialize: (untyped method) -> void
+
+      def non_kw_args_arity_description: () -> untyped
+
+      def valid_non_kw_args?: (untyped positional_arg_count, ?untyped optional_max_arg_count) -> (true | untyped)
+
+      def classify_arity: (?untyped arity) -> untyped
+
+      # def description: () -> untyped
+
+      # def missing_kw_args_from: (untyped given_kw_args) -> untyped
+
+      # def invalid_kw_args_from: (untyped given_kw_args) -> (::Array[untyped] | untyped)
+
+      # If the last argument is Hash, Ruby will treat only symbol keys as keyword arguments
+      # the rest will be grouped in another Hash and passed as positional argument.
+      # def has_kw_args_in?: (untyped args) -> untyped
+
+      # Without considering what the last arg is, could it
+      # contain keyword arguments?
+      # def could_contain_kw_args?: (untyped args) -> (false | untyped)
+
+      # def arbitrary_kw_args?: () -> untyped
+
+      # def unlimited_args?: () -> untyped
+
+      # def classify_parameters: () -> untyped
+
+      def description: () -> ::String
+
+      def missing_kw_args_from: (untyped _given_kw_args) -> ::Array[untyped]
+
+      def invalid_kw_args_from: (untyped _given_kw_args) -> ::Array[untyped]
+
+      def has_kw_args_in?: (untyped _args) -> false
+
+      def could_contain_kw_args?: () -> false
+
+      def arbitrary_kw_args?: () -> false
+
+      def unlimited_args?: () -> false
+
+      # alias classify_parameters classify_arity
+
+      INFINITY: untyped
+    end
+
+    class MethodSignature # < 
+      private
+
+      # def classify_parameters: () -> untyped
+    end
+
+    class MethodSignature # < 
+      private
+
+      def classify_parameters: () -> (nil | untyped)
+    end
+
+    # Encapsulates expectations about the number of arguments and
+    # allowed/required keyword args of a given method.
+    #
+    # @api private
+    class MethodSignatureExpectation
+      def initialize: () -> void
+
+      attr_reader min_count: untyped
+
+      attr_reader max_count: untyped
+
+      attr_reader keywords: untyped
+
+      attr_accessor expect_unlimited_arguments: untyped
+
+      attr_accessor expect_arbitrary_keywords: untyped
+
+      def max_count=: (untyped number) -> untyped
+
+      def min_count=: (untyped number) -> untyped
+
+      def empty?: () -> untyped
+
+      def keywords=: (untyped values) -> untyped
+    end
+
+    # Deals with the slightly different semantics of block arguments.
+    # For methods, arguments are required unless a default value is provided.
+    # For blocks, arguments are optional, even if no default value is provided.
+    #
+    # However, we want to treat block args as required since you virtually
+    # always want to pass a value for each received argument and our
+    # `and_yield` has treated block args as required for many years.
+    #
+    # @api private
+    class BlockSignature < MethodSignature
+      def classify_parameters: () -> untyped
+    end
+
+    # Abstract base class for signature verifiers.
+    #
+    # @api private
+    class MethodSignatureVerifier
+      attr_reader non_kw_args: untyped
+
+      attr_reader kw_args: untyped
+
+      attr_reader min_non_kw_args: untyped
+
+      attr_reader max_non_kw_args: untyped
+
+      def initialize: (untyped signature, ?untyped args) -> void
+
+      def with_expectation: (untyped expectation) -> untyped
+
+      def valid?: () -> untyped
+
+      def error_message: () -> untyped
+
+      private
+
+      def valid_non_kw_args?: () -> untyped
+
+      def missing_kw_args: () -> untyped
+
+      def invalid_kw_args: () -> untyped
+
+      def arbitrary_kw_args?: () -> untyped
+
+      def unlimited_args?: () -> untyped
+
+      def split_args: (*untyped args) -> ::Array[untyped]
+    end
+
+    # Figures out wether a given method can accept various arguments.
+    # Surprisingly non-trivial.
+    #
+    # @private
+    StrictSignatureVerifier: untyped
+
+    # Allows matchers to be used instead of providing keyword arguments. In
+    # practice, when this happens only the arity of the method is verified.
+    #
+    # @private
+    class LooseSignatureVerifier < MethodSignatureVerifier
+      private
+
+      def split_args: (*untyped args) -> untyped
+
+      # If a matcher is used in a signature in place of keyword arguments, all
+      # keyword argument validation needs to be skipped since the matcher is
+      # opaque.
+      #
+      # Instead, keyword arguments will be validated when the method is called
+      # and they are actually known.
+      #
+      # @private
+      class SignatureWithKeywordArgumentsMatcher
+        def initialize: (untyped signature) -> void
+
+        def missing_kw_args_from: (untyped _kw_args) -> ::Array[untyped]
+
+        def invalid_kw_args_from: (untyped _kw_args) -> ::Array[untyped]
+
+        def non_kw_args_arity_description: () -> untyped
+
+        def valid_non_kw_args?: (*untyped args) -> untyped
+
+        def has_kw_args_in?: (untyped args) -> untyped
+      end
+    end
+  end
+end
+
+module RSpec
+  module Support
+    # @api private
+    #
+    # Defines a helper method that is optimized to require files from the
+    # named lib. The passed block MUST be `{ |f| require_relative f }`
+    # because for `require_relative` to work properly from within the named
+    # lib the line of code must be IN that lib.
+    #
+    # `require_relative` is preferred when available because it is always O(1),
+    # regardless of the number of dirs in $LOAD_PATH. `require`, on the other
+    # hand, does a linear O(N) search over the dirs in the $LOAD_PATH until
+    # it can resolve the file relative to one of the dirs.
+    def self.define_optimized_require_for_rspec: (untyped lib) { () -> untyped } -> untyped
+
+    # @api private
+    KERNEL_METHOD_METHOD: untyped
+
+    def self.method_handle_for: (untyped object, untyped method_name) -> untyped
+
+    # @api private
+    #
+    # Used internally to get a class of a given object, even if it does not respond to #class.
+    def self.class_of: (untyped object) -> untyped
+
+    # A single thread local variable so we don't excessively pollute that namespace.
+    def self.thread_local_data: () -> untyped
+
+    # @api private
+    def self.failure_notifier=: (untyped callable) -> untyped
+
+    # @private
+    DEFAULT_FAILURE_NOTIFIER: untyped
+
+    # @api private
+    def self.failure_notifier: () -> untyped
+
+    # @api private
+    def self.notify_failure: (untyped failure, ?::Hash[untyped, untyped] options) -> untyped
+
+    # @api private
+    def self.with_failure_notifier: (untyped callable) { () -> untyped } -> untyped
+
+    # @api private
+    attr_writer self.warning_notifier: untyped
+
+    # @private
+    DEFAULT_WARNING_NOTIFIER: untyped
+
+    # @api private
+    def self.warning_notifier: () -> untyped
+
+    # @private
+    module AllExceptionsExceptOnesWeMustNotRescue
+      # These exceptions are dangerous to rescue as rescuing them
+      # would interfere with things we should not interfere with.
+      AVOID_RESCUING: ::Array[untyped]
+
+      def self.===: (untyped exception) -> untyped
+    end
+  end
+end
+
