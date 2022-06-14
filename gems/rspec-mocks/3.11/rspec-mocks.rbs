@@ -1237,7 +1237,7 @@ module RSpec
       #   # => failed expectation
       #   cart.add(Book.new(:isbn => 1934356379))
       #   # => passes
-      def with: (*untyped args) { () -> untyped } -> untyped
+      def with: (*untyped args) ?{ () -> untyped } -> MessageExpectation
 
       # Expect messages to be received in a specific order.
       #
@@ -2128,6 +2128,26 @@ module RSpec
       def expression: () -> :expect_any_instance_of
     end
   end
+end
+
+class Object
+
+  # Used to wrap a class in preparation for stubbing a method on instances of it.
+  # 
+  # Examples:
+  # allow_any_instance_of(MyClass).to receive(:foo)
+  def allow_any_instance_of: (singleton(Object)) -> Object
+
+  # Used to specify a message that you expect or allow an object to receive. 
+  # The object returned by receive supports the same fluent interface that 
+  # should_receive and stub have always supported, allowing you to constrain 
+  # the arguments or number of times, and configure how the object should 
+  # respond to the message.
+  # 
+  # Examples:
+  # expect(obj).to receive(:hello).with("world").exactly(3).times
+  def receive: (Symbol) -> ::RSpec::Mocks::MessageExpectation
+
 end
 
 module RSpec
