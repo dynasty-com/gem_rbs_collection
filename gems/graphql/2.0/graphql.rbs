@@ -887,7 +887,7 @@ module GraphQL
 
     def self.context_class: (?untyped? new_context_class) -> untyped
 
-    def self.rescue_from: (*untyped err_classes) { () -> untyped } -> untyped
+    def self.rescue_from: (*untyped err_classes) { (Exception err, untyped obj, Hash[untyped, untyped] args, untyped ctx, untyped field) -> untyped } -> untyped
 
     NEW_HANDLER_HASH: untyped
 

@@ -505,6 +505,21 @@ class Object
 end
 
 module Rollbar
+  # Sends a report of type `error` to Rollbar.
+  # 
+  # Accepts any number of arguments. The last String argument will become 
+  # the message or description of the report. The last Exception argument 
+  # will become the associated exception for the report. The last hash 
+  # argument will be used as the extra data for the report.
+  # 
+  # If the extra hash contains a symbol key :custom_data_method_context 
+  # the value of the key will be used as the context for 
+  # configuration.custom_data_method and will be removed from the extra 
+  # hash.
+  def self.error: (*untyped args) -> untyped
+end
+
+module Rollbar
   class Sidekiq
     PARAM_BLACKLIST: ::Array["backtrace" | "error_backtrace" | "error_message" | "error_class"]
 
