@@ -4437,6 +4437,14 @@ class Object
   # https://www.rubydoc.info/gems/rspec-core/RSpec%2FCore%2FExampleGroup.it
   def it: (String doc_string) { () -> void } -> void
 
+  # The describe method creates an example group. Within the block passed to
+  # describe you can declare nested groups using the describe or context
+  # methods, or you can declare examples using the it or specify methods.
+
+  # Under the hood, an example group is a class in which the block passed to
+  # describe or context is evaluated. The blocks passed to it are evaluated
+  # in the context of an instance of that class.
+  def describe: (untyped) { () -> void } -> void
 end
 
 # ## Built-in Formatters
