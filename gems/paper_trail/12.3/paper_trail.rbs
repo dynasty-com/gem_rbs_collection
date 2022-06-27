@@ -1,0 +1,1658 @@
+# An ActiveRecord extension that tracks changes to your models, for auditing or
+# versioning.
+module PaperTrail
+  E_TIMESTAMP_FIELD_CONFIG: untyped
+
+  RAILS_GTE_7_0: untyped
+
+  extend PaperTrail::Cleaner
+
+  # Switches PaperTrail on or off, for all threads.
+  # @api public
+  def self.enabled=: (untyped value) -> untyped
+
+  # Returns `true` if PaperTrail is on, `false` otherwise. This is the
+  # on/off switch that affects all threads. Enabled by default.
+  # @api public
+  def self.enabled?: () -> untyped
+
+  # Returns PaperTrail's `::Gem::Version`, convenient for comparisons. This is
+  # recommended over `::PaperTrail::VERSION::STRING`.
+  #
+  # Added in 7.0.0
+  #
+  # @api public
+  def self.gem_version: () -> untyped
+
+  # Set variables for the current request, eg. whodunnit.
+  #
+  # All request-level variables are now managed here, as of PT 9. Having the
+  # word "request" right there in your application code will remind you that
+  # these variables only affect the current request, not all threads.
+  #
+  # Given a block, temporarily sets the given `options`, executes the block,
+  # and returns the value of the block.
+  #
+  # Without a block, this currently just returns `PaperTrail::Request`.
+  # However, please do not use `PaperTrail::Request` directly. Currently,
+  # `Request` is a `Module`, but in the future it is quite possible we may
+  # make it a `Class`. If we make such a choice, we will not provide any
+  # warning and will not treat it as a breaking change. You've been warned :)
+  #
+  # @api public
+  def self.request: (?untyped? options) { () -> untyped } -> untyped
+
+  # Set the field which records when a version was created.
+  # @api public
+  def self.timestamp_field=: (untyped _field_name) -> untyped
+
+  # Set the PaperTrail serializer. This setting affects all threads.
+  # @api public
+  def self.serializer=: (untyped value) -> untyped
+
+  # Get the PaperTrail serializer used by all threads.
+  # @api public
+  def self.serializer: () -> untyped
+
+  # Returns PaperTrail's global configuration object, a singleton. These
+  # settings affect all threads.
+  # @api private
+  def self.config: () { (untyped) -> untyped } -> untyped
+
+  alias self.configure self.config
+
+  def self.version: () -> untyped
+end
+
+module PaperTrail
+  # Generic PaperTrail exception.
+  # @api public
+  class Error < StandardError
+  end
+
+  # An unexpected option, perhaps a typo, was passed to a public API method.
+  # @api public
+  class InvalidOption < Error
+  end
+
+  # The application's database schema is not supported.
+  # @api public
+  class UnsupportedSchema < Error
+  end
+
+  # The application's database column type is not supported.
+  # @api public
+  class UnsupportedColumnType < UnsupportedSchema
+    def initialize: (method: untyped method, expected: untyped expected, actual: untyped actual) -> void
+  end
+end
+
+module PaperTrail
+  module AttributeSerializers
+    # Serialize or deserialize the `version.object` column.
+    class ObjectAttribute
+      def initialize: (untyped model_class) -> void
+
+      def serialize: (untyped attributes) -> untyped
+
+      def deserialize: (untyped attributes) -> untyped
+
+      private
+
+      # Modifies `attributes` in place.
+      # TODO: Return a new hash instead.
+      def alter: (untyped attributes, untyped serialization_method) -> untyped
+
+      def object_col_is_json?: () -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  # :nodoc:
+  module AttributeSerializers
+    # The `CastAttributeSerializer` (de)serializes model attribute values. For
+    # example, the string "1.99" serializes into the integer `1` when assigned
+    # to an attribute of type `ActiveRecord::Type::Integer`.
+    class CastAttributeSerializer
+      def initialize: (untyped klass) -> void
+
+      private
+
+      # Returns a hash mapping attributes to hashes that map strings to
+      # integers. Example:
+      #
+      # ```
+      # { "status" => { "draft"=>0, "published"=>1, "archived"=>2 } }
+      # ```
+      #
+      # ActiveRecord::Enum was added in AR 4.1
+      # http://edgeguides.rubyonrails.org/4_1_release_notes.html#active-record-enums
+      def defined_enums: () -> untyped
+
+      def deserialize: (untyped attr, untyped val) -> untyped
+
+      def serialize: (untyped attr, untyped val) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module AttributeSerializers
+    # Serialize or deserialize the `version.object_changes` column.
+    class ObjectChangesAttribute
+      def initialize: (untyped item_class) -> void
+
+      def serialize: (untyped changes) -> untyped
+
+      def deserialize: (untyped changes) -> untyped
+
+      private
+
+      # Modifies `changes` in place.
+      # TODO: Return a new hash instead.
+      def alter: (untyped changes, untyped serialization_method) -> untyped
+
+      def object_changes_col_is_json?: () -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module AttributeSerializers
+    # Values returned by some Active Record serializers are
+    # not suited for writing JSON to a text column. This factory
+    # replaces certain default Active Record serializers
+    # with custom PaperTrail ones.
+    #
+    # @api private
+    module AttributeSerializerFactory
+      # @api private
+      def self.for: (untyped klass, untyped attr) -> untyped
+
+      private
+
+      # @api private
+      def self.ar_pg_array?: (untyped obj) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  # Originally, PaperTrail did not provide this module, and all of this
+  # functionality was in `PaperTrail::Version`. That model still exists (and is
+  # used by most apps) but by moving the functionality to this module, people
+  # can include this concern instead of sub-classing the `Version` model.
+  module VersionConcern
+    extend ::ActiveSupport::Concern
+
+    # :nodoc:
+    module ClassMethods
+      def with_item_keys: (untyped item_type, untyped item_id) -> untyped
+
+      def creates: () -> untyped
+
+      def updates: () -> untyped
+
+      def destroys: () -> untyped
+
+      def not_creates: () -> untyped
+
+      def between: (untyped start_time, untyped end_time) -> untyped
+
+      # Defaults to using the primary key as the secondary sort order if
+      # possible.
+      def timestamp_sort_order: (?::String direction) -> untyped
+
+      # Given an attribute like `"name"`, query the `versions.object_changes`
+      # column for any changes that modified the provided attribute.
+      #
+      # @api public
+      def where_attribute_changes: (untyped attribute) -> untyped
+
+      # Given a hash of attributes like `name: 'Joan'`, query the
+      # `versions.objects` column.
+      #
+      # ```
+      # SELECT "versions".*
+      # FROM "versions"
+      # WHERE ("versions"."object" LIKE '%
+      # name: Joan
+      # %')
+      # ```
+      #
+      # This is useful for finding versions where a given attribute had a given
+      # value. Imagine, in the example above, that Joan had changed her name
+      # and we wanted to find the versions before that change.
+      #
+      # Based on the data type of the `object` column, the appropriate SQL
+      # operator is used. For example, a text column will use `like`, and a
+      # jsonb column will use `@>`.
+      #
+      # @api public
+      def where_object: (?::Hash[untyped, untyped] args) -> untyped
+
+      # Given a hash of attributes like `name: 'Joan'`, query the
+      # `versions.objects_changes` column.
+      #
+      # ```
+      # SELECT "versions".*
+      # FROM "versions"
+      # WHERE .. ("versions"."object_changes" LIKE '%
+      # name:
+      # - Joan
+      # %' OR "versions"."object_changes" LIKE '%
+      # name:
+      # -%
+      # - Joan
+      # %')
+      # ```
+      #
+      # This is useful for finding versions immediately before and after a given
+      # attribute had a given value. Imagine, in the example above, that someone
+      # changed their name to Joan and we wanted to find the versions
+      # immediately before and after that change.
+      #
+      # Based on the data type of the `object` column, the appropriate SQL
+      # operator is used. For example, a text column will use `like`, and a
+      # jsonb column will use `@>`.
+      #
+      # @api public
+      def where_object_changes: (?::Hash[untyped, untyped] args) -> untyped
+
+      # Given a hash of attributes like `name: 'Joan'`, query the
+      # `versions.objects_changes` column for changes where the version changed
+      # from the hash of attributes to other values.
+      #
+      # This is useful for finding versions where the attribute started with a
+      # known value and changed to something else. This is in comparison to
+      # `where_object_changes` which will find both the changes before and
+      # after.
+      #
+      # @api public
+      def where_object_changes_from: (?::Hash[untyped, untyped] args) -> untyped
+
+      # Given a hash of attributes like `name: 'Joan'`, query the
+      # `versions.objects_changes` column for changes where the version changed
+      # to the hash of attributes from other values.
+      #
+      # This is useful for finding versions where the attribute started with an
+      # unknown value and changed to a known value. This is in comparison to
+      # `where_object_changes` which will find both the changes before and
+      # after.
+      #
+      # @api public
+      def where_object_changes_to: (?::Hash[untyped, untyped] args) -> untyped
+
+      def primary_key_is_int?: () -> untyped
+
+      # Returns whether the `object` column is using the `json` type supported
+      # by PostgreSQL.
+      def object_col_is_json?: () -> untyped
+
+      # Returns whether the `object_changes` column is using the `json` type
+      # supported by PostgreSQL.
+      def object_changes_col_is_json?: () -> untyped
+
+      # Returns versions before `obj`.
+      #
+      # @param obj - a `Version` or a timestamp
+      # @param timestamp_arg - boolean - When true, `obj` is a timestamp.
+      #   Default: false.
+      # @return `ActiveRecord::Relation`
+      # @api public
+      # rubocop:disable Style/OptionalBooleanParameter
+      def preceding: (untyped obj, ?bool timestamp_arg) -> untyped
+
+      # Returns versions after `obj`.
+      #
+      # @param obj - a `Version` or a timestamp
+      # @param timestamp_arg - boolean - When true, `obj` is a timestamp.
+      #   Default: false.
+      # @return `ActiveRecord::Relation`
+      # @api public
+      # rubocop:disable Style/OptionalBooleanParameter
+      def subsequent: (untyped obj, ?bool timestamp_arg) -> untyped
+
+      private
+
+      # @api private
+      def preceding_by_id: (untyped obj) -> untyped
+
+      # @api private
+      def preceding_by_timestamp: (untyped obj) -> untyped
+
+      # @api private
+      def subsequent_by_id: (untyped version) -> untyped
+
+      # @api private
+      def subsequent_by_timestamp: (untyped obj) -> untyped
+    end
+
+    # @api private
+    def object_deserialized: () -> untyped
+
+    # Restore the item from this version.
+    #
+    # Options:
+    #
+    # - :mark_for_destruction
+    #   - `true` - Mark the has_one/has_many associations that did not exist in
+    #     the reified version for destruction, instead of removing them.
+    #   - `false` - Default. Useful for persisting the reified version.
+    # - :dup
+    #   - `false` - Default.
+    #   - `true` - Always create a new object instance. Useful for
+    #     comparing two versions of the same object.
+    # - :unversioned_attributes
+    #   - `:nil` - Default. Attributes undefined in version record are set to
+    #     nil in reified record.
+    #   - `:preserve` - Attributes undefined in version record are not modified.
+    #
+    def reify: (?::Hash[untyped, untyped] options) -> (nil | untyped)
+
+    # Returns what changed in this version of the item.
+    # `ActiveModel::Dirty#changes`. returns `nil` if your `versions` table does
+    # not have an `object_changes` text column.
+    def changeset: () -> (nil | untyped)
+
+    # Returns who put the item into the state stored in this version.
+    def paper_trail_originator: () -> untyped
+
+    # Returns who changed the item from the state it had in this version. This
+    # is an alias for `whodunnit`.
+    def terminator: () -> untyped
+
+    alias version_author terminator
+
+    def next: () -> untyped
+
+    def previous: () -> untyped
+
+    # Returns an integer representing the chronological position of the
+    # version among its siblings. The "create" event, for example, has an index
+    # of 0.
+    #
+    # @api public
+    def index: () -> untyped
+
+    private
+
+    # @api private
+    def load_changeset: () -> untyped
+
+    # If the `object_changes` column is a Postgres JSON column, then
+    # ActiveRecord will deserialize it for us. Otherwise, it's a string column
+    # and we must deserialize it ourselves.
+    # @api private
+    def object_changes_deserialized: () -> untyped
+
+    # Enforces the `version_limit`, if set. Default: no limit.
+    # @api private
+    def enforce_version_limit!: () -> (nil | untyped)
+
+    # @api private
+    def sibling_versions: () -> untyped
+
+    # See docs section 2.e. Limiting the Number of Versions Created.
+    # The version limit can be global or per-model.
+    #
+    # @api private
+    def version_limit: () -> untyped
+
+    def limit_option?: (untyped klass) -> untyped
+
+    def base_class_limit_option?: (untyped klass) -> untyped
+  end
+end
+
+module PaperTrail
+  module Queries
+    module Versions
+      # For public API documentation, see `where_object_changes` in
+      # `paper_trail/version_concern.rb`.
+      # @api private
+      class WhereObjectChanges
+        # - version_model_class - The class that VersionConcern was mixed into.
+        # - attributes - A `Hash` of attributes and values. See the public API
+        #   documentation for details.
+        # @api private
+        def initialize: (untyped version_model_class, untyped attributes) -> void
+
+        # @api private
+        def execute: () -> untyped
+
+        private
+
+        # @api private
+        def json: () -> untyped
+
+        # @api private
+        def jsonb: () -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  module Queries
+    module Versions
+      # For public API documentation, see `where_object_changes_to` in
+      # `paper_trail/version_concern.rb`.
+      # @api private
+      class WhereObjectChangesTo
+        # - version_model_class - The class that VersionConcern was mixed into.
+        # - attributes - A `Hash` of attributes and values. See the public API
+        #   documentation for details.
+        # @api private
+        def initialize: (untyped version_model_class, untyped attributes) -> void
+
+        # @api private
+        def execute: () -> untyped
+
+        private
+
+        # @api private
+        def json: () -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  module Queries
+    module Versions
+      # For public API documentation, see `where_object_changes_from` in
+      # `paper_trail/version_concern.rb`.
+      # @api private
+      class WhereObjectChangesFrom
+        # - version_model_class - The class that VersionConcern was mixed into.
+        # - attributes - A `Hash` of attributes and values. See the public API
+        #   documentation for details.
+        # @api private
+        def initialize: (untyped version_model_class, untyped attributes) -> void
+
+        # @api private
+        def execute: () -> untyped
+
+        private
+
+        # @api private
+        def json: () -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  module Queries
+    module Versions
+      # For public API documentation, see `where_attribute_changes` in
+      # `paper_trail/version_concern.rb`.
+      # @api private
+      class WhereAttributeChanges
+        # - version_model_class - The class that VersionConcern was mixed into.
+        # - attribute - An attribute that changed. See the public API
+        #   documentation for details.
+        # @api private
+        def initialize: (untyped version_model_class, untyped attribute) -> void
+
+        # @api private
+        def execute: () -> untyped
+
+        private
+
+        # @api private
+        def json: () -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  module Queries
+    module Versions
+      # For public API documentation, see `where_object` in
+      # `paper_trail/version_concern.rb`.
+      # @api private
+      class WhereObject
+        # - version_model_class - The class that VersionConcern was mixed into.
+        # - attributes - A `Hash` of attributes and values. See the public API
+        #   documentation for details.
+        # @api private
+        def initialize: (untyped version_model_class, untyped attributes) -> void
+
+        # @api private
+        def execute: () -> untyped
+
+        private
+
+        # @api private
+        def json: () -> untyped
+
+        # @api private
+        def jsonb: () -> untyped
+
+        # @api private
+        def text: () -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  # Utilities for deleting version records.
+  module Cleaner
+    # Destroys all but the most recent version(s) for items on a given date
+    # (or on all dates). Useful for deleting drafts.
+    #
+    # Options:
+    #
+    # - :keeping - An `integer` indicating the number of versions to be kept for
+    #   each item per date. Defaults to `1`. The most recent matching versions
+    #   are kept.
+    # - :date - Should either be a `Date` object specifying which date to
+    #   destroy versions for or `:all`, which will specify that all dates
+    #   should be cleaned. Defaults to `:all`.
+    # - :item_id - The `id` for the item to be cleaned on, or `nil`, which
+    #   causes all items to be cleaned. Defaults to `nil`.
+    #
+    def clean_versions!: (?::Hash[untyped, untyped] options) -> untyped
+
+    private
+
+    # Returns a hash of versions grouped by the `item_id` attribute formatted
+    # like this: {:item_id => PaperTrail::Version}. If `item_id` or `date` is
+    # set, versions will be narrowed to those pointing at items with those ids
+    # that were created on specified date. Versions are returned in
+    # chronological order.
+    def gather_versions: (?untyped? item_id, ?::Symbol date) -> untyped
+
+    # Given an array of versions, returns a hash mapping dates to arrays of
+    # versions.
+    # @api private
+    def group_versions_by_date: (untyped versions) -> untyped
+  end
+end
+
+module PaperTrail
+  # Manages variables that affect the current HTTP request, such as `whodunnit`.
+  #
+  # Please do not use `PaperTrail::Request` directly, use `PaperTrail.request`.
+  # Currently, `Request` is a `Module`, but in the future it is quite possible
+  # we may make it a `Class`. If we make such a choice, we will not provide any
+  # warning and will not treat it as a breaking change. You've been warned :)
+  #
+  # @api private
+  module Request
+    # Sets any data from the controller that you want PaperTrail to store.
+    # See also `PaperTrail::Rails::Controller#info_for_paper_trail`.
+    #
+    #   PaperTrail.request.controller_info = { ip: request_user_ip }
+    #   PaperTrail.request.controller_info # => { ip: '127.0.0.1' }
+    #
+    # @api public
+    def self.controller_info=: (untyped value) -> untyped
+
+    # Returns the data from the controller that you want PaperTrail to store.
+    # See also `PaperTrail::Rails::Controller#info_for_paper_trail`.
+    #
+    #   PaperTrail.request.controller_info = { ip: request_user_ip }
+    #   PaperTrail.request.controller_info # => { ip: '127.0.0.1' }
+    #
+    # @api public
+    def self.controller_info: () -> untyped
+
+    # Switches PaperTrail off for the given model.
+    # @api public
+    def self.disable_model: (untyped model_class) -> untyped
+
+    # Switches PaperTrail on for the given model.
+    # @api public
+    def self.enable_model: (untyped model_class) -> untyped
+
+    # Sets whether PaperTrail is enabled or disabled for the current request.
+    # @api public
+    def self.enabled=: (untyped value) -> untyped
+
+    # Returns `true` if PaperTrail is enabled for the request, `false` otherwise.
+    # See `PaperTrail::Rails::Controller#paper_trail_enabled_for_controller`.
+    # @api public
+    def self.enabled?: () -> untyped
+
+    # Sets whether PaperTrail is enabled or disabled for this model in the
+    # current request.
+    # @api public
+    def self.enabled_for_model: (untyped model, untyped value) -> untyped
+
+    # Returns `true` if PaperTrail is enabled for this model in the current
+    # request, `false` otherwise.
+    # @api public
+    def self.enabled_for_model?: (untyped model) -> untyped
+
+    # @api private
+    def self.merge: (untyped options) -> untyped
+
+    # @api private
+    def self.set: (untyped options) -> untyped
+
+    # Returns a deep copy of the internal hash from our RequestStore. Keys are
+    # all symbols. Values are mostly primitives, but whodunnit can be a Proc.
+    # We cannot use Marshal.dump here because it doesn't support Proc. It is
+    # unclear exactly how `deep_dup` handles a Proc, but it doesn't complain.
+    # @api private
+    def self.to_h: () -> untyped
+
+    # Temporarily set `options` and execute a block.
+    # @api private
+    def self.with: (untyped options) { () -> untyped } -> untyped
+
+    # Sets who is responsible for any changes that occur during request. You
+    # would normally use this in a migration or on the console, when working
+    # with models directly.
+    #
+    # `value` is usually a string, the name of a person, but you can set
+    # anything that responds to `to_s`. You can also set a Proc, which will
+    # not be evaluated until `whodunnit` is called later, usually right before
+    # inserting a `Version` record.
+    #
+    # @api public
+    def self.whodunnit=: (untyped value) -> untyped
+
+    # Returns who is reponsible for any changes that occur during request.
+    #
+    # @api public
+    def self.whodunnit: () -> untyped
+
+    private
+
+    # Returns a Hash, initializing with default values if necessary.
+    # @api private
+    def self.store: () -> untyped
+
+    # Provide a helpful error message if someone has a typo in one of their
+    # option keys. We don't validate option values here. That's traditionally
+    # been handled with casting (`to_s`, `!!`) in the accessor method.
+    # @api private
+    def self.validate_public_options: (untyped options) -> untyped
+  end
+end
+
+module PaperTrail
+  module Serializers
+    # An alternate serializer for, e.g. `versions.object`.
+    module JSON
+      extend ::PaperTrail::Serializers::JSON
+
+      def load: (untyped string) -> untyped
+
+      def dump: (untyped object) -> untyped
+
+      # Returns a SQL LIKE condition to be used to match the given field and
+      # value in the serialized object.
+      def where_object_condition: (untyped arel_field, untyped field, untyped value) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module Serializers
+    # The default serializer for, e.g. `versions.object`.
+    module YAML
+      extend ::PaperTrail::Serializers::YAML
+
+      def load: (untyped string) -> untyped
+
+      # @param object (Hash | HashWithIndifferentAccess) - Coming from
+      # `recordable_object` `object` will be a plain `Hash`. However, due to
+      # recent [memory optimizations](https://github.com/paper-trail-gem/paper_trail/pull/1189),
+      # when coming from `recordable_object_changes`, it will be a `HashWithIndifferentAccess`.
+      def dump: (untyped object) -> untyped
+
+      # Returns a SQL LIKE condition to be used to match the given field and
+      # value in the serialized object.
+      def where_object_condition: (untyped arel_field, untyped field, untyped value) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  # Given a version record and some options, builds a new model object.
+  # @api private
+  module Reifier
+    # See `VersionConcern#reify` for documentation.
+    # @api private
+    def self.reify: (untyped version, untyped options) -> untyped
+
+    private
+
+    # Given a hash of `options` for `.reify`, return a new hash with default
+    # values applied.
+    # @api private
+    def self.apply_defaults_to: (untyped options, untyped version) -> untyped
+
+    # Initialize a model object suitable for reifying `version` into. Does
+    # not perform reification, merely instantiates the appropriate model
+    # class and, if specified by `options[:unversioned_attributes]`, sets
+    # unversioned attributes to `nil`.
+    #
+    # Normally a polymorphic belongs_to relationship allows us to get the
+    # object we belong to by calling, in this case, `item`.  However this
+    # returns nil if `item` has been destroyed, and we need to be able to
+    # retrieve destroyed objects.
+    #
+    # In this situation we constantize the `item_type` to get hold of the
+    # class...except when the stored object's attributes include a `type`
+    # key.  If this is the case, the object we belong to is using single
+    # table inheritance (STI) and the `item_type` will be the base class,
+    # not the actual subclass. If `type` is present but empty, the class is
+    # the base class.
+    def self.init_model: (untyped attrs, untyped options, untyped version) -> untyped
+
+    # @api private
+    def self.init_model_by_finding_item_id: (untyped klass, untyped version) -> untyped
+
+    # Look for attributes that exist in `model` and not in this version.
+    # These attributes should be set to nil. Modifies `attrs`.
+    # @api private
+    def self.init_unversioned_attrs: (untyped attrs, untyped model) -> untyped
+
+    # Reify onto `model` an attribute named `k` with value `v` from `version`.
+    #
+    # `ObjectAttribute#deserialize` will return the mapped enum value and in
+    # Rails < 5, the []= uses the integer type caster from the column
+    # definition (in general) and thus will turn a (usually) string to 0
+    # instead of the correct value.
+    #
+    # @api private
+    def self.reify_attribute: (untyped k, untyped v, untyped model, untyped version) -> untyped
+
+    # Reify onto `model` all the attributes of `version`.
+    # @api private
+    def self.reify_attributes: (untyped model, untyped version, untyped attrs) -> untyped
+
+    # Given a `version`, return the class to reify. This method supports
+    # Single Table Inheritance (STI) with custom inheritance columns and
+    # custom inheritance column values.
+    #
+    # For example, imagine a `version` whose `item_type` is "Animal". The
+    # `animals` table is an STI table (it has cats and dogs) and it has a
+    # custom inheritance column, `species`. If `attrs["species"]` is "Dog",
+    # this method returns the constant `Dog`. If `attrs["species"]` is blank,
+    # this method returns the constant `Animal`.
+    #
+    # The values contained in the inheritance columns may be non-camelized
+    # strings (e.g. 'dog' instead of 'Dog'). To reify classes in this case
+    # we need to call the parents class `sti_class_for` method to retrieve
+    # the correct record class.
+    #
+    # You can see these particular examples in action in
+    # `spec/models/animal_spec.rb` and `spec/models/plant_spec.rb`
+    def self.version_reification_class: (untyped version, untyped attrs) -> untyped
+  end
+end
+
+module PaperTrail
+  # The version number of the paper_trail gem. Not to be confused with
+  # `PaperTrail::Version`. Ruby constants are case-sensitive, apparently,
+  # and they are two different modules! It would be nice to remove `VERSION`,
+  # because of this confusion, but it's not worth the breaking change.
+  # People are encouraged to use `PaperTrail.gem_version` instead.
+  module VERSION
+    MAJOR: 12
+
+    MINOR: 3
+
+    TINY: 0
+
+    # Set PRE to nil unless it's a pre-release (beta, rc, etc.)
+    PRE: nil
+
+    STRING: untyped
+
+    def self.to_s: () -> untyped
+  end
+end
+
+module PaperTrail
+  # Represents the history of a single record.
+  # @api private
+  class RecordHistory
+    # @param versions - ActiveRecord::Relation - All versions of the record.
+    # @param version_class - Class - Usually PaperTrail::Version,
+    #   but it could also be a custom version class.
+    # @api private
+    def initialize: (untyped versions, untyped version_class) -> void
+
+    # Returns ordinal position of `version` in `sequence`.
+    # @api private
+    def index: (untyped version) -> untyped
+
+    private
+
+    # Returns `@versions` in chronological order.
+    # @api private
+    def sequence: () -> untyped
+
+    # @return - Arel::Attribute - Attribute representing the primary key
+    #   of the version table. The column's data type is usually a serial
+    #   integer (the rails convention) but not always.
+    # @api private
+    def primary_key: () -> untyped
+
+    # @return - Arel::Table - The version table, usually named `versions`, but
+    #   not always.
+    # @api private
+    def table: () -> untyped
+  end
+end
+
+module PaperTrail
+  module TypeSerializers
+    # Provides an alternative method of serialization
+    # and deserialization of PostgreSQL array columns.
+    class PostgresArraySerializer
+      def initialize: (untyped subtype, untyped delimiter) -> void
+
+      def serialize: (untyped array) -> untyped
+
+      def deserialize: (untyped array) -> untyped
+
+      private
+
+      def deserialize_with_ar: (untyped array) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  # Global configuration affecting all threads. Some thread-specific
+  # configuration can be found in `paper_trail.rb`, others in `controller.rb`.
+  class Config
+    include Singleton
+
+    attr_accessor association_reify_error_behaviour: untyped
+
+    attr_accessor object_changes_adapter: untyped
+
+    attr_accessor serializer: untyped
+
+    attr_accessor version_limit: untyped
+
+    attr_accessor has_paper_trail_defaults: untyped
+
+    def initialize: () -> void
+
+    # Indicates whether PaperTrail is on or off. Default: true.
+    def enabled: () -> untyped
+
+    def enabled=: (untyped enable) -> untyped
+  end
+end
+
+module PaperTrail
+  module Events
+    # We refer to times in the lifecycle of a record as "events". There are
+    # three events:
+    #
+    # - create
+    #   - `after_create` we call `RecordTrail#record_create`
+    # - update
+    #   - `after_update` we call `RecordTrail#record_update`
+    #   - `after_touch` we call `RecordTrail#record_update`
+    #   - `RecordTrail#save_with_version` calls `RecordTrail#record_update`
+    #   - `RecordTrail#update_columns` is also referred to as an update, though
+    #     it uses `RecordTrail#record_update_columns` rather than
+    #     `RecordTrail#record_update`
+    # - destroy
+    #   - `before_destroy` or `after_destroy` we call `RecordTrail#record_destroy`
+    #
+    # The value inserted into the `event` column of the versions table can also
+    # be overridden by the user, with `paper_trail_event`.
+    #
+    # @api private
+    class Base
+      # @api private
+      def initialize: (untyped record, untyped in_after_callback) -> void
+
+      # Determines whether it is appropriate to generate a new version
+      # instance. A timestamp-only update (e.g. only `updated_at` changed) is
+      # considered notable unless an ignored attribute was also changed.
+      #
+      # @api private
+      def changed_notably?: () -> untyped
+
+      private
+
+      # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
+      # https://github.com/paper-trail-gem/paper_trail/pull/899
+      #
+      # @api private
+      def attribute_changed_in_latest_version?: (untyped attr_name) -> untyped
+
+      # @api private
+      def nonskipped_attributes_before_change: (untyped is_touch) -> untyped
+
+      # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
+      # https://github.com/paper-trail-gem/paper_trail/pull/899
+      #
+      # Event can be any of the three (create, update, destroy).
+      #
+      # @api private
+      def attribute_in_previous_version: (untyped attr_name, untyped is_touch) -> untyped
+
+      # @api private
+      def calculated_ignored_array: () -> untyped
+
+      # @api private
+      def changed_and_not_ignored: () -> untyped
+
+      # @api private
+      def changed_in_latest_version: () -> untyped
+
+      # Memoized to reduce memory usage
+      #
+      # @api private
+      def changes_in_latest_version: () -> untyped
+
+      # @api private
+      def evaluate_only: () -> untyped
+
+      # An attributed is "ignored" if it is listed in the `:ignore` option
+      # and/or the `:skip` option.  Returns true if an ignored attribute has
+      # changed.
+      #
+      # @api private
+      def ignored_attr_has_changed?: () -> untyped
+
+      # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
+      # https://github.com/paper-trail-gem/paper_trail/pull/899
+      #
+      # @api private
+      def load_changes_in_latest_version: () -> untyped
+
+      # PT 10 has a new optional column, `item_subtype`
+      #
+      # @api private
+      def merge_item_subtype_into: (untyped data) -> untyped
+
+      # Updates `data` from the model's `meta` option and from `controller_info`.
+      # Metadata is always recorded; that means all three events (create, update,
+      # destroy) and `update_columns`.
+      #
+      # @api private
+      def merge_metadata_into: (untyped data) -> untyped
+
+      # Updates `data` from `controller_info`.
+      #
+      # @api private
+      def merge_metadata_from_controller_into: (untyped data) -> untyped
+
+      # Updates `data` from the model's `meta` option.
+      #
+      # @api private
+      def merge_metadata_from_model_into: (untyped data) -> untyped
+
+      # Given a `value` from the model's `meta` option, returns an object to be
+      # persisted. The `value` can be a simple scalar value, but it can also
+      # be a symbol that names a model method, or even a Proc.
+      #
+      # @api private
+      def model_metadatum: (untyped value, untyped event) -> untyped
+
+      # The model method can either be an attribute or a non-attribute method.
+      #
+      # If it is an attribute that is changing in an existing object,
+      # be sure to grab the correct version.
+      #
+      # @api private
+      def metadatum_from_model_method: (untyped event, untyped method) -> untyped
+
+      # @api private
+      def notable_changes: () -> untyped
+
+      # @api private
+      def notably_changed: () -> untyped
+
+      # Returns hash of attributes (with appropriate attributes serialized),
+      # omitting attributes to be skipped.
+      #
+      # @api private
+      def object_attrs_for_paper_trail: (untyped is_touch) -> untyped
+
+      # @api private
+      def prepare_object_changes: (untyped changes) -> untyped
+
+      # Returns an object which can be assigned to the `object_changes`
+      # attribute of a nascent version record. If the `object_changes` column is
+      # a postgres `json` column, then a hash can be used in the assignment,
+      # otherwise the column is a `text` column, and we must perform the
+      # serialization here, using `PaperTrail.serializer`.
+      #
+      # @api private
+      # @param changes HashWithIndifferentAccess
+      def recordable_object_changes: (untyped changes) -> untyped
+
+      # Returns a boolean indicating whether to store serialized version diffs
+      # in the `object_changes` column of the version record.
+      #
+      # @api private
+      def record_object_changes?: () -> untyped
+
+      # Returns a boolean indicating whether to store the original object during save.
+      #
+      # @api private
+      def record_object?: () -> untyped
+
+      # Returns an object which can be assigned to the `object` attribute of a
+      # nascent version record. If the `object` column is a postgres `json`
+      # column, then a hash can be used in the assignment, otherwise the column
+      # is a `text` column, and we must perform the serialization here, using
+      # `PaperTrail.serializer`.
+      #
+      # @api private
+      def recordable_object: (untyped is_touch) -> untyped
+
+      # @api private
+      def serialize_object_changes: (untyped changes) -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module Events
+    # See docs in `Base`.
+    #
+    # @api private
+    class Create < Base
+      # Return attributes of nascent `Version` record.
+      #
+      # @api private
+      def data: () -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module Events
+    # See docs in `Base`.
+    #
+    # @api private
+    class Destroy < Base
+      # Return attributes of nascent `Version` record.
+      #
+      # @api private
+      def data: () -> untyped
+
+      private
+
+      # Rails' implementation (eg. `@record.saved_changes`) returns nothing on
+      # destroy, so we have to build the hash we want.
+      #
+      # @override
+      def changes_in_latest_version: () -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  module Events
+    # See docs in `Base`.
+    #
+    # @api private
+    class Update < Base
+      # - is_touch - [boolean] - Used in the two situations that are touch-like:
+      #   - `after_touch` we call `RecordTrail#record_update`
+      # - force_changes - [Hash] - Only used by `RecordTrail#update_columns`,
+      #   because there dirty-tracking is off, so it has to track its own changes.
+      #
+      # @api private
+      def initialize: (untyped record, untyped in_after_callback, untyped is_touch, untyped force_changes) -> void
+
+      # Return attributes of nascent `Version` record.
+      #
+      # @api private
+      def data: () -> untyped
+
+      # If it is a touch event, and changed are empty, it is assumed to be
+      # implicit `touch` mutation, and will a version is created.
+      #
+      # See https://github.com/rails/rails/commit/dcb825902d79d0f6baba956f7c6ec5767611353e
+      #
+      # @api private
+      def changed_notably?: () -> untyped
+
+      private
+
+      # @api private
+      def merge_object_changes_into: (untyped data) -> untyped
+
+      # `touch` cannot record `object_changes` because rails' `touch` does not
+      # perform dirty-tracking. Specifically, methods from `Dirty`, like
+      # `saved_changes`, return the same values before and after `touch`.
+      #
+      # See https://github.com/rails/rails/issues/33429
+      #
+      # @api private
+      def record_object_changes?: () -> untyped
+    end
+  end
+end
+
+
+module PaperTrail
+  # This is the default ActiveRecord model provided by PaperTrail. Most simple
+  # applications will use this model as-is, but it is possible to sub-class,
+  # extend, or even do without this model entirely. See documentation section
+  # 6.a. Custom Version Classes.
+  #
+  # The paper_trail-association_tracking gem provides a related model,
+  # `VersionAssociation`.
+  class Version < ::ActiveRecord::Base
+    include PaperTrail::VersionConcern
+  end
+end
+
+
+module PaperTrail
+  module Cucumber
+    # Helper method for enabling PT in Cucumber features.
+    module Extensions
+      def with_versioning: () { () -> untyped } -> untyped
+    end
+  end
+end
+
+
+module PaperTrail
+  module RSpec
+    module Helpers
+      # Included in the RSpec configuration in `frameworks/rspec.rb`
+      module InstanceMethods
+        # enable versioning for specific blocks (at instance-level)
+        def with_versioning: () { () -> untyped } -> untyped
+      end
+
+      # Extended by the RSpec configuration in `frameworks/rspec.rb`
+      module ClassMethods
+        # enable versioning for specific blocks (at class-level)
+        def with_versioning: () { () -> untyped } -> untyped
+      end
+    end
+  end
+end
+
+module PaperTrail
+  # Represents code to load within Rails framework. See documentation in
+  # `railties/lib/rails/railtie.rb`.
+  # @api private
+  class Railtie < ::Rails::Railtie
+    # Mix our extensions into `ActionController::Base`, which is `self`
+    # because of the `class_eval` in `lazy_load_hooks.rb`.
+    include PaperTrail::Rails::Controller
+  end
+end
+
+module PaperTrail
+  module Rails
+    # Extensions to rails controllers. Provides convenient ways to pass certain
+    # information to the model layer, with `controller_info` and `whodunnit`.
+    # Also includes a convenient on/off switch,
+    # `paper_trail_enabled_for_controller`.
+    module Controller
+      def self.included: (untyped controller) -> untyped
+
+      # Returns the user who is responsible for any changes that occur.
+      # By default this calls `current_user` and returns the result.
+      #
+      # Override this method in your controller to call a different
+      # method, e.g. `current_person`, or anything you like.
+      #
+      # @api public
+      def user_for_paper_trail: () -> (nil | untyped)
+
+      # Returns any information about the controller or request that you
+      # want PaperTrail to store alongside any changes that occur.  By
+      # default this returns an empty hash.
+      #
+      # Override this method in your controller to return a hash of any
+      # information you need.  The hash's keys must correspond to columns
+      # in your `versions` table, so don't forget to add any new columns
+      # you need.
+      #
+      # For example:
+      #
+      #     {:ip => request.remote_ip, :user_agent => request.user_agent}
+      #
+      # The columns `ip` and `user_agent` must exist in your `versions` # table.
+      #
+      # Use the `:meta` option to
+      # `PaperTrail::Model::ClassMethods.has_paper_trail` to store any extra
+      # model-level data you need.
+      #
+      # @api public
+      def info_for_paper_trail: () -> ::Hash[untyped, untyped]
+
+      # Returns `true` (default) or `false` depending on whether PaperTrail
+      # should be active for the current request.
+      #
+      # Override this method in your controller to specify when PaperTrail
+      # should be off.
+      #
+      # ```
+      # def paper_trail_enabled_for_controller
+      #   # Don't omit `super` without a good reason.
+      #   super && request.user_agent != 'Disable User-Agent'
+      # end
+      # ```
+      #
+      # @api public
+      def paper_trail_enabled_for_controller: () -> untyped
+
+      private
+
+      # Tells PaperTrail whether versions should be saved in the current
+      # request.
+      #
+      # @api public
+      def set_paper_trail_enabled_for_controller: () -> untyped
+
+      # Tells PaperTrail who is responsible for any changes that occur.
+      #
+      # @api public
+      def set_paper_trail_whodunnit: () -> untyped
+
+      # Tells PaperTrail any information from the controller you want to store
+      # alongside any changes that occur.
+      #
+      # @api public
+      def set_paper_trail_controller_info: () -> untyped
+    end
+  end
+end
+
+module PaperTrail
+  # Extensions to `ActiveRecord::Base`.  See `frameworks/active_record.rb`.
+  # It is our goal to have the smallest possible footprint here, because
+  # `ActiveRecord::Base` is a very crowded namespace! That is why we introduced
+  # `.paper_trail` and `#paper_trail`.
+  module Model
+    def self.included: (untyped base) -> untyped
+
+    # :nodoc:
+    module ClassMethods
+      # Declare this in your model to track every create, update, and destroy.
+      # Each version of the model is available in the `versions` association.
+      #
+      # Options:
+      #
+      # - :on - The events to track (optional; defaults to all of them). Set
+      #   to an array of `:create`, `:update`, `:destroy` and `:touch` as desired.
+      # - :class_name (deprecated) - The name of a custom Version class that
+      #   includes `PaperTrail::VersionConcern`.
+      # - :ignore - An array of attributes for which a new `Version` will not be
+      #   created if only they change. It can also accept a Hash as an
+      #   argument where the key is the attribute to ignore (a `String` or
+      #   `Symbol`), which will only be ignored if the value is a `Proc` which
+      #   returns truthily.
+      # - :if, :unless - Procs that allow to specify conditions when to save
+      #   versions for an object.
+      # - :only - Inverse of `ignore`. A new `Version` will be created only
+      #   for these attributes if supplied it can also accept a Hash as an
+      #   argument where the key is the attribute to track (a `String` or
+      #   `Symbol`), which will only be counted if the value is a `Proc` which
+      #   returns truthily.
+      # - :skip - Fields to ignore completely.  As with `ignore`, updates to
+      #   these fields will not create a new `Version`.  In addition, these
+      #   fields will not be included in the serialized versions of the object
+      #   whenever a new `Version` is created.
+      # - :meta - A hash of extra data to store. You must add a column to the
+      #   `versions` table for each key. Values are objects or procs (which
+      #   are called with `self`, i.e. the model with the paper trail).  See
+      #   `PaperTrail::Controller.info_for_paper_trail` for how to store data
+      #   from the controller.
+      # - :versions - Either,
+      #   - A String (deprecated) - The name to use for the versions
+      #     association.  Default is `:versions`.
+      #   - A Hash - options passed to `has_many`, plus `name:` and `scope:`.
+      # - :version - The name to use for the method which returns the version
+      #   the instance was reified from. Default is `:version`.
+      #
+      # Plugins like the experimental `paper_trail-association_tracking` gem
+      # may accept additional options.
+      #
+      # You can define a default set of options via the configurable
+      # `PaperTrail.config.has_paper_trail_defaults` hash in your applications
+      # initializer. The hash can contain any of the following options and will
+      # provide an overridable default for all models.
+      #
+      # @api public
+      def has_paper_trail: (?::Hash[untyped, untyped] options) -> untyped
+
+      # @api public
+      def paper_trail: () -> untyped
+    end
+
+    # Wrap the following methods in a module so we can include them only in the
+    # ActiveRecord models that declare `has_paper_trail`.
+    module InstanceMethods
+      # @api public
+      def paper_trail: () -> untyped
+    end
+  end
+end
+
+module ActiveRecord
+  class Base
+    extend PaperTrail::Model::ClassMethods
+  end
+end
+
+module PaperTrail
+  # Configures an ActiveRecord model, mostly at application boot time, but also
+  # sometimes mid-request, with methods like enable/disable.
+  class ModelConfig
+    E_CANNOT_RECORD_AFTER_DESTROY: untyped
+
+    E_HPT_ABSTRACT_CLASS: untyped
+
+    DPR_PASSING_ASSOC_NAME_DIRECTLY_TO_VERSIONS_OPTION: untyped
+
+    DPR_CLASS_NAME_OPTION: untyped
+
+    def initialize: (untyped model_class) -> void
+
+    # Adds a callback that records a version after a "create" event.
+    #
+    # @api public
+    def on_create: () -> untyped
+
+    # Adds a callback that records a version before or after a "destroy" event.
+    #
+    # @api public
+    def on_destroy: (?::String recording_order) -> (nil | untyped)
+
+    # Adds a callback that records a version after an "update" event.
+    #
+    # @api public
+    def on_update: () -> untyped
+
+    # Adds a callback that records a version after a "touch" event.
+    #
+    # Rails < 6.0 has a bug where dirty-tracking does not occur during
+    # a `touch`. (https://github.com/rails/rails/issues/33429) See also:
+    # https://github.com/paper-trail-gem/paper_trail/issues/1121
+    # https://github.com/paper-trail-gem/paper_trail/issues/1161
+    # https://github.com/paper-trail-gem/paper_trail/pull/1285
+    #
+    # @api public
+    def on_touch: () -> untyped
+
+    # Set up `@model_class` for PaperTrail. Installs callbacks, associations,
+    # "class attributes", instance methods, and more.
+    # @api private
+    def setup: (?::Hash[untyped, untyped] options) -> untyped
+
+    # @api private
+    def version_class: () -> untyped
+
+    private
+
+    RAILS_LT_6_0: untyped
+
+    # @api private
+    def append_option_uniquely: (untyped option, untyped value) -> (nil | untyped)
+
+    # Raises an error if the provided class is an `abstract_class`.
+    # @api private
+    def assert_concrete_activerecord_class: (untyped class_name) -> untyped
+
+    # @api private
+    def assert_valid_recording_order_for_on_destroy: (untyped recording_order) -> untyped
+
+    def cannot_record_after_destroy?: () -> untyped
+
+    def check_version_class_name: (untyped options) -> untyped
+
+    def check_versions_association_name: (untyped options) -> untyped
+
+    def define_has_many_versions: (untyped options) -> untyped
+
+    def ensure_versions_option_is_hash: (untyped options) -> untyped
+
+    # Process an `ignore`, `skip`, or `only` option.
+    def event_attribute_option: (untyped option_name) -> untyped
+
+    def get_versions_scope: (untyped options) -> untyped
+
+    def setup_associations: (untyped options) -> untyped
+
+    def setup_callbacks_from_options: (?untyped options_on) -> untyped
+
+    def setup_options: (untyped options) -> untyped
+  end
+end
+
+module PaperTrail
+  # Represents the "paper trail" for a single record.
+  class RecordTrail
+    def initialize: (untyped record) -> void
+
+    # Invoked after rollbacks to ensure versions records are not created for
+    # changes that never actually took place. Optimization: Use lazy `reset`
+    # instead of eager `reload` because, in many use cases, the association will
+    # not be used.
+    def clear_rolled_back_versions: () -> untyped
+
+    # Invoked via`after_update` callback for when a previous version is
+    # reified and then saved.
+    def clear_version_instance: () -> untyped
+
+    # Is PT enabled for this particular record?
+    # @api private
+    def enabled?: () -> untyped
+
+    # Returns true if this instance is the current, live one;
+    # returns false if this instance came from a previous version.
+    def live?: () -> untyped
+
+    # Returns the object (not a Version) as it became next.
+    # NOTE: if self (the item) was not reified from a version, i.e. it is the
+    #  "live" item, we return nil.  Perhaps we should return self instead?
+    def next_version: () -> untyped
+
+    # Returns who put `@record` into its current state.
+    #
+    # @api public
+    def originator: () -> untyped
+
+    # Returns the object (not a Version) as it was most recently.
+    #
+    # @api public
+    def previous_version: () -> untyped
+
+    def record_create: () -> (nil | untyped)
+
+    # PT-AT extends this method to add its transaction id.
+    #
+    # @api private
+    def data_for_create: () -> ::Hash[untyped, untyped]
+
+    # `recording_order` is "after" or "before". See ModelConfig#on_destroy.
+    #
+    # @api private
+    # @return - The created version object, so that plugins can use it, e.g.
+    # paper_trail-association_tracking
+    def record_destroy: (untyped recording_order) -> (nil | untyped)
+
+    # PT-AT extends this method to add its transaction id.
+    #
+    # @api private
+    def data_for_destroy: () -> ::Hash[untyped, untyped]
+
+    # @api private
+    # @return - The created version object, so that plugins can use it, e.g.
+    # paper_trail-association_tracking
+    def record_update: (force: untyped force, in_after_callback: untyped in_after_callback, is_touch: untyped is_touch) -> (nil | untyped)
+
+    # PT-AT extends this method to add its transaction id.
+    #
+    # @api private
+    def data_for_update: () -> ::Hash[untyped, untyped]
+
+    # @api private
+    # @return - The created version object, so that plugins can use it, e.g.
+    # paper_trail-association_tracking
+    def record_update_columns: (untyped changes) -> (nil | untyped)
+
+    # PT-AT extends this method to add its transaction id.
+    #
+    # @api private
+    def data_for_update_columns: () -> ::Hash[untyped, untyped]
+
+    # Invoked via callback when a user attempts to persist a reified
+    # `Version`.
+    def reset_timestamp_attrs_for_update_if_needed: () -> (nil | untyped)
+
+    # AR callback.
+    # @api private
+    def save_version?: () -> untyped
+
+    def source_version: () -> untyped
+
+    # Save, and create a version record regardless of options such as `:on`,
+    # `:if`, or `:unless`.
+    #
+    # `in_after_callback`: Indicates if this method is being called within an
+    #                      `after` callback. Defaults to `false`.
+    # `options`: Optional arguments passed to `save`.
+    #
+    # This is an "update" event. That is, we record the same data we would in
+    # the case of a normal AR `update`.
+    def save_with_version: (?in_after_callback: bool in_after_callback, **untyped options) -> untyped
+
+    # Like the `update_column` method from `ActiveRecord::Persistence`, but also
+    # creates a version to record those changes.
+    # @api public
+    def update_column: (untyped name, untyped value) -> untyped
+
+    # Like the `update_columns` method from `ActiveRecord::Persistence`, but also
+    # creates a version to record those changes.
+    # @api public
+    def update_columns: (untyped attributes) -> untyped
+
+    # Returns the object (not a Version) as it was at the given timestamp.
+    def version_at: (untyped timestamp, ?::Hash[untyped, untyped] reify_options) -> untyped
+
+    # Returns the objects (not Versions) as they were between the given times.
+    def versions_between: (untyped start_time, untyped end_time) -> untyped
+
+    private
+
+    # @api private
+    def assign_and_reset_version_association: (untyped version) -> untyped
+
+    # @api private
+    def build_version_on_create: (in_after_callback: untyped in_after_callback) -> untyped
+
+    # @api private
+    def build_version_on_update: (force: untyped force, in_after_callback: untyped in_after_callback, is_touch: untyped is_touch) -> (nil | untyped)
+
+    def log_version_errors: (untyped version, untyped action) -> untyped
+
+    def version: () -> untyped
+
+    def versions: () -> untyped
+  end
+end
+
+module PaperTrail
+  # Rails does not follow SemVer, makes breaking changes in minor versions.
+  # Breaking changes are expected, and are generally good for the rails
+  # ecosystem. However, they often require dozens of hours to fix, even with the
+  # [help of experts](https://github.com/paper-trail-gem/paper_trail/pull/899).
+  #
+  # It is not safe to assume that a new version of rails will be compatible with
+  # PaperTrail. PT is only compatible with the versions of rails that it is
+  # tested against. See `.github/workflows/test.yml`.
+  #
+  # However, as of
+  # [#1213](https://github.com/paper-trail-gem/paper_trail/pull/1213) our
+  # gemspec allows installation with newer, incompatible rails versions. We hope
+  # this will make it easier for contributors to work on compatibility with
+  # newer rails versions. Most PT users should avoid incompatible rails
+  # versions.
+  module Compatibility
+    ACTIVERECORD_GTE: ">= 5.2"
+
+    ACTIVERECORD_LT: "< 7.1"
+
+    E_INCOMPATIBLE_AR: ::String
+
+    # Normal users need a warning if they accidentally install an incompatible
+    # version of ActiveRecord. Contributors can silence this warning with an
+    # environment variable.
+    def self.check_activerecord: (untyped ar_version) -> (nil | untyped)
+  end
+end
+
+module PaperTrail
+  # Installs PaperTrail in a rails app.
+  class InstallGenerator < MigrationGenerator
+    # Class names of MySQL adapters.
+    # - `MysqlAdapter` - Used by gems: `mysql`, `activerecord-jdbcmysql-adapter`.
+    # - `Mysql2Adapter` - Used by `mysql2` gem.
+    MYSQL_ADAPTERS: ::Array["ActiveRecord::ConnectionAdapters::MysqlAdapter" | "ActiveRecord::ConnectionAdapters::Mysql2Adapter"]
+
+    def create_migration_file: () -> untyped
+
+    private
+
+    # To use uuid instead of integer for primary key
+    def item_id_type_options: () -> untyped
+
+    # MySQL 5.6 utf8mb4 limit is 191 chars for keys used in indexes.
+    # See https://github.com/paper-trail-gem/paper_trail/issues/651
+    def item_type_options: () -> untyped
+
+    def mysql?: () -> untyped
+
+    # Even modern versions of MySQL still use `latin1` as the default character
+    # encoding. Many users are not aware of this, and run into trouble when they
+    # try to use PaperTrail in apps that otherwise tend to use UTF-8. Postgres, by
+    # comparison, uses UTF-8 except in the unusual case where the OS is configured
+    # with a custom locale.
+    #
+    # - https://dev.mysql.com/doc/refman/5.7/en/charset-applications.html
+    # - http://www.postgresql.org/docs/9.4/static/multibyte.html
+    #
+    # Furthermore, MySQL's original implementation of UTF-8 was flawed, and had
+    # to be fixed later by introducing a new charset, `utf8mb4`.
+    #
+    # - https://mathiasbynens.be/notes/mysql-utf8mb4
+    # - https://dev.mysql.com/doc/refman/5.5/en/charset-unicode-utf8mb4.html
+    #
+    def versions_table_options: () -> untyped
+  end
+end
+
+module PaperTrail
+  # Updates STI entries for PaperTrail
+  class UpdateItemSubtypeGenerator < MigrationGenerator
+    def create_migration_file: () -> untyped
+  end
+end
+
+module PaperTrail
+  # Basic structure to support a generator that builds a migration
+  class MigrationGenerator < ::Rails::Generators::Base
+    include ::Rails::Generators::Migration
+
+    def self.next_migration_number: (untyped dirname) -> untyped
+
+    def add_paper_trail_migration: (untyped template, ?::Hash[untyped, untyped] extra_options) -> untyped
+
+    def migration_version: () -> untyped
+  end
+end
+

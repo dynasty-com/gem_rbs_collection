@@ -115,3 +115,6 @@
 [submodule "gems/active_decorator/1.4/_src"]
 	path = gems/active_decorator/1.4/_src
 	url = https://github.com/amatsuda/active_decorator.git
+[submodule "gems/paper_trail/12.3/_src"]
+	path = gems/paper_trail/12.3/_src
+	url = https://github.com/paper-trail-gem/paper_trail.git
