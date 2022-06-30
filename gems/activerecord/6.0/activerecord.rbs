@@ -38,6 +38,7 @@ module ActiveRecord
     extend ::ActiveRecord::Validations::ClassMethods
     extend ::ActiveSupport::Callbacks::ClassMethods
     extend _ActiveRecord_Relation_ClassMethods[untyped, untyped, untyped]
+    extend ::ActiveRecord::Calculations
 
     def self.abstract_class=: (bool) -> void
     def self.scope: (Symbol, Proc) ?{ () -> untyped } -> void
