@@ -5,7 +5,7 @@ module RSpec
     # available to be called from within example blocks.
     #
     # @see ClassMethods
-    module MemoizedHelpers
+    module MemoizedHelpers : BasicObject
       # @note `subject` was contributed by Joe Ferris to support the one-liner
       #   syntax embraced by shoulda matchers:
       #
@@ -172,7 +172,7 @@ module RSpec
       # This module is extended onto {ExampleGroup}, making the methods
       # available to be called from within example group blocks.
       # You can think of them as being analagous to class macros.
-      module ClassMethods
+      module ClassMethods : BasicObject
         # Generates a method whose return value is memoized after the first
         # call. Useful for reducing duplication between examples that assign
         # values to the same local variable.
@@ -300,7 +300,7 @@ module RSpec
         # @see MemoizedHelpers#should
         # @see MemoizedHelpers#should_not
         # @see MemoizedHelpers#is_expected
-        def subject: (?untyped? name) { () -> untyped } -> untyped
+        def subject: (?untyped? name) ?{ () -> untyped } -> untyped
 
         # Just like `subject`, except the block is invoked by an implicit
         # `before` hook. This serves a dual purpose of setting up state and
@@ -4431,11 +4431,14 @@ module RSpec
 end
 
 class Object
-  
+  include ::RSpec::Core::MemoizedHelpers
+  include ::RSpec::Core::MemoizedHelpers::ClassMethods
+  include ::RSpec::Core::Hooks
+
   # Defines an example within a group. This is the primary API to define a code example.
   # 
   # https://www.rubydoc.info/gems/rspec-core/RSpec%2FCore%2FExampleGroup.it
-  def it: (String doc_string) { () -> void } -> void
+  def it: (?String doc_string) { () -> void } -> void
 
   # The describe method creates an example group. Within the block passed to
   # describe you can declare nested groups using the describe or context
@@ -4445,6 +4448,8 @@ class Object
   # describe or context is evaluated. The blocks passed to it are evaluated
   # in the context of an instance of that class.
   def describe: (untyped) { () -> void } -> void
+
+  alias context describe
 end
 
 # ## Built-in Formatters
@@ -5841,7 +5846,7 @@ module RSpec
     # or `context` block and included in {Configuration}, making them
     # available off of the configuration object to define global setup
     # or teardown logic.
-    module Hooks
+    module Hooks : BasicObject
       # @api public
       #
       # @overload before(&block)
