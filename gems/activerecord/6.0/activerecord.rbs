@@ -37,7 +37,7 @@ module ActiveRecord
     extend ::ActiveRecord::Transactions::ClassMethods
     extend ::ActiveRecord::Validations::ClassMethods
     extend ::ActiveSupport::Callbacks::ClassMethods
-    extend _ActiveRecord_Relation_ClassMethods[untyped, untyped, untyped]
+    extend _ActiveRecord_Relation_ClassMethods[instance, untyped, untyped]
     extend ::ActiveRecord::Calculations
 
     def self.abstract_class=: (bool) -> void
