@@ -80,9 +80,9 @@ module ActiveRecord
 
     def will_save_change_to_attribute?: (String | Symbol attr_name, ?from: untyped, ?to: untyped) -> bool
 
-    def save!: (?validate: bool, ?touch: bool) -> self
+    def save!: (?validate: bool, ?touch: bool) -> bool
     def save: () -> bool
-    def update!: (*untyped) -> self
+    def update!: (*untyped) -> bool
     def update: (*untyped) -> bool
     def destroy!: () -> self
     def destroy: () -> bool
