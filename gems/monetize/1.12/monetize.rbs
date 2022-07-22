@@ -1,0 +1,159 @@
+# Write the type definition here!
+
+
+STRING_TO_MONEY: ::Hash[::String, untyped]
+
+module Monetize
+  class Error < StandardError
+  end
+
+  class ParseError < Error
+  end
+
+  class ArgumentError < Error
+  end
+end
+
+module Monetize
+  class Collection
+    extend Forwardable
+
+    include Enumerable
+
+    attr_reader input: untyped
+
+    attr_reader currency: untyped
+
+    attr_reader options: untyped
+
+    def self.parse: (untyped input, ?untyped currency, ?::Hash[untyped, untyped] options) -> Money
+
+    def initialize: (untyped input, ?untyped currency, ?::Hash[untyped, untyped] options) -> void
+
+    def parse: () -> Money
+
+    def range?: () -> untyped
+
+    private
+
+    LIST_SPLIT: ::Regexp
+
+    RANGE_SPLIT: ::Regexp
+
+    def split_list: () -> untyped
+
+    def split_range: () -> untyped
+  end
+end
+
+module Monetize
+  class Parser
+    CURRENCY_SYMBOLS: ::Hash[::String, "USD" | "EUR" | "GBP" | "BRL" | "ZAR" | "JPY" | "CAD" | "AZN" | "CNY" | "CZK" | "HUF" | "INR" | "RUB" | "TRY" | "UAH" | "CHF" | "PLN" | "KZT" | "KRW"]
+
+    MULTIPLIER_SUFFIXES: ::Hash[::String, 3 | 6 | 9 | 12]
+
+    MULTIPLIER_REGEXP: untyped
+
+    DEFAULT_DECIMAL_MARK: "."
+
+    def initialize: (untyped input, ?untyped fallback_currency, ?::Hash[untyped, untyped] options) -> void
+
+    def parse: () -> ::Array[Money]
+
+    private
+
+    def to_big_decimal: (untyped value) -> untyped
+
+    attr_reader input: untyped
+
+    attr_reader fallback_currency: untyped
+
+    attr_reader options: untyped
+
+    def parse_currency: () -> untyped
+
+    def assume_from_symbol?: () -> untyped
+
+    def apply_multiplier: (untyped multiplier_exp, untyped amount) -> untyped
+
+    def apply_sign: (untyped negative, untyped amount) -> untyped
+
+    def compute_currency: () -> untyped
+
+    def extract_major_minor: (untyped num, untyped currency) -> untyped
+
+    def extract_major_minor_with_single_delimiter: (untyped num, untyped currency, untyped delimiter) -> (untyped | ::Array[untyped | 0] | untyped)
+
+    def extract_major_minor_with_tentative_delimiter: (untyped num, untyped delimiter) -> (::Array[untyped | "00"] | untyped)
+
+    def extract_multiplier: () -> (::Array[untyped | ::String] | ::Array[0 | untyped])
+
+    def extract_sign: (untyped input) -> untyped
+
+    def regex_safe_symbols: () -> untyped
+
+    def split_major_minor: (untyped num, untyped delimiter) -> ::Array[untyped]
+
+    def currency_symbol_regex: () -> ::Regexp
+  end
+end
+
+
+module Monetize
+  VERSION: "1.12.0"
+end
+
+class String
+  def to_money: (?String? currency) -> Money
+
+  def to_currency: () -> Money::Currency
+end
+
+class Numeric
+  def to_money: (?Numeric? currency) -> Money
+end
+
+class Hash
+  def to_money: (?Hash? currency) -> Money
+end
+
+class Symbol
+  def to_currency: () -> Money::Currency
+end
+
+class NilClass
+  def to_money: (?NilClass? currency) -> Money
+end
+
+module Monetize
+  # @attr_accessor [true, false] assume_from_symbol Use this to enable the
+  #   ability to assume the currency from a passed symbol
+  attr_accessor self.assume_from_symbol: untyped
+
+  # Monetize uses the delimiters set in the currency to separate integers from
+  # decimals, and to ignore thousands separators. In some corner cases,
+  # though, it will try to determine the correct separator by itself. Set this
+  # to true to enforce the delimiters set in the currency all the time.
+  attr_accessor self.enforce_currency_delimiters: untyped
+
+  def self.parse: (untyped input, ?Money::Currency currency, ?::Hash[untyped, untyped] options) -> Money
+
+  def self.parse!: (untyped input, ?Money::Currency currency, ?::Hash[untyped, untyped] options) -> Money
+
+  def self.parse_collection: (untyped input, ?untyped currency, ?::Hash[untyped, untyped] options) -> untyped
+
+  def self.from_string: (String value, ?untyped currency) -> Money
+
+  def self.from_fixnum: (Fixnum value, ?untyped currency) -> Money
+
+  alias self.from_integer self.from_fixnum
+
+  def self.from_float: (Float value, ?untyped currency) -> Money
+
+  def self.from_bigdecimal: (BigDecimal value, ?untyped currency) -> Money
+
+  def self.from_numeric: (Numeric value, ?untyped currency) -> Money
+
+  def self.extract_cents: (untyped input, ?untyped currency) -> untyped
+end
+

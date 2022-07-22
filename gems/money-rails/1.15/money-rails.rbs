@@ -1,0 +1,460 @@
+
+
+
+class Product < ActiveRecord::Base
+  attr_accessor accessor_price_cents: untyped
+end
+
+class Priceable
+  include Mongoid::Document
+end
+
+class DummyProduct < ActiveRecord::Base
+end
+
+class Transaction < ActiveRecord::Base
+  def total_cents: () -> untyped
+end
+
+class Service < ActiveRecord::Base
+end
+
+class ApplicationController < ActionController::Base
+end
+
+module ApplicationHelper
+end
+
+
+
+
+
+
+module Dummy
+  class Application < Rails::Application
+  end
+end
+
+
+
+
+
+
+
+
+
+
+class AddBonusCentsToProduct
+  def change: () -> untyped
+end
+
+class AddDeliveryFeeCentsAndRestockFeeCentsToProduct
+  def change: () -> untyped
+end
+
+class AddColumnThatAllowsNil
+  def change: () -> untyped
+end
+
+class CreateProducts
+  def change: () -> untyped
+end
+
+class AddSkipValidationPriceCentsToProducts
+  def change: () -> untyped
+end
+
+class AddAliasedAttrToProducts
+  def change: () -> untyped
+end
+
+class AddLambdaPriceToProducts
+  def change: () -> untyped
+end
+
+class AddPriceInARangeCentsToProducts
+  def change: () -> untyped
+end
+
+class AddOptionalAmountToTransactions
+  def change: () -> untyped
+end
+
+class AddSalePriceCentsToProduct
+  def change: () -> untyped
+end
+
+class AddReducedPriceToProducts
+  def change: () -> untyped
+end
+
+class CreateTransactions
+  def change: () -> untyped
+end
+
+class CreateServices
+  def change: () -> untyped
+end
+
+class AddValidatesMethodAmountCentsToProducts
+  def change: () -> untyped
+end
+
+class CreateDummyProducts
+  def change: () -> untyped
+end
+
+class AddSpecialPriceToProducts
+  def change: () -> untyped
+end
+
+
+class Item < ActiveRecord::Base
+end
+
+class Item < ActiveRecord::Base
+end
+
+class Sub < Product
+end
+
+class InheritedMonetizeProduct < Product
+end
+
+class Product
+end
+
+class AnotherProduct < Product
+end
+
+class AnotherProduct < Product
+end
+
+class SubProduct < Product
+end
+
+class Object
+  def update_product: (*untyped attributes) -> untyped
+
+  def assert_monetized_attributes: (untyped monetized_attributes, untyped expected_attributes) -> untyped
+end
+
+
+
+class Object
+  include MoneyRails::TestHelpers
+end
+
+
+
+module MoneyRails
+  extend Configuration
+end
+
+class Money
+  include ::Mongoid::Fields::Serializable
+
+  # Mongo friendly -> Money
+  def deserialize: (untyped object) -> (nil | untyped)
+
+  # Money -> Mongo friendly
+  def serialize: (untyped object) -> untyped
+end
+
+class Money
+  # Converts an object of this instance into a database friendly value.
+  def mongoize: () -> { cents: untyped, currency_iso: untyped }
+
+  # Get the object as it was stored in the database, and instantiate
+  # this custom class from it.
+  def self.demongoize: (untyped object) -> (untyped | nil)
+
+  # Takes any possible object and converts it to how it would be
+  # stored in the database.
+  def self.mongoize: (untyped object) -> (untyped | nil)
+
+  # Converts the object that was supplied to a criteria and converts it
+  # into a database friendly form.
+  def self.evolve: (untyped object) -> untyped
+
+  private
+
+  def self.mongoize_hash: (untyped hash) -> (nil | untyped)
+
+  def self.mongoize_castable: (untyped object) -> untyped
+end
+
+module MoneyRails
+  class Error < StandardError
+  end
+end
+
+module MoneyRails
+  module TestHelpers
+    def monetize: (untyped attribute) -> untyped
+
+    class MonetizeMatcher
+      def initialize: (untyped attribute) -> void
+
+      def with_currency: (untyped currency) -> self
+
+      def with_model_currency: (untyped attribute) -> self
+
+      def as: (untyped virt_attr) -> self
+
+      def allow_nil: () -> self
+
+      def matches?: (untyped actual) -> untyped
+
+      def description: () -> untyped
+
+      def failure_message: () -> untyped
+
+      alias failure_message_for_should failure_message
+
+      def failure_message_when_negated: () -> untyped
+
+      alias failure_message_for_should_not failure_message_when_negated
+
+      alias negative_failure_message failure_message_when_negated
+
+      private
+
+      def object_responds_to_attributes?: () -> untyped
+
+      def test_allow_nil: () -> (untyped | true)
+
+      def is_monetized?: () -> untyped
+
+      def test_currency_iso: () -> (untyped | true)
+
+      def test_currency_attribute: () -> (untyped | true)
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveModel
+    class MoneyValidator < ::ActiveModel::Validations::NumericalityValidator
+      class Details
+        def abs_raw_value: () -> untyped
+
+        def decimal_pieces: () -> untyped
+      end
+
+      def validate_each: (untyped record, untyped attr, untyped _value) -> (nil | untyped)
+
+      private
+
+      DEFAULTS: { decimal_mark: ".", thousands_separator: "," }
+
+      def generate_details: (untyped raw_value, untyped currency) -> untyped
+
+      def record_already_has_error?: (untyped record, untyped attr, untyped raw_value) -> untyped
+
+      def add_error!: (untyped record, untyped attr, untyped details) -> untyped
+
+      def value_has_too_many_decimal_points: (untyped details) -> untyped
+
+      def thousand_separator_after_decimal_mark: (untyped details) -> untyped
+
+      def invalid_thousands_separation: (untyped details) -> (false | true | untyped)
+
+      # Remove thousands separators, normalize decimal mark,
+      # remove whitespaces and _ (E.g. 99 999 999 or 12_300_200.20)
+      def normalize: (untyped details) -> untyped
+
+      def lookup: (untyped key, untyped currency) -> untyped
+
+      def locale_backend: () -> untyped
+    end
+  end
+end
+
+# Compatibility with ActiveModel validates method which matches option keys to their validator class
+ActiveModel::Validations::MoneyValidator: untyped
+
+module MoneyRails
+  class Engine < ::Rails::Engine
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module Monetizable
+      class ReadOnlyCurrencyException < MoneyRails::Error
+      end
+
+      extend ActiveSupport::Concern
+
+      module ClassMethods
+        def monetized_attributes: () -> untyped
+
+        def monetize: (*untyped fields) -> untyped
+
+        def register_currency: (untyped currency_name) -> untyped
+
+        private
+
+        def track_monetized_attribute: (untyped name, untyped value) -> untyped
+      end
+
+      def read_monetized: (untyped name, untyped subunit_name, ?::Hash[untyped, untyped] options, *untyped args) -> (nil | untyped)
+
+      def write_monetized: (untyped name, untyped subunit_name, untyped value, untyped validation_enabled, untyped instance_currency_name, untyped options) -> (nil | untyped)
+
+      def currency_for: (untyped name, untyped instance_currency_name, untyped field_currency_name) -> untyped
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module MigrationExtensions
+      class OptionsExtractor
+        def self.extract: (untyped attribute, untyped table_name, untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+      end
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module MigrationExtensions
+      module SchemaStatements
+        def add_money: (untyped table_name, untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+
+        def remove_money: (untyped table_name, untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+      end
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module MigrationExtensions
+      module Table
+        def money: (untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+
+        def remove_money: (untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+      end
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module MigrationExtensions
+      module SchemaStatements
+        def add_monetize: (untyped table_name, untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+
+        def remove_monetize: (untyped table_name, untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+      end
+    end
+  end
+end
+
+module MoneyRails
+  module ActiveRecord
+    module MigrationExtensions
+      module Table
+        def monetize: (untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+
+        def remove_monetize: (untyped accessor, ?::Hash[untyped, untyped] options) -> untyped
+      end
+    end
+  end
+end
+
+module RailsAdmin
+  module Config
+    module Fields
+      module Types
+        class Money < RailsAdmin::Config::Fields::Types::Decimal
+        end
+      end
+    end
+  end
+end
+
+class Object
+  include MoneyRails::ActionViewExtension
+end
+
+class Money
+  alias self.orig_default_formatting_rules self.default_formatting_rules
+
+  def self.default_formatting_rules: () -> untyped
+
+  # This is expected to be called by ActiveSupport when calling as_json an Money object
+  def to_hash: () -> { cents: untyped, currency_iso: untyped }
+end
+
+module MoneyRails
+  class Railtie < ::Rails::Railtie
+  end
+end
+
+module MoneyRails
+  VERSION: "1.15.0"
+end
+
+module MoneyRails
+  # MoneyRails configuration module.
+  # This is extended by MoneyRails to provide configuration settings.
+  module Configuration
+    # Start a MoneyRails configuration block in an initializer.
+    #
+    # example: Provide a default currency for the application
+    #   MoneyRails.configure do |config|
+    #     config.default_currency = :eur
+    #   end
+    def configure: () { (untyped) -> untyped } -> untyped
+
+    def default_currency: () -> untyped
+
+    # Set default currency of money library
+    def default_currency=: (untyped currency_name) -> untyped
+
+    # Register a custom currency
+    def register_currency=: (untyped currency_options) -> untyped
+
+    def set_currency_column_for_default_currency!: () -> untyped
+
+    def rounding_mode=: (untyped mode) -> untyped
+  end
+end
+
+module MoneyRails
+  module ActionViewExtension
+    def currency_symbol: (?untyped currency) -> untyped
+
+    def humanized_money: (untyped value, ?::Hash[untyped, untyped] options) -> untyped
+
+    def humanized_money_with_symbol: (untyped value, ?::Hash[untyped, untyped] options) -> untyped
+
+    def money_without_cents: (untyped value, ?::Hash[untyped, untyped] options) -> untyped
+
+    def money_without_cents_and_with_symbol: (untyped value) -> untyped
+
+    def money_only_cents: (untyped value) -> ("00" | untyped)
+  end
+end
+
+module MoneyRails
+  class Hooks
+    PG_ADAPTERS: ::Array["activerecord-jdbcpostgresql-adapter" | "postgresql" | "postgis"]
+
+    def self.init: () -> untyped
+  end
+end
+
+module MoneyRails
+  module Generators
+    class InitializerGenerator < ::Rails::Generators::Base
+      def copy_initializer: () -> untyped
+    end
+  end
+end
+
+

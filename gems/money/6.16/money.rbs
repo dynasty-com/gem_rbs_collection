@@ -1,0 +1,2023 @@
+class Money
+  module Warning
+    def warn: (untyped message) -> nil
+  end
+end
+
+class Money
+  include Warning
+
+  extend Warning
+end
+
+class Money::LocaleBackend::Base
+  include Money::Warning
+end
+
+class Money::FormattingRules
+  include Money::Warning
+end
+
+class Object
+  def reset_i18n: () -> untyped
+end
+
+
+
+class MyBank
+  attr_reader setup_called: untyped
+
+  def setup: () -> untyped
+end
+
+Subclass: untyped
+
+class Object
+  def self.fractional: () -> "expectation"
+
+  # Make a small expectation
+  def self.amount: () -> 5
+end
+
+
+
+
+
+
+BAR: "{ \"priority\": 1, \"iso_code\": \"BAR\", \"iso_numeric\": \"840\", \"name\": \"Dollar with 4 decimal places\", \"symbol\": \"$\", \"subunit\": \"Cent\", \"subunit_to_unit\": 10000, \"symbol_first\": true, \"html_entity\": \"$\", \"decimal_mark\": \".\", \"thousands_separator\": \",\", \"smallest_denomination\": 1 }"
+
+INDIAN_BAR: "{ \"priority\": 1, \"iso_code\": \"INDIAN_BAR\", \"iso_numeric\": \"840\", \"name\": \"Dollar with 4 decimal places\", \"symbol\": \"$\", \"subunit\": \"Cent\", \"subunit_to_unit\": 10000, \"symbol_first\": true, \"html_entity\": \"$\", \"decimal_mark\": \".\", \"thousands_separator\": \",\", \"south_asian_number_formatting\": true, \"smallest_denomination\": 1}"
+
+EU4: ::String
+
+
+
+FOO: "{ \"priority\": 1, \"iso_code\": \"FOO\", \"iso_numeric\": \"840\", \"name\": \"United States Dollar\", \"symbol\": \"$\", \"subunit\": \"Cent\", \"subunit_to_unit\": 1000, \"symbol_first\": true, \"html_entity\": \"$\", \"decimal_mark\": \".\", \"thousands_separator\": \",\", \"smallest_denomination\": 1 }"
+
+class Mock
+  def to_s: () -> "208"
+end
+
+class Object
+  def register_foo: (?::Hash[untyped, untyped] opts) -> untyped
+
+  def unregister_foo: () -> untyped
+end
+
+
+
+
+
+
+
+class Money
+  # Represents a specific currency unit.
+  #
+  # @see https://en.wikipedia.org/wiki/Currency
+  # @see http://iso4217.net/
+  class Currency
+    include Comparable
+
+    extend Enumerable
+
+    extend Money::Currency::Heuristics
+
+    # Thrown when a Currency has been registered without all the attributes
+    # which are required for the current action.
+    class MissingAttributeError < StandardError
+      def initialize: (untyped method, untyped currency, untyped attribute) -> void
+    end
+
+    # Thrown when an unknown currency is requested.
+    class UnknownCurrency < ArgumentError
+    end
+
+    def self.new: (untyped id) -> untyped
+
+    def self._instances: () -> untyped
+
+    # Lookup a currency with given +id+ an returns a +Currency+ instance on
+    # success, +nil+ otherwise.
+    #
+    # @param [String, Symbol, #to_s] id Used to look into +table+ and
+    # retrieve the applicable attributes.
+    #
+    # @return [Money::Currency]
+    #
+    # @example
+    #   Money::Currency.find(:eur) #=> #<Money::Currency id: eur ...>
+    #   Money::Currency.find(:foo) #=> nil
+    def self.find: (untyped id) -> untyped
+
+    # Lookup a currency with given +num+ as an ISO 4217 numeric and returns an
+    # +Currency+ instance on success, +nil+ otherwise.
+    #
+    # @param [#to_s] num used to look into +table+ in +iso_numeric+ and find
+    # the right currency id.
+    #
+    # @return [Money::Currency]
+    #
+    # @example
+    #   Money::Currency.find_by_iso_numeric(978) #=> #<Money::Currency id: eur ...>
+    #   Money::Currency.find_by_iso_numeric(51) #=> #<Money::Currency id: amd ...>
+    #   Money::Currency.find_by_iso_numeric('001') #=> nil
+    def self.find_by_iso_numeric: (untyped num) -> untyped
+
+    # Wraps the object in a +Currency+ unless it's already a +Currency+
+    # object.
+    #
+    # @param [Object] object The object to attempt and wrap as a +Currency+
+    # object.
+    #
+    # @return [Money::Currency]
+    #
+    # @example
+    #   c1 = Money::Currency.new(:usd)
+    #   Money::Currency.wrap(nil)   #=> nil
+    #   Money::Currency.wrap(c1)    #=> #<Money::Currency id: usd ...>
+    #   Money::Currency.wrap("usd") #=> #<Money::Currency id: usd ...>
+    def self.wrap: (untyped object) -> (nil | untyped)
+
+    # List of known currencies.
+    #
+    # == monetary unit
+    # The standard unit of value of a currency, as the dollar in the United States or the peso in Mexico.
+    # https://www.answers.com/topic/monetary-unit
+    # == fractional monetary unit, subunit
+    # A monetary unit that is valued at a fraction (usually one hundredth) of the basic monetary unit
+    # https://www.answers.com/topic/fractional-monetary-unit-subunit
+    #
+    # See https://en.wikipedia.org/wiki/List_of_circulating_currencies and
+    # http://search.cpan.org/~tnguyen/Locale-Currency-Format-1.28/Format.pm
+    def self.table: () -> untyped
+
+    # List the currencies imported and registered
+    # @return [Array]
+    #
+    # @example
+    #   Money::Currency.all()
+    #   [#<Currency ..USD>, 'CAD', 'EUR']...
+    def self.all: () -> untyped
+
+    # We need a string-based validator before creating an unbounded number of
+    # symbols.
+    # http://www.randomhacks.net/articles/2007/01/20/13-ways-of-looking-at-a-ruby-symbol#11
+    # https://github.com/RubyMoney/money/issues/132
+    #
+    # @return [Set]
+    def self.stringified_keys: () -> untyped
+
+    # Register a new currency
+    #
+    # @param curr [Hash] information about the currency
+    # @option priority [Numeric] a numerical value you can use to sort/group
+    #   the currency list
+    # @option iso_code [String] the international 3-letter code as defined
+    #   by the ISO 4217 standard
+    # @option iso_numeric [Integer] the international 3-digit code as
+    #   defined by the ISO 4217 standard
+    # @option name [String] the currency name
+    # @option symbol [String] the currency symbol (UTF-8 encoded)
+    # @option subunit [String] the name of the fractional monetary unit
+    # @option subunit_to_unit [Numeric] the proportion between the unit and
+    #   the subunit
+    # @option separator [String] character between the whole and fraction
+    #   amounts
+    # @option delimiter [String] character between each thousands place
+    def self.register: (untyped curr) -> untyped
+
+    # Inherit a new currency from existing one
+    #
+    # @param parent_iso_code [String] the international 3-letter code as defined
+    # @param curr [Hash] See {register} method for hash structure
+    def self.inherit: (untyped parent_iso_code, untyped curr) -> untyped
+
+    # Unregister a currency.
+    #
+    # @param [Object] curr A Hash with the key `:iso_code`, or the ISO code
+    #   as a String or Symbol.
+    #
+    # @return [Boolean] true if the currency previously existed, false
+    #   if it didn't.
+    def self.unregister: (untyped curr) -> untyped
+
+    def self.each: () { (untyped) -> untyped } -> untyped
+
+    def self.reset!: () -> untyped
+
+    private
+
+    def self.stringify_keys: () -> untyped
+
+    public
+
+    attr_reader id: untyped
+
+    attr_reader priority: untyped
+
+    attr_reader iso_code: untyped
+
+    attr_reader iso_numeric: untyped
+
+    attr_reader name: untyped
+
+    attr_reader symbol: untyped
+
+    attr_reader disambiguate_symbol: untyped
+
+    attr_reader html_entity: untyped
+
+    attr_reader subunit: untyped
+
+    attr_reader subunit_to_unit: untyped
+
+    attr_reader decimal_mark: untyped
+
+    attr_reader thousands_separator: untyped
+
+    attr_reader symbol_first: untyped
+
+    attr_reader smallest_denomination: untyped
+
+    attr_reader format: untyped
+
+    alias separator decimal_mark
+
+    alias delimiter thousands_separator
+
+    alias eql? ==
+
+    # Create a new +Currency+ object.
+    #
+    # @param [String, Symbol, #to_s] id Used to look into +table+ and retrieve
+    #  the applicable attributes.
+    #
+    # @return [Money::Currency]
+    #
+    # @example
+    #   Money::Currency.new(:usd) #=> #<Money::Currency id: usd ...>
+    def initialize: (untyped id) -> void
+
+    # Compares +self+ with +other_currency+ against the value of +priority+
+    # attribute.
+    #
+    # @param [Money::Currency] other_currency The currency to compare to.
+    #
+    # @return [-1,0,1] -1 if less than, 0 is equal to, 1 if greater than
+    #
+    # @example
+    #   c1 = Money::Currency.new(:usd)
+    #   c2 = Money::Currency.new(:jpy)
+    #   c1 <=> c2 #=> 1
+    #   c2 <=> c1 #=> -1
+    #   c1 <=> c1 #=> 0
+    def <=>: (untyped other_currency) -> untyped
+
+    # Compares +self+ with +other_currency+ and returns +true+ if the are the
+    # same or if their +id+ attributes match.
+    #
+    # @param [Money::Currency] other_currency The currency to compare to.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   c1 = Money::Currency.new(:usd)
+    #   c2 = Money::Currency.new(:jpy)
+    #   c1 == c1 #=> true
+    #   c1 == c2 #=> false
+    def ==: (untyped other_currency) -> untyped
+
+    private
+
+    def compare_ids: (untyped other_currency) -> untyped
+
+    public
+
+    # Returns a Integer hash value based on the +id+ attribute in order to use
+    # functions like & (intersection), group_by, etc.
+    #
+    # @return [Integer]
+    #
+    # @example
+    #   Money::Currency.new(:usd).hash #=> 428936
+    def hash: () -> untyped
+
+    # Returns a human readable representation.
+    #
+    # @return [String]
+    #
+    # @example
+    #   Money::Currency.new(:usd) #=> #<Currency id: usd ...>
+    def inspect: () -> ::String
+
+    # Returns a string representation corresponding to the upcase +id+
+    # attribute.
+    #
+    # --
+    # DEV: id.to_s.upcase corresponds to iso_code but don't use ISO_CODE for consistency.
+    #
+    # @return [String]
+    #
+    # @example
+    #   Money::Currency.new(:usd).to_s #=> "USD"
+    #   Money::Currency.new(:eur).to_s #=> "EUR"
+    def to_s: () -> untyped
+
+    # Returns a string representation corresponding to the upcase +id+
+    # attribute. Useful in cases where only implicit conversions are made.
+    #
+    # @return [String]
+    #
+    # @example
+    #   Money::Currency.new(:usd).to_str #=> "USD"
+    #   Money::Currency.new(:eur).to_str #=> "EUR"
+    def to_str: () -> untyped
+
+    # Returns a symbol representation corresponding to the upcase +id+
+    # attribute.
+    #
+    # @return [Symbol]
+    #
+    # @example
+    #   Money::Currency.new(:usd).to_sym #=> :USD
+    #   Money::Currency.new(:eur).to_sym #=> :EUR
+    def to_sym: () -> untyped
+
+    # Conversion to +self+.
+    #
+    # @return [self]
+    def to_currency: () -> self
+
+    # Returns currency symbol or iso code for currencies with no symbol.
+    #
+    # @return [String]
+    def code: () -> untyped
+
+    def symbol_first?: () -> untyped
+
+    # Returns if a code currency is ISO.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   Money::Currency.new(:usd).iso?
+    #
+    def iso?: () -> untyped
+
+    # Returns the relation between subunit and unit as a base 10 exponent.
+    #
+    # Note that MGA and MRU are exceptions and are rounded to 1
+    # @see https://en.wikipedia.org/wiki/ISO_4217#Active_codes
+    #
+    # @return [Integer]
+    def exponent: () -> untyped
+
+    alias decimal_places exponent
+
+    private
+
+    def initialize_data!: () -> untyped
+  end
+end
+
+class Money
+  # Provides classes that aid in the ability of exchange one currency with
+  # another.
+  module Bank
+    # The lowest Money::Bank error class.
+    # All Money::Bank errors should inherit from it.
+    class Error < StandardError
+    end
+
+    # Raised when the bank doesn't know about the conversion rate
+    # for specified currencies.
+    class UnknownRate < Error
+    end
+
+    # Money::Bank::Base is the basic interface for creating a money exchange
+    # object, also called Bank.
+    #
+    # A Bank is responsible for storing exchange rates, take a Money object as
+    # input and returns the corresponding Money object converted into an other
+    # currency.
+    #
+    # This class exists for aiding in the creating of other classes to exchange
+    # money between different currencies. When creating a subclass you will
+    # need to implement the following methods to exchange money between
+    # currencies:
+    #
+    # - #exchange_with(Money) #=> Money
+    #
+    # See Money::Bank::VariableExchange for a real example.
+    #
+    # Also, you can extend +Money::Bank::VariableExchange+ instead of
+    # +Money::Bank::Base+ if your bank implementation needs to store rates
+    # internally.
+    #
+    # @abstract Subclass and override +#exchange_with+ to implement a custom
+    #  +Money::Bank+ class. You can also override +#setup+ instead of
+    #  +#initialize+ to setup initial variables, etc.
+    class Base
+      # Returns the singleton instance of the Base bank.
+      #
+      # @return [Money::Bank::Base]
+      def self.instance: () -> untyped
+
+      # The rounding method to use when exchanging rates.
+      #
+      # @return [Proc]
+      attr_reader rounding_method: untyped
+
+      # Initializes a new +Money::Bank::Base+ object. An optional block can be
+      # passed to dictate the rounding method that +#exchange_with+ can use.
+      #
+      # @yield [n] Optional block to use when rounding after exchanging one
+      #  currency for another.
+      # @yieldparam [Float] n The resulting float after exchanging one currency
+      #  for another.
+      # @yieldreturn [Integer]
+      #
+      # @return [Money::Bank::Base]
+      #
+      # @example
+      #   Money::Bank::Base.new #=> #<Money::Bank::Base @rounding_method=nil>
+      #   Money::Bank::Base.new {|n|
+      #     n.floor
+      #   } #=> #<Money::Bank::Base @round_method=#<Proc>>
+      def initialize: () ?{ () -> untyped } -> void
+
+      # Called after initialize. Subclasses can use this method to setup
+      # variables, etc that they normally would in +#initialize+.
+      #
+      # @abstract Subclass and override +#setup+ to implement a custom
+      #  +Money::Bank+ class.
+      #
+      # @return [self]
+      def setup: () -> nil
+
+      # Exchanges the given +Money+ object to a new +Money+ object in
+      # +to_currency+.
+      #
+      # @abstract Subclass and override +#exchange_with+ to implement a custom
+      #  +Money::Bank+ class.
+      #
+      # @raise NotImplementedError
+      #
+      # @param [Money] from The +Money+ object to exchange from.
+      # @param [Money::Currency, String, Symbol] to_currency The currency
+      #  string or object to exchange to.
+      # @yield [n] Optional block to use to round the result after making
+      #  the exchange.
+      # @yieldparam [Float] n The result after exchanging from one currency to
+      #  the other.
+      # @yieldreturn [Integer]
+      #
+      # @return [Money]
+      def exchange_with: (untyped from, untyped to_currency) ?{ () -> untyped } -> untyped
+
+      # Given two currency strings or object, checks whether they're both the
+      # same currency. Return +true+ if the currencies are the same, +false+
+      # otherwise.
+      #
+      # @param [Money::Currency, String, Symbol] currency1 The first currency
+      #  to compare.
+      # @param [Money::Currency, String, Symbol] currency2 The second currency
+      #  to compare.
+      #
+      # @return [Boolean]
+      #
+      # @example
+      #   same_currency?("usd", "USD")                #=> true
+      #   same_currency?("usd", "EUR")                #=> false
+      #   same_currency?("usd", Currency.new("USD"))   #=> true
+      #   same_currency?("usd", "USD")                #=> true
+      def same_currency?: (untyped currency1, untyped currency2) -> untyped
+    end
+  end
+end
+
+class Money
+  module Bank
+    # Thrown when an unknown rate format is requested.
+    class UnknownRateFormat < StandardError
+    end
+
+    # Class for aiding in exchanging money between different currencies. By
+    # default, the +Money+ class uses an object of this class (accessible
+    # through +Money#bank+) for performing currency exchanges.
+    #
+    # By default, +Money::Bank::VariableExchange+ has no knowledge about
+    # conversion rates. One must manually specify them with +add_rate+, after
+    # which one can perform exchanges with +#exchange_with+.
+    #
+    # Exchange rates are stored in memory using +Money::RatesStore::Memory+ by default.
+    # Pass custom rates stores for other types of storage (file, database, etc)
+    #
+    # @example
+    #   bank = Money::Bank::VariableExchange.new
+    #   bank.add_rate("USD", "CAD", 1.24515)
+    #   bank.add_rate("CAD", "USD", 0.803115)
+    #
+    #   c1 = Money.new(100_00, "USD")
+    #   c2 = Money.new(100_00, "CAD")
+    #
+    #   # Exchange 100 USD to CAD:
+    #   bank.exchange_with(c1, "CAD") #=> #<Money fractional:12451 currency:CAD>
+    #
+    #   # Exchange 100 CAD to USD:
+    #   bank.exchange_with(c2, "USD") #=> #<Money fractional:8031 currency:USD>
+    #
+    #   # With custom exchange rates storage
+    #   redis_store = MyCustomRedisStore.new(host: 'localhost:6379')
+    #   bank = Money::Bank::VariableExchange.new(redis_store)
+    #   # Store rates in redis
+    #   bank.add_rate 'USD', 'CAD', 0.98
+    #   # Get rate from redis
+    #   bank.get_rate 'USD', 'CAD'
+    class VariableExchange < Base
+      attr_reader mutex: untyped
+
+      # Available formats for importing/exporting rates.
+      RATE_FORMATS: ::Array[:json | :ruby | :yaml]
+
+      SERIALIZER_SEPARATOR: "_TO_"
+
+      FORMAT_SERIALIZERS: { json: untyped, ruby: untyped, yaml: untyped }
+
+      # Initializes a new +Money::Bank::VariableExchange+ object.
+      # It defaults to using an in-memory, thread safe store instance for
+      # storing exchange rates.
+      #
+      # @param [RateStore] st An exchange rate store, used to persist exchange rate pairs.
+      # @yield [n] Optional block to use when rounding after exchanging one
+      #  currency for another. See +Money::bank::base+
+      def initialize: (?untyped st) ?{ () -> untyped } -> void
+
+      def store: () -> untyped
+
+      def marshal_dump: () -> ::Array[untyped]
+
+      def marshal_load: (untyped arr) -> untyped
+
+      # Exchanges the given +Money+ object to a new +Money+ object in
+      # +to_currency+.
+      #
+      # @param  [Money] from
+      #         The +Money+ object to exchange.
+      # @param  [Currency, String, Symbol] to_currency
+      #         The currency to exchange to.
+      #
+      # @yield [n] Optional block to use when rounding after exchanging one
+      #  currency for another.
+      # @yieldparam [Float] n The resulting float after exchanging one currency
+      #  for another.
+      # @yieldreturn [Integer]
+      #
+      # @return [Money]
+      #
+      # @raise +Money::Bank::UnknownRate+ if the conversion rate is unknown.
+      #
+      # @example
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.add_rate("USD", "CAD", 1.24515)
+      #   bank.add_rate("CAD", "USD", 0.803115)
+      #
+      #   c1 = Money.new(100_00, "USD")
+      #   c2 = Money.new(100_00, "CAD")
+      #
+      #   # Exchange 100 USD to CAD:
+      #   bank.exchange_with(c1, "CAD") #=> #<Money fractional:12451 currency:CAD>
+      #
+      #   # Exchange 100 CAD to USD:
+      #   bank.exchange_with(c2, "USD") #=> #<Money fractional:8031 currency:USD>
+      def exchange_with: (untyped from, untyped to_currency) ?{ () -> untyped } -> untyped
+
+      def calculate_fractional: (untyped from, untyped to_currency) -> untyped
+
+      def exchange: (untyped fractional, untyped rate) { (untyped) -> untyped } -> untyped
+
+      # Registers a conversion rate and returns it (uses +#set_rate+).
+      # Delegates to +Money::RatesStore::Memory+
+      #
+      # @param [Currency, String, Symbol] from Currency to exchange from.
+      # @param [Currency, String, Symbol] to Currency to exchange to.
+      # @param [Numeric] rate Rate to use when exchanging currencies.
+      #
+      # @return [Numeric]
+      #
+      # @example
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.add_rate("USD", "CAD", 1.24515)
+      #   bank.add_rate("CAD", "USD", 0.803115)
+      def add_rate: (untyped from, untyped to, untyped rate) -> untyped
+
+      # Set the rate for the given currencies.
+      # access.
+      # Delegates to +Money::RatesStore::Memory+
+      #
+      # @param [Currency, String, Symbol] from Currency to exchange from.
+      # @param [Currency, String, Symbol] to Currency to exchange to.
+      # @param [Numeric] rate Rate to use when exchanging currencies.
+      # @param [Hash] opts Options hash to set special parameters. Backwards compatibility only.
+      #
+      # @return [Numeric]
+      #
+      # @example
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.set_rate("USD", "CAD", 1.24515)
+      #   bank.set_rate("CAD", "USD", 0.803115)
+      def set_rate: (untyped from, untyped to, untyped rate, ?::Hash[untyped, untyped] opts) -> untyped
+
+      # Retrieve the rate for the given currencies.
+      # data access.
+      # Delegates to +Money::RatesStore::Memory+
+      #
+      # @param [Currency, String, Symbol] from Currency to exchange from.
+      # @param [Currency, String, Symbol] to Currency to exchange to.
+      # @param [Hash] opts Options hash to set special parameters. Backwards compatibility only.
+      #
+      # @return [Numeric]
+      #
+      # @example
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.set_rate("USD", "CAD", 1.24515)
+      #   bank.set_rate("CAD", "USD", 0.803115)
+      #
+      #   bank.get_rate("USD", "CAD") #=> 1.24515
+      #   bank.get_rate("CAD", "USD") #=> 0.803115
+      def get_rate: (untyped from, untyped to, ?::Hash[untyped, untyped] opts) -> untyped
+
+      # Return the known rates as a string in the format specified. If +file+
+      # is given will also write the string out to the file specified.
+      # Available formats are +:json+, +:ruby+ and +:yaml+.
+      #
+      # @param [Symbol] format Request format for the resulting string.
+      # @param [String] file Optional file location to write the rates to.
+      # @param [Hash] opts Options hash to set special parameters. Backwards compatibility only.
+      #
+      # @return [String]
+      #
+      # @raise +Money::Bank::UnknownRateFormat+ if format is unknown.
+      #
+      # @example
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.set_rate("USD", "CAD", 1.24515)
+      #   bank.set_rate("CAD", "USD", 0.803115)
+      #
+      #   s = bank.export_rates(:json)
+      #   s #=> "{\"USD_TO_CAD\":1.24515,\"CAD_TO_USD\":0.803115}"
+      def export_rates: (untyped format, ?untyped? file, ?::Hash[untyped, untyped] opts) -> untyped
+
+      # This should be deprecated.
+      def rates: () -> untyped
+
+      # Loads rates provided in +s+ given the specified format. Available
+      # formats are +:json+, +:ruby+ and +:yaml+.
+      # Delegates to +Money::RatesStore::Memory+
+      #
+      # @param [Symbol] format The format of +s+.
+      # @param [String] s The rates string.
+      # @param [Hash] opts Options hash to set special parameters. Backwards compatibility only.
+      #
+      # @return [self]
+      #
+      # @raise +Money::Bank::UnknownRateFormat+ if format is unknown.
+      #
+      # @example
+      #   s = "{\"USD_TO_CAD\":1.24515,\"CAD_TO_USD\":0.803115}"
+      #   bank = Money::Bank::VariableExchange.new
+      #   bank.import_rates(:json, s)
+      #
+      #   bank.get_rate("USD", "CAD") #=> 1.24515
+      #   bank.get_rate("CAD", "USD") #=> 0.803115
+      def import_rates: (untyped format, untyped s, ?::Hash[untyped, untyped] opts) -> self
+    end
+  end
+end
+
+class Money
+  module Bank
+    # Raised when trying to exchange currencies
+    class DifferentCurrencyError < Error
+    end
+
+    # Class to ensure client code is operating in a single currency
+    # by raising if an exchange attempts to happen.
+    #
+    # This is useful when an application uses multiple currencies but
+    # it usually deals with only one currency at a time so any arithmetic
+    # where exchanges happen are erroneous. Using this as the default bank
+    # means that that these mistakes don't silently do the wrong thing.
+    class SingleCurrency < Base
+      # Raises a DifferentCurrencyError to remove possibility of accidentally
+      # exchanging currencies
+      def exchange_with: (untyped from, untyped to_currency) ?{ () -> untyped } -> untyped
+    end
+  end
+end
+
+# "Money is any object or record that is generally accepted as payment for
+# goods and services and repayment of debts in a given socio-economic context
+# or country." -Wikipedia
+#
+# An instance of Money represents an amount of a specific currency.
+#
+# Money is a value object and should be treated as immutable.
+#
+# @see http://en.wikipedia.org/wiki/Money
+class Money
+  include Comparable
+
+  include Money::Arithmetic
+
+  extend Constructors
+
+  # Raised when smallest denomination of a currency is not defined
+  class UndefinedSmallestDenomination < StandardError
+  end
+
+  # Convenience method for fractional part of the amount. Synonym of #fractional
+  #
+  # @return [Integer] when infinite_precision is false
+  # @return [BigDecimal] when infinite_precision is true
+  #
+  # @see infinite_precision
+  def cents: () -> untyped
+
+  # The value of the monetary amount represented in the fractional or subunit
+  # of the currency.
+  #
+  # For example, in the US dollar currency the fractional unit is cents, and
+  # there are 100 cents in one US dollar. So given the Money representation of
+  # one US dollar, the fractional interpretation is 100.
+  #
+  # Another example is that of the Kuwaiti dinar. In this case the fractional
+  # unit is the fils and there 1000 fils to one Kuwaiti dinar. So given the
+  # Money representation of one Kuwaiti dinar, the fractional interpretation is
+  # 1000.
+  #
+  # @return [Integer] when infinite_precision is false
+  # @return [BigDecimal] when infinite_precision is true
+  #
+  # @see infinite_precision
+  def fractional: () -> untyped
+
+  # Round a given amount of money to the nearest possible amount in cash value. For
+  # example, in Swiss franc (CHF), the smallest possible amount of cash value is
+  # CHF 0.05. Therefore, this method rounds CHF 0.07 to CHF 0.05, and CHF 0.08 to
+  # CHF 0.10.
+  #
+  # @return [Integer] when infinite_precision is false
+  # @return [BigDecimal] when infinite_precision is true
+  #
+  # @see infinite_precision
+  def round_to_nearest_cash_value: () -> untyped
+
+  attr_reader currency: untyped
+
+  attr_reader bank: untyped
+
+  # @!attribute [rw] default_bank
+  #   Used to set a default bank for currency exchange.
+  #
+  #   Each Money object is associated with a bank
+  #   object, which is responsible for currency exchange. This property
+  #   allows you to specify the default bank object. The default value for
+  #   this property is an instance of +Bank::VariableExchange.+ It allows
+  #   one to specify custom exchange rates.
+  #
+  #   @return [Money::Bank::Base]
+  #
+  # @!attribute default_formatting_rules
+  #   Used to define a default hash of rules for every time
+  #   +Money#format+ is called.  Rules provided on method call will be
+  #   merged with the default ones.  To overwrite a rule, just provide the
+  #   intended value while calling +format+.
+  #
+  #   @see Money::Formatter#initialize Money::Formatter for more details
+  #
+  #   @example
+  #     Money.default_formatting_rules = { display_free: true }
+  #     Money.new(0, "USD").format                          # => "free"
+  #     Money.new(0, "USD").format(display_free: false)  # => "$0.00"
+  #
+  #   @return [Hash]
+  #
+  # @!attribute [rw] use_i18n
+  #   Used to disable i18n even if it's used by other components of your app.
+  #
+  #   @return [Boolean]
+  #
+  # @!attribute [rw] default_infinite_precision
+  #   @return [Boolean] Use this to enable infinite precision cents as the
+  #     global default
+  #
+  # @!attribute [rw] conversion_precision
+  #   Used to specify precision for converting Rational to BigDecimal
+  #
+  #   @return [Integer]
+  attr_accessor self.default_formatting_rules: untyped
+
+  # @!attribute [rw] default_bank
+  #   Used to set a default bank for currency exchange.
+  #
+  #   Each Money object is associated with a bank
+  #   object, which is responsible for currency exchange. This property
+  #   allows you to specify the default bank object. The default value for
+  #   this property is an instance of +Bank::VariableExchange.+ It allows
+  #   one to specify custom exchange rates.
+  #
+  #   @return [Money::Bank::Base]
+  #
+  # @!attribute default_formatting_rules
+  #   Used to define a default hash of rules for every time
+  #   +Money#format+ is called.  Rules provided on method call will be
+  #   merged with the default ones.  To overwrite a rule, just provide the
+  #   intended value while calling +format+.
+  #
+  #   @see Money::Formatter#initialize Money::Formatter for more details
+  #
+  #   @example
+  #     Money.default_formatting_rules = { display_free: true }
+  #     Money.new(0, "USD").format                          # => "free"
+  #     Money.new(0, "USD").format(display_free: false)  # => "$0.00"
+  #
+  #   @return [Hash]
+  #
+  # @!attribute [rw] use_i18n
+  #   Used to disable i18n even if it's used by other components of your app.
+  #
+  #   @return [Boolean]
+  #
+  # @!attribute [rw] default_infinite_precision
+  #   @return [Boolean] Use this to enable infinite precision cents as the
+  #     global default
+  #
+  # @!attribute [rw] conversion_precision
+  #   Used to specify precision for converting Rational to BigDecimal
+  #
+  #   @return [Integer]
+  attr_accessor self.default_infinite_precision: untyped
+
+  # @!attribute [rw] default_bank
+  #   Used to set a default bank for currency exchange.
+  #
+  #   Each Money object is associated with a bank
+  #   object, which is responsible for currency exchange. This property
+  #   allows you to specify the default bank object. The default value for
+  #   this property is an instance of +Bank::VariableExchange.+ It allows
+  #   one to specify custom exchange rates.
+  #
+  #   @return [Money::Bank::Base]
+  #
+  # @!attribute default_formatting_rules
+  #   Used to define a default hash of rules for every time
+  #   +Money#format+ is called.  Rules provided on method call will be
+  #   merged with the default ones.  To overwrite a rule, just provide the
+  #   intended value while calling +format+.
+  #
+  #   @see Money::Formatter#initialize Money::Formatter for more details
+  #
+  #   @example
+  #     Money.default_formatting_rules = { display_free: true }
+  #     Money.new(0, "USD").format                          # => "free"
+  #     Money.new(0, "USD").format(display_free: false)  # => "$0.00"
+  #
+  #   @return [Hash]
+  #
+  # @!attribute [rw] use_i18n
+  #   Used to disable i18n even if it's used by other components of your app.
+  #
+  #   @return [Boolean]
+  #
+  # @!attribute [rw] default_infinite_precision
+  #   @return [Boolean] Use this to enable infinite precision cents as the
+  #     global default
+  #
+  # @!attribute [rw] conversion_precision
+  #   Used to specify precision for converting Rational to BigDecimal
+  #
+  #   @return [Integer]
+  attr_accessor self.conversion_precision: untyped
+
+  attr_reader self.use_i18n: untyped
+
+  attr_reader self.locale_backend: untyped
+
+  attr_writer self.default_bank: untyped
+
+  def self.infinite_precision: () -> untyped
+
+  def self.infinite_precision=: (untyped value) -> untyped
+
+  # @!attribute default_currency
+  #   @return [Money::Currency] The default currency, which is used when
+  #     +Money.new+ is called without an explicit currency argument. The
+  #     default value is Currency.new("USD"). The value must be a valid
+  #     +Money::Currency+ instance.
+  def self.default_currency: () -> untyped
+
+  def self.default_currency=: (untyped currency) -> untyped
+
+  def self.default_bank: () -> untyped
+
+  def self.locale_backend=: (untyped value) -> untyped
+
+  # @attr_writer rounding_mode Use this to specify the rounding mode
+  def self.rounding_mode=: (untyped new_rounding_mode) -> untyped
+
+  def self.use_i18n=: (untyped value) -> untyped
+
+  def self.setup_defaults: () -> untyped
+
+  def self.inherited: (untyped base) -> untyped
+
+  # Use this to return the rounding mode.
+  #
+  # @param [BigDecimal::ROUND_MODE] mode
+  #
+  # @return [BigDecimal::ROUND_MODE] rounding mode
+  def self.rounding_mode: (?untyped? mode) { () -> untyped } -> untyped
+
+  # Temporarily changes the rounding mode in a given block.
+  #
+  # @param [BigDecimal::ROUND_MODE] mode
+  #
+  # @yield The block within which rounding mode will be changed. Its return
+  #   value will also be the return value of the whole method.
+  #
+  # @return [Object] block results
+  #
+  # @example
+  #   fee = Money.with_rounding_mode(BigDecimal::ROUND_HALF_UP) do
+  #     Money.new(1200) * BigDecimal('0.029')
+  #   end
+  def self.with_rounding_mode: (untyped mode) { () -> untyped } -> untyped
+
+  # Adds a new exchange rate to the default bank and return the rate.
+  #
+  # @param [Currency, String, Symbol] from_currency Currency to exchange from.
+  # @param [Currency, String, Symbol] to_currency Currency to exchange to.
+  # @param [Numeric] rate Rate to exchange with.
+  #
+  # @return [Numeric]
+  #
+  # @example
+  #   Money.add_rate("USD", "CAD", 1.25) #=> 1.25
+  def self.add_rate: (untyped from_currency, untyped to_currency, untyped rate) -> untyped
+
+  # Sets the default bank to be a SingleCurrency bank that raises on
+  # currency exchange. Useful when apps operate in a single currency at a time.
+  def self.disallow_currency_conversion!: () -> untyped
+
+  # Creates a new Money object of value given in the +unit+ of the given
+  # +currency+.
+  #
+  # @param [Numeric] amount The numerical value of the money.
+  # @param [Currency, String, Symbol] currency The currency format.
+  # @param [Hash] options Optional settings for the new Money instance
+  # @option [Money::Bank::*] :bank The exchange bank to use.
+  #
+  # @example
+  #   Money.from_amount(23.45, "USD") # => #<Money fractional:2345 currency:USD>
+  #   Money.from_amount(23.45, "JPY") # => #<Money fractional:23 currency:JPY>
+  #
+  # @return [Money]
+  #
+  # @see #initialize
+  def self.from_amount: (untyped amount, ?untyped currency, ?::Hash[untyped, untyped] options) -> untyped
+
+  alias self.from_cents self.new
+
+  # Creates a new Money object of value given in the
+  # +fractional unit+ of the given +currency+.
+  #
+  # Alternatively you can use the convenience
+  # methods like {Money.ca_dollar} and {Money.us_dollar}.
+  #
+  # @param [Object] obj Either the fractional value of the money,
+  #   a Money object, or a currency. (If passed a currency as the first
+  #   argument, a Money will be created in that currency with fractional value
+  #   = 0.
+  # @param [Currency, String, Symbol] currency The currency format.
+  # @param [Hash] options Optional settings for the new Money instance
+  # @option [Money::Bank::*] :bank The exchange bank to use.
+  #
+  # @return [Money]
+  #
+  # @example
+  #   Money.new(100)        #=> #<Money @fractional=100 @currency="USD">
+  #   Money.new(100, "USD") #=> #<Money @fractional=100 @currency="USD">
+  #   Money.new(100, "EUR") #=> #<Money @fractional=100 @currency="EUR">
+  #
+  def initialize: (untyped obj, ?untyped currency, ?::Hash[untyped, untyped] options) -> void
+
+  # Assuming using a currency using dollars:
+  # Returns the value of the money in dollars,
+  # instead of in the fractional unit cents.
+  #
+  # Synonym of #amount
+  #
+  # @return [BigDecimal]
+  #
+  # @example
+  #   Money.new(1_00, "USD").dollars   # => BigDecimal("1.00")
+  #
+  # @see #amount
+  # @see #to_d
+  # @see #cents
+  #
+  def dollars: () -> untyped
+
+  # Returns the numerical value of the money
+  #
+  # @return [BigDecimal]
+  #
+  # @example
+  #   Money.new(1_00, "USD").amount    # => BigDecimal("1.00")
+  #
+  # @see #to_d
+  # @see #fractional
+  #
+  def amount: () -> untyped
+
+  # Return string representation of currency object
+  #
+  # @return [String]
+  #
+  # @example
+  #   Money.new(100, :USD).currency_as_string #=> "USD"
+  def currency_as_string: () -> untyped
+
+  # Set currency object using a string
+  #
+  # @param [String] val The currency string.
+  #
+  # @return [Money::Currency]
+  #
+  # @example
+  #   Money.new(100).currency_as_string("CAD") #=> #<Money::Currency id: cad>
+  def currency_as_string=: (untyped val) -> untyped
+
+  # Returns a Integer hash value based on the +fractional+ and +currency+ attributes
+  # in order to use functions like & (intersection), group_by, etc.
+  #
+  # @return [Integer]
+  #
+  # @example
+  #   Money.new(100).hash #=> 908351
+  def hash: () -> untyped
+
+  # Uses +Currency#symbol+. If +nil+ is returned, defaults to "¤".
+  #
+  # @return [String]
+  #
+  # @example
+  #   Money.new(100, "USD").symbol #=> "$"
+  def symbol: () -> untyped
+
+  # Common inspect function
+  #
+  # @return [String]
+  def inspect: () -> ::String
+
+  # Returns the amount of money as a string.
+  #
+  # @return [String]
+  #
+  # @example
+  #   Money.ca_dollar(100).to_s #=> "1.00"
+  def to_s: () -> untyped
+
+  # Return the amount of money as a BigDecimal.
+  #
+  # @return [BigDecimal]
+  #
+  # @example
+  #   Money.us_dollar(1_00).to_d #=> BigDecimal("1.00")
+  def to_d: () -> untyped
+
+  # Return the amount of money as a Integer.
+  #
+  # @return [Integer]
+  #
+  # @example
+  #   Money.us_dollar(1_00).to_i #=> 1
+  def to_i: () -> untyped
+
+  # Return the amount of money as a float. Floating points cannot guarantee
+  # precision. Therefore, this function should only be used when you no longer
+  # need to represent currency or working with another system that requires
+  # floats.
+  #
+  # @return [Float]
+  #
+  # @example
+  #   Money.us_dollar(100).to_f #=> 1.0
+  def to_f: () -> untyped
+
+  # Returns a new Money instance in a given currency leaving the amount intact
+  # and not performing currency conversion.
+  #
+  # @param [Currency, String, Symbol] new_currency Currency of the new object.
+  #
+  # @return [self]
+  def with_currency: (untyped new_currency) -> untyped
+
+  # Conversion to +self+.
+  #
+  # @return [self]
+  def to_money: (?untyped? given_currency) -> untyped
+
+  # Receive the amount of this money object in another Currency.
+  #
+  # @param [Currency, String, Symbol] other_currency Currency to exchange to.
+  #
+  # @yield [n] Optional block to use when rounding after exchanging one currency
+  #  for another.
+  # @yieldparam [Float] n The resulting float after exchanging one currency for
+  #  another.
+  # @yieldreturn [Integer]
+  #
+  # @return [Money]
+  #
+  # @example
+  #   Money.new(2000, "USD").exchange_to("EUR")
+  #   Money.new(2000, "USD").exchange_to("EUR") {|x| x.round}
+  #   Money.new(2000, "USD").exchange_to(Currency.new("EUR"))
+  def exchange_to: (untyped other_currency) ?{ () -> untyped } -> untyped
+
+  # Receive a money object with the same amount as the current Money object
+  # in United States dollar.
+  #
+  # @return [Money]
+  #
+  # @example
+  #   n = Money.new(100, "CAD").as_us_dollar
+  #   n.currency #=> #<Money::Currency id: usd>
+  def as_us_dollar: () -> untyped
+
+  # Receive a money object with the same amount as the current Money object
+  # in Canadian dollar.
+  #
+  # @return [Money]
+  #
+  # @example
+  #   n = Money.new(100, "USD").as_ca_dollar
+  #   n.currency #=> #<Money::Currency id: cad>
+  def as_ca_dollar: () -> untyped
+
+  # Receive a money object with the same amount as the current Money object
+  # in euro.
+  #
+  # @return [Money]
+  #
+  # @example
+  #   n = Money.new(100, "USD").as_euro
+  #   n.currency #=> #<Money::Currency id: eur>
+  def as_euro: () -> untyped
+
+  # Splits a given amount in parts without losing pennies. The left-over pennies will be
+  # distributed round-robin amongst the parties. This means that parts listed first will likely
+  # receive more pennies than ones listed later.
+  #
+  # Pass [2, 1, 1] as input to give twice as much to part1 as part2 or
+  # part3 which results in 50% of the cash to party1, 25% to part2, and 25% to part3. Passing a
+  # number instead of an array will split the amount evenly (without losing pennies when rounding).
+  #
+  # @param [Array<Numeric>, Numeric] parts how amount should be distributed to parts
+  #
+  # @return [Array<Money>]
+  #
+  # @example
+  #   Money.new(5,   "USD").allocate([3, 7]) #=> [Money.new(2), Money.new(3)]
+  #   Money.new(100, "USD").allocate([1, 1, 1]) #=> [Money.new(34), Money.new(33), Money.new(33)]
+  #   Money.new(100, "USD").allocate(2) #=> [Money.new(50), Money.new(50)]
+  #   Money.new(100, "USD").allocate(3) #=> [Money.new(34), Money.new(33), Money.new(33)]
+  #
+  def allocate: (untyped parts) -> untyped
+
+  alias split allocate
+
+  # Round the monetary amount to smallest unit of coinage.
+  #
+  # @note
+  #   This method is only useful when operating with infinite_precision turned
+  #   on. Without infinite_precision values are rounded to the smallest unit of
+  #   coinage automatically.
+  #
+  # @return [Money]
+  #
+  # @example
+  #   Money.new(10.1, 'USD').round #=> Money.new(10, 'USD')
+  #
+  # @see
+  #   Money.default_infinite_precision
+  #
+  def round: (?untyped rounding_mode, ?::Integer rounding_precision) -> untyped
+
+  # Creates a formatted price string according to several rules.
+  #
+  # @param [Hash] rules See {Money::Formatter Money::Formatter} for the list of formatting options
+  #
+  # @return [String]
+  #
+  def format: (*untyped rules) -> untyped
+
+  # Returns a thousands separator according to the locale
+  #
+  # @return [String]
+  #
+  def thousands_separator: () -> untyped
+
+  # Returns a decimal mark according to the locale
+  #
+  # @return [String]
+  #
+  def decimal_mark: () -> untyped
+
+  def dup_with: (?::Hash[untyped, untyped] options) -> untyped
+
+  private
+
+  def as_d: (untyped num) -> untyped
+
+  def return_value: (untyped value) -> untyped
+
+  def locale_backend: () -> untyped
+end
+
+class Money
+  module RatesStore
+    # Class for thread-safe storage of exchange rate pairs.
+    # Used by instances of +Money::Bank::VariableExchange+.
+    #
+    # @example
+    #   store = Money::RatesStore::Memory.new
+    #   store.add_rate 'USD', 'CAD', 0.98
+    #   store.get_rate 'USD', 'CAD' # => 0.98
+    #   # iterates rates
+    #   store.each_rate {|iso_from, iso_to, rate| puts "#{from} -> #{to}: #{rate}" }
+    class Memory
+      INDEX_KEY_SEPARATOR: "_TO_"
+
+      # Initializes a new +Money::RatesStore::Memory+ object.
+      #
+      # @param [Hash] opts Optional store options.
+      # @option opts [Boolean] :without_mutex disables the usage of a mutex
+      # @param [Hash] rates Optional initial exchange rate data.
+      def initialize: (?::Hash[untyped, untyped] opts, ?::Hash[untyped, untyped] rates) -> void
+
+      # Registers a conversion rate and returns it. Uses +Mutex+ to synchronize data access.
+      #
+      # @param [String] currency_iso_from Currency to exchange from.
+      # @param [String] currency_iso_to Currency to exchange to.
+      # @param [Numeric] rate Rate to use when exchanging currencies.
+      #
+      # @return [Numeric]
+      #
+      # @example
+      #   store = Money::RatesStore::Memory.new
+      #   store.add_rate("USD", "CAD", 1.24515)
+      #   store.add_rate("CAD", "USD", 0.803115)
+      def add_rate: (untyped currency_iso_from, untyped currency_iso_to, untyped rate) -> untyped
+
+      # Retrieve the rate for the given currencies. Uses +Mutex+ to synchronize data access.
+      # Delegates to +Money::RatesStore::Memory+
+      #
+      # @param [String] currency_iso_from Currency to exchange from.
+      # @param [String] currency_iso_to Currency to exchange to.
+      #
+      # @return [Numeric]
+      #
+      # @example
+      #   store = Money::RatesStore::Memory.new
+      #   store.add_rate("USD", "CAD", 1.24515)
+      #
+      #   store.get_rate("USD", "CAD") #=> 1.24515
+      def get_rate: (untyped currency_iso_from, untyped currency_iso_to) -> untyped
+
+      def marshal_dump: () -> untyped
+
+      # Wraps block execution in a thread-safe transaction
+      def transaction: () { () -> untyped } -> untyped
+
+      # Iterate over rate tuples (iso_from, iso_to, rate)
+      #
+      # @yieldparam iso_from [String] Currency ISO string.
+      # @yieldparam iso_to [String] Currency ISO string.
+      # @yieldparam rate [Numeric] Exchange rate.
+      #
+      # @return [Enumerator]
+      #
+      # @example
+      #   store.each_rate do |iso_from, iso_to, rate|
+      #     puts [iso_from, iso_to, rate].join
+      #   end
+      def each_rate: () { (untyped, untyped, untyped) -> untyped } -> untyped
+
+      private
+
+      attr_reader rates: untyped
+
+      attr_reader options: untyped
+
+      attr_reader guard: untyped
+
+      # Return the rate hashkey for the given currencies.
+      #
+      # @param [String] currency_iso_from The currency to exchange from.
+      # @param [String] currency_iso_to The currency to exchange to.
+      #
+      # @return [String]
+      #
+      # @example
+      #   rate_key_for("USD", "CAD") #=> "USD_TO_CAD"
+      def rate_key_for: (untyped currency_iso_from, untyped currency_iso_to) -> untyped
+    end
+  end
+end
+
+class Money
+  module Constructors
+    # Create a new money object with value 0.
+    #
+    # @param [Currency, String, Symbol] currency The currency to use.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   Money.empty #=> #<Money @fractional=0>
+    def empty: (?untyped currency) -> untyped
+
+    alias zero empty
+
+    # Creates a new Money object of the given value, using the Canadian
+    # dollar currency.
+    #
+    # @param [Integer] cents The cents value.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   n = Money.ca_dollar(100)
+    #   n.cents    #=> 100
+    #   n.currency #=> #<Money::Currency id: cad>
+    def ca_dollar: (untyped cents) -> untyped
+
+    alias cad ca_dollar
+
+    # Creates a new Money object of the given value, using the American dollar
+    # currency.
+    #
+    # @param [Integer] cents The cents value.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   n = Money.us_dollar(100)
+    #   n.cents    #=> 100
+    #   n.currency #=> #<Money::Currency id: usd>
+    def us_dollar: (untyped cents) -> untyped
+
+    alias usd us_dollar
+
+    # Creates a new Money object of the given value, using the Euro currency.
+    #
+    # @param [Integer] cents The cents value.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   n = Money.euro(100)
+    #   n.cents    #=> 100
+    #   n.currency #=> #<Money::Currency id: eur>
+    def euro: (untyped cents) -> untyped
+
+    alias eur euro
+
+    # Creates a new Money object of the given value, in British pounds.
+    #
+    # @param [Integer] pence The pence value.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   n = Money.pound_sterling(100)
+    #   n.fractional    #=> 100
+    #   n.currency #=> #<Money::Currency id: gbp>
+    def pound_sterling: (untyped pence) -> untyped
+
+    alias gbp pound_sterling
+  end
+end
+
+class Money
+  module LocaleBackend
+    BACKENDS: { legacy: untyped, :i18n => untyped, currency: untyped }
+
+    def self.find: (untyped name) -> untyped
+  end
+end
+
+class Money
+  class Allocation
+    # Splits a given amount in parts without losing pennies.
+    # The left-over pennies will be distributed round-robin amongst the parts. This means that
+    # parts listed first will likely receive more pennies than the ones listed later.
+    #
+    # The results should always add up to the original amount.
+    #
+    # The parts can be specified as:
+    #   Numeric — performs the split between a given number of parties evenely
+    #   Array<Numeric> — allocates the amounts proportionally to the given array
+    #
+    def self.generate: (untyped amount, untyped parts, ?bool whole_amounts) -> untyped
+  end
+end
+
+class Money
+  class FormattingRules
+    def initialize: (untyped currency, *untyped raw_rules) -> void
+
+    def []: (untyped key) -> untyped
+
+    def has_key?: (untyped key) -> untyped
+
+    private
+
+    attr_reader currency: untyped
+
+    # Cleans up formatting rules.
+    #
+    # @param [Hash] rules
+    #
+    # @return [Hash]
+    def normalize_formatting_rules: (untyped rules) -> untyped
+
+    def default_formatting_rules: () -> untyped
+
+    def translate_formatting_rules: (untyped rules) -> untyped
+
+    def localize_formatting_rules: (untyped rules) -> untyped
+
+    def determine_format_from_formatting_rules: (untyped rules) -> untyped
+
+    def delimiter_pattern_rule: (untyped rules) -> ::Regexp
+
+    def symbol_position_from: (untyped rules) -> (untyped | :before | :after)
+
+    def warn_about_deprecated_rules: (untyped rules) -> untyped
+  end
+end
+
+class Money
+  module Arithmetic
+    # Wrapper for coerced numeric values to distinguish
+    # when numeric was on the 1st place in operation.
+    CoercedNumeric: untyped
+
+    # Returns a money object with changed polarity.
+    #
+    # @return [Money]
+    #
+    # @example
+    #    - Money.new(100) #=> #<Money @fractional=-100>
+    def -@: () -> untyped
+
+    # Checks whether two Money objects have the same currency and the same
+    # amount. If Money objects have a different currency it will only be true
+    # if the amounts are both zero. Checks against objects that are not Money or
+    # a subclass will always return false.
+    #
+    # @param [Money] other_money Value to compare with.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   Money.new(100).eql?(Money.new(101))                #=> false
+    #   Money.new(100).eql?(Money.new(100))                #=> true
+    #   Money.new(100, "USD").eql?(Money.new(100, "GBP"))  #=> false
+    #   Money.new(0, "USD").eql?(Money.new(0, "EUR"))      #=> true
+    #   Money.new(100).eql?("1.00")                        #=> false
+    def eql?: (untyped other_money) -> (untyped | false)
+
+    # Compares two Money objects. If money objects have a different currency it
+    # will attempt to convert the currency.
+    #
+    # @param [Money] other Value to compare with.
+    #
+    # @return [Integer]
+    #
+    # @raise [TypeError] when other object is not Money
+    #
+    def <=>: (untyped other) -> untyped
+
+    # Uses Comparable's implementation but raises ArgumentError if non-zero
+    # numeric value is given.
+    def ==: (untyped other) -> untyped
+
+    # Test if the amount is positive. Returns +true+ if the money amount is
+    # greater than 0, +false+ otherwise.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   Money.new(1).positive?  #=> true
+    #   Money.new(0).positive?  #=> false
+    #   Money.new(-1).positive? #=> false
+    def positive?: () -> untyped
+
+    # Test if the amount is negative. Returns +true+ if the money amount is
+    # less than 0, +false+ otherwise.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   Money.new(-1).negative? #=> true
+    #   Money.new(0).negative?  #=> false
+    #   Money.new(1).negative?  #=> false
+    def negative?: () -> untyped
+
+    # Multiplies the monetary value with the given number and returns a new
+    # +Money+ object with this monetary value and the same currency.
+    #
+    # Note that you can't multiply a Money object by an other +Money+ object.
+    #
+    # @param [Numeric] value Number to multiply by.
+    #
+    # @return [Money] The resulting money.
+    #
+    # @raise [TypeError] If +value+ is NOT a number.
+    #
+    # @example
+    #   Money.new(100) * 2 #=> #<Money @fractional=200>
+    #
+    def *: (untyped value) -> untyped
+
+    # Divides the monetary value with the given number and returns a new +Money+
+    # object with this monetary value and the same currency.
+    # Can also divide by another +Money+ object to get a ratio.
+    #
+    # +Money/Numeric+ returns +Money+. +Money/Money+ returns +Float+.
+    #
+    # @param [Money, Numeric] value Number to divide by.
+    #
+    # @return [Money] The resulting money if you divide Money by a number.
+    # @return [Float] The resulting number if you divide Money by a Money.
+    #
+    # @example
+    #   Money.new(100) / 10            #=> #<Money @fractional=10>
+    #   Money.new(100) / Money.new(10) #=> 10.0
+    #
+    def /: (untyped value) -> untyped
+
+    # Synonym for +#/+.
+    #
+    # @param [Money, Numeric] value Number to divide by.
+    #
+    # @return [Money] The resulting money if you divide Money by a number.
+    # @return [Float] The resulting number if you divide Money by a Money.
+    #
+    # @see #/
+    #
+    def div: (untyped value) -> untyped
+
+    # Divide money by money or fixnum and return array containing quotient and
+    # modulus.
+    #
+    # @param [Money, Integer] val Number to divmod by.
+    #
+    # @return [Array<Money,Money>,Array<Integer,Money>]
+    #
+    # @example
+    #   Money.new(100).divmod(9)            #=> [#<Money @fractional=11>, #<Money @fractional=1>]
+    #   Money.new(100).divmod(Money.new(9)) #=> [11, #<Money @fractional=1>]
+    def divmod: (untyped val) -> untyped
+
+    private
+
+    def divmod_money: (untyped val) -> ::Array[untyped]
+
+    def divmod_other: (untyped val) -> ::Array[untyped]
+
+    public
+
+    # Equivalent to +self.divmod(val)[1]+
+    #
+    # @param [Money, Integer] val Number take modulo with.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   Money.new(100).modulo(9)            #=> #<Money @fractional=1>
+    #   Money.new(100).modulo(Money.new(9)) #=> #<Money @fractional=1>
+    def modulo: (untyped val) -> untyped
+
+    # Synonym for +#modulo+.
+    #
+    # @param [Money, Integer] val Number take modulo with.
+    #
+    # @return [Money]
+    #
+    # @see #modulo
+    def %: (untyped val) -> untyped
+
+    # If different signs +self.modulo(val) - val+ otherwise +self.modulo(val)+
+    #
+    # @param [Money, Integer] val Number to rake remainder with.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   Money.new(100).remainder(9) #=> #<Money @fractional=1>
+    def remainder: (untyped val) -> untyped
+
+    # Return absolute value of self as a new Money object.
+    #
+    # @return [Money]
+    #
+    # @example
+    #   Money.new(-100).abs #=> #<Money @fractional=100>
+    def abs: () -> untyped
+
+    # Test if the money amount is zero.
+    #
+    # @return [Boolean]
+    #
+    # @example
+    #   Money.new(100).zero? #=> false
+    #   Money.new(0).zero?   #=> true
+    def zero?: () -> untyped
+
+    # Test if the money amount is non-zero. Returns this money object if it is
+    # non-zero, or nil otherwise, like +Numeric#nonzero?+.
+    #
+    # @return [Money, nil]
+    #
+    # @example
+    #   Money.new(100).nonzero? #=> #<Money @fractional=100>
+    #   Money.new(0).nonzero?   #=> nil
+    def nonzero?: () -> (self | nil)
+
+    # Used to make Money instance handle the operations when arguments order is reversed
+    # @return [Array]
+    #
+    # @example
+    #   2 * Money.new(10) #=> #<Money @fractional=20>
+    def coerce: (untyped other) -> ::Array[self | untyped]
+  end
+end
+
+class Money
+  class Formatter
+    DEFAULTS: { thousands_separator: "", decimal_mark: "." }
+
+    # Creates a formatted price string according to several rules.
+    #
+    # @param [Hash] rules The options used to format the string.
+    #
+    # @return [String]
+    #
+    # @option rules [Boolean, String] :display_free (false) Whether a zero
+    #  amount of money should be formatted of "free" or as the supplied string.
+    #
+    # @example
+    #   Money.us_dollar(0).format(display_free: true)     #=> "free"
+    #   Money.us_dollar(0).format(display_free: "gratis") #=> "gratis"
+    #   Money.us_dollar(0).format                            #=> "$0.00"
+    #
+    # @option rules [Boolean] :with_currency (false) Whether the currency name
+    #  should be appended to the result string.
+    #
+    # @example
+    #   Money.ca_dollar(100).format #=> "$1.00"
+    #   Money.ca_dollar(100).format(with_currency: true) #=> "$1.00 CAD"
+    #   Money.us_dollar(85).format(with_currency: true)  #=> "$0.85 USD"
+    #
+    # @option rules [Boolean] :rounded_infinite_precision (false) Whether the
+    #  amount of money should be rounded when using {infinite_precision}
+    #
+    # @example
+    #   Money.us_dollar(100.1).format #=> "$1.001"
+    #   Money.us_dollar(100.1).format(rounded_infinite_precision: true) #=> "$1"
+    #   Money.us_dollar(100.9).format(rounded_infinite_precision: true) #=> "$1.01"
+    #
+    # @option rules [Boolean] :no_cents (false) Whether cents should be omitted.
+    #
+    # @example
+    #   Money.ca_dollar(100).format(no_cents: true) #=> "$1"
+    #   Money.ca_dollar(599).format(no_cents: true) #=> "$5"
+    #
+    # @option rules [Boolean] :no_cents_if_whole (false) Whether cents should be
+    #  omitted if the cent value is zero
+    #
+    # @example
+    #   Money.ca_dollar(10000).format(no_cents_if_whole: true) #=> "$100"
+    #   Money.ca_dollar(10034).format(no_cents_if_whole: true) #=> "$100.34"
+    #
+    # @option rules [Boolean, String, nil] :symbol (true) Whether a money symbol
+    #  should be prepended to the result string. The default is true. This method
+    #  attempts to pick a symbol that's suitable for the given currency.
+    #
+    # @example
+    #   Money.new(100, "USD") #=> "$1.00"
+    #   Money.new(100, "GBP") #=> "£1.00"
+    #   Money.new(100, "EUR") #=> "€1.00"
+    #
+    #   # Same thing.
+    #   Money.new(100, "USD").format(symbol: true) #=> "$1.00"
+    #   Money.new(100, "GBP").format(symbol: true) #=> "£1.00"
+    #   Money.new(100, "EUR").format(symbol: true) #=> "€1.00"
+    #
+    #   # You can specify a false expression or an empty string to disable
+    #   # prepending a money symbol.§
+    #   Money.new(100, "USD").format(symbol: false) #=> "1.00"
+    #   Money.new(100, "GBP").format(symbol: nil)   #=> "1.00"
+    #   Money.new(100, "EUR").format(symbol: "")    #=> "1.00"
+    #
+    #   # If the symbol for the given currency isn't known, then it will default
+    #   # to "¤" as symbol.
+    #   Money.new(100, "AWG").format(symbol: true) #=> "¤1.00"
+    #
+    #   # You can specify a string as value to enforce using a particular symbol.
+    #   Money.new(100, "AWG").format(symbol: "ƒ") #=> "ƒ1.00"
+    #
+    #   # You can specify a indian currency format
+    #   Money.new(10000000, "INR").format(south_asian_number_formatting: true) #=> "1,00,000.00"
+    #   Money.new(10000000).format(south_asian_number_formatting: true) #=> "$1,00,000.00"
+    #
+    # @option rules [Boolean, nil] :symbol_before_without_space (true) Whether
+    #   a space between the money symbol and the amount should be inserted when
+    #   +:symbol_position+ is +:before+. The default is true (meaning no space). Ignored
+    #   if +:symbol+ is false or +:symbol_position+ is not +:before+.
+    #
+    # @example
+    #   # Default is to not insert a space.
+    #   Money.new(100, "USD").format #=> "$1.00"
+    #
+    #   # Same thing.
+    #   Money.new(100, "USD").format(symbol_before_without_space: true) #=> "$1.00"
+    #
+    #   # If set to false, will insert a space.
+    #   Money.new(100, "USD").format(symbol_before_without_space: false) #=> "$ 1.00"
+    #
+    # @option rules [Boolean, nil] :symbol_after_without_space (false) Whether
+    #   a space between the amount and the money symbol should be inserted when
+    #   +:symbol_position+ is +:after+. The default is false (meaning space). Ignored
+    #   if +:symbol+ is false or +:symbol_position+ is not +:after+.
+    #
+    # @example
+    #   # Default is to insert a space.
+    #   Money.new(100, "USD").format(symbol_position: :after) #=> "1.00 $"
+    #
+    #   # If set to true, will not insert a space.
+    #   Money.new(100, "USD").format(symbol_position: :after, symbol_after_without_space: true) #=> "1.00$"
+    #
+    # @option rules [Boolean, String, nil] :decimal_mark (true) Whether the
+    #  currency should be separated by the specified character or '.'
+    #
+    # @example
+    #   # If a string is specified, it's value is used.
+    #   Money.new(100, "USD").format(decimal_mark: ",") #=> "$1,00"
+    #
+    #   # If the decimal_mark for a given currency isn't known, then it will default
+    #   # to "." as decimal_mark.
+    #   Money.new(100, "FOO").format #=> "$1.00"
+    #
+    # @option rules [Boolean, String, nil] :thousands_separator (true) Whether
+    #  the currency should be delimited by the specified character or ','
+    #
+    # @example
+    #   # If a falsey value is specified, no thousands_separator is used.
+    #   Money.new(100000, "USD").format(thousands_separator: false) #=> "1000.00"
+    #   Money.new(100000, "USD").format(thousands_separator: nil)   #=> "1000.00"
+    #   Money.new(100000, "USD").format(thousands_separator: "")    #=> "1000.00"
+    #
+    #   # If true is specified, the locale or default thousands_separator is used.
+    #   Money.new(100000, "USD").format(thousands_separator: true) #=> "1,000.00"
+    #
+    #   # If a string is specified, it's value is used.
+    #   Money.new(100000, "USD").format(thousands_separator: ".") #=> "$1.000.00"
+    #
+    #   # If the thousands_separator for a given currency isn't known, then it will
+    #   # default to "," as thousands_separator.
+    #   Money.new(100000, "FOO").format #=> "$1,000.00"
+    #
+    # @option rules [Boolean] :html (false) Whether the currency should be
+    #  HTML-formatted. Only useful in combination with +:with_currency+.
+    #
+    # @example
+    #   Money.ca_dollar(570).format(html: true, with_currency: true)
+    #   #=> "$5.70 <span class=\"currency\">CAD</span>"
+    #
+    # @option rules [Boolean] :html_wrap (false) Whether all currency parts should be HTML-formatted.
+    #
+    # @example
+    #   Money.ca_dollar(570).format(html_wrap: true, with_currency: true)
+    #   #=> "<span class=\"money-currency-symbol\">$</span><span class=\"money-whole\">5</span><span class=\"money-decimal-mark\">.</span><span class=\"money-decimal\">70</span> <span class=\"money-currency\">CAD</span>"
+    #
+    # @option rules [Boolean] :sign_before_symbol (false) Whether the sign should be
+    #  before the currency symbol.
+    #
+    # @example
+    #   # You can specify to display the sign before the symbol for negative numbers
+    #   Money.new(-100, "GBP").format(sign_before_symbol: true)  #=> "-£1.00"
+    #   Money.new(-100, "GBP").format(sign_before_symbol: false) #=> "£-1.00"
+    #   Money.new(-100, "GBP").format                               #=> "£-1.00"
+    #
+    # @option rules [Boolean] :sign_positive (false) Whether positive numbers should be
+    #  signed, too.
+    #
+    # @example
+    #   # You can specify to display the sign with positive numbers
+    #   Money.new(100, "GBP").format(sign_positive: true,  sign_before_symbol: true)  #=> "+£1.00"
+    #   Money.new(100, "GBP").format(sign_positive: true,  sign_before_symbol: false) #=> "£+1.00"
+    #   Money.new(100, "GBP").format(sign_positive: false, sign_before_symbol: true)  #=> "£1.00"
+    #   Money.new(100, "GBP").format(sign_positive: false, sign_before_symbol: false) #=> "£1.00"
+    #   Money.new(100, "GBP").format                               #=> "£+1.00"
+    #
+    # @option rules [Boolean] :disambiguate (false) Prevents the result from being ambiguous
+    #  due to equal symbols for different currencies. Uses the `disambiguate_symbol`.
+    #
+    # @example
+    #   Money.new(10000, "USD").format(disambiguate: false)   #=> "$100.00"
+    #   Money.new(10000, "CAD").format(disambiguate: false)   #=> "$100.00"
+    #   Money.new(10000, "USD").format(disambiguate: true)    #=> "$100.00"
+    #   Money.new(10000, "CAD").format(disambiguate: true)    #=> "C$100.00"
+    #
+    # @option rules [Boolean] :html_wrap_symbol (false) Wraps the currency symbol
+    #  in a html <span> tag.
+    #
+    # @example
+    #   Money.new(10000, "USD").format(disambiguate: false)
+    #   #=> "<span class=\"currency_symbol\">$100.00</span>
+    #
+    # @option rules [Symbol] :symbol_position (:before) `:before` if the currency
+    #   symbol goes before the amount, `:after` if it goes after.
+    #
+    # @example
+    #   Money.new(10000, "USD").format(symbol_position: :before) #=> "$100.00"
+    #   Money.new(10000, "USD").format(symbol_position: :after)  #=> "100.00 $"
+    #
+    # @option rules [Boolean] :translate (true) `true` Checks for custom
+    #   symbol definitions using I18n.
+    #
+    # @example
+    #   # With the following entry in the translation files:
+    #   # en:
+    #   #   number:
+    #   #     currency:
+    #   #       symbol:
+    #   #         CAD: "CAD$"
+    #   Money.new(10000, "CAD").format(translate: true) #=> "CAD$100.00"
+    #
+    # @option rules [Boolean] :drop_trailing_zeros (false) Ignore trailing zeros after
+    #   the decimal mark
+    #
+    # @example
+    #   Money.new(89000, :btc).format(drop_trailing_zeros: true) #=> B⃦0.00089
+    #   Money.new(110, :usd).format(drop_trailing_zeros: true)   #=> $1.1
+    #
+    # @option rules [Boolean] :delimiter_pattern (/(\d)(?=(?:\d{3})+(?:[^\d]{1}|$))/) Regular expression to set the placement
+    #   for the thousands delimiter
+    #
+    # @example
+    #   Money.new(89000, :btc).format(delimiter_pattern: /(\d)(?=\d)/) #=> B⃦8,9,0.00
+    #
+    # @option rules [String] :format (nil) Provide a template for formatting. `%u` will be replaced
+    # with the symbol (if present) and `%n` will be replaced with the number.
+    #
+    # @example
+    #   Money.new(10000, "USD").format(format: '%u %n') #=> "$ 100.00"
+    #   Money.new(10000, "USD").format(format: '<span>%u%n</span>')  #=> "<span>$100.00</span>"
+    #
+    # Note that the default rules can be defined through {Money.default_formatting_rules} hash.
+    #
+    # @see Money.default_formatting_rules Money.default_formatting_rules for more information.
+    def initialize: (untyped money, *untyped rules) -> void
+
+    def to_s: () -> untyped
+
+    def thousands_separator: () -> untyped
+
+    def decimal_mark: () -> untyped
+
+    alias delimiter thousands_separator
+
+    alias separator decimal_mark
+
+    private
+
+    attr_reader money: untyped
+
+    attr_reader currency: untyped
+
+    attr_reader rules: untyped
+
+    def format_number: () -> untyped
+
+    def append_sign: (untyped formatted_number) -> untyped
+
+    def append_currency_symbol: (untyped formatted_number) -> untyped
+
+    def show_free_text?: () -> untyped
+
+    def html_wrap: (untyped string, untyped class_name) -> ::String
+
+    def free_text: () -> (untyped | "free")
+
+    def format_whole_part: (untyped value) -> untyped
+
+    def extract_whole_and_decimal_parts: () -> untyped
+
+    def format_decimal_part: (untyped value) -> (nil | untyped)
+
+    def lookup: (untyped key) -> untyped
+
+    def lookup_default: (untyped key) -> untyped
+
+    def symbol_value_from: (untyped rules) -> (untyped | untyped | "" | untyped)
+  end
+end
+
+class Money
+  module LocaleBackend
+    class Base
+    end
+  end
+end
+
+class Money
+  module LocaleBackend
+    class NotSupported < StandardError
+    end
+
+    class Unknown < ArgumentError
+    end
+  end
+end
+
+class Money
+  module LocaleBackend
+    class Currency < Base
+      def lookup: (untyped key, untyped currency) -> (untyped | nil)
+    end
+  end
+end
+
+class Money
+  module LocaleBackend
+    class I18n < Base
+      KEY_MAP: { thousands_separator: :delimiter, decimal_mark: :separator, symbol: :unit }
+
+      def initialize: () -> void
+
+      def lookup: (untyped key, untyped _) -> untyped
+    end
+  end
+end
+
+class Money
+  module LocaleBackend
+    class Legacy < Base
+      def initialize: () -> void
+
+      def lookup: (untyped key, untyped currency) -> untyped
+
+      private
+
+      def i18n_backend: () -> untyped
+    end
+  end
+end
+
+class Money
+  VERSION: "6.17.0"
+end
+
+class Money
+  class Currency
+    module Loader
+      DATA_PATH: untyped
+
+      # Loads and returns the currencies stored in JSON files in the config directory.
+      #
+      # @return [Hash]
+      def self.load_currencies: () -> untyped
+
+      private
+
+      def self.parse_currency_file: (untyped filename) -> untyped
+    end
+  end
+end
+
+class Money
+  class Currency
+    module Heuristics
+      def analyze: (untyped str) -> untyped
+    end
+  end
+end
+
