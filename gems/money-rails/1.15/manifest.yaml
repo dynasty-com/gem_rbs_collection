@@ -3,5 +3,6 @@
 # declare the dependencies.
 # If all dependencies appear in the gemspec, you can remove this file.
 #
-# dependencies:
-#   - name: pathname
+dependencies:
+  - name: money
+  - name: monetize
