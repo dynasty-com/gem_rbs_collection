@@ -535,7 +535,7 @@ module RSpec
     # the arg in same position in the argument list.
     #
     # @see ArgumentListMatcher
-    module ArgumentMatchers
+    module ArgumentMatchers : BasicObject
       # Acts like an arg splat, matching any number of args at any point in an arg list.
       #
       # @example
@@ -731,7 +731,7 @@ module RSpec
     # Mix this in to your test context (such as a test framework base class)
     # to use rspec-mocks with your test framework. If you're using rspec-core,
     # it'll take care of doing this for you.
-    module ExampleMethods
+    module ExampleMethods : BasicObject
       include RSpec::Mocks::ArgumentMatchers
 
       # @overload double()
@@ -3298,7 +3298,7 @@ module RSpec
 end
 
 class Object
-  extend RSpec::Mocks::ExampleMethods
+  include RSpec::Mocks::ExampleMethods
 end
 
 # Share the top-level RSpec namespace, because we are a core supported
