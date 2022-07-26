@@ -648,7 +648,7 @@ module RSpec
     #   expect { do_something_risky }.to raise_error("that was too risky")
     #
     #   expect { do_something_risky }.not_to raise_error
-    def raise_error: (?untyped error, ?untyped? message) { () -> untyped } -> untyped
+    def raise_error: (?untyped error, ?untyped? message) ?{ () -> untyped } -> untyped
 
     alias raise_exception raise_error
 
