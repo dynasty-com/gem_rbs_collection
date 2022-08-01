@@ -2137,6 +2137,12 @@ class Object
   # Examples:
   # allow_any_instance_of(MyClass).to receive(:foo)
   def allow_any_instance_of: (singleton(Object)) -> Object
+                           
+  # Used to wrap a class in preparation for setting a mock expectation on instances of it.
+  # 
+  # Examples:
+  # expect_any_instance_of(MyClass).to receive(:foo)
+  def expect_any_instance_of: (singleton(Object)) -> Object
 
   # Used to specify a message that you expect or allow an object to receive. 
   # The object returned by receive supports the same fluent interface that 
