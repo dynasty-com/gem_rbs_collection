@@ -96,7 +96,7 @@ module WebMock
     class PatronAdapter < ::WebMock::HttpLibAdapter
       OriginalPatronSession: untyped
 
-      class WebMockPatronSession < ::Patron::Session
+      class WebMockPatronSession # < ::Patron::Session
         def handle_request: (untyped req) -> untyped
       end
 
@@ -130,11 +130,11 @@ module WebMock
 
       def self.disable!: () -> untyped
 
-      class StubbedTimeoutResponse < Manticore::StubbedResponse
+      class StubbedTimeoutResponse # < Manticore::StubbedResponse
         def call: () -> untyped
       end
 
-      class WebMockManticoreClient < Manticore::Client
+      class WebMockManticoreClient # < Manticore::Client
         def request: (untyped klass, untyped url, ?::Hash[untyped, untyped] options) ?{ () -> untyped } -> untyped
 
         private
@@ -183,14 +183,14 @@ module EventMachine
   module HTTPMethods
   end
 
-  class WebMockHttpConnection < HttpConnection
+  class WebMockHttpConnection # < HttpConnection
     def activate_connection: (untyped client) -> untyped
 
     def drop_client: () -> untyped
   end
 
-  class WebMockHttpClient < EventMachine::HttpClient
-    include HttpEncoding
+  class WebMockHttpClient # < EventMachine::HttpClient
+    # include HttpEncoding
 
     def uri: () -> untyped
 
@@ -267,7 +267,7 @@ module WebMock
 end
 
 module Curl
-  class WebMockCurlEasy < Curl::Easy
+  class WebMockCurlEasy # < Curl::Easy
     def curb_or_webmock: () { () -> untyped } -> untyped
 
     def build_request_signature: () -> untyped
@@ -464,7 +464,7 @@ class WebMockHTTPClient < HTTPClient
   include WebMockHTTPClients
 end
 
-class WebMockJSONClient < JSONClient
+class WebMockJSONClient # < JSONClient
   alias do_get_block_without_webmock do_get_block
 
   alias do_get_stream_without_webmock do_get_stream
@@ -619,7 +619,7 @@ end
 
 module Async
   module HTTP
-    class WebMockClientWrapper < Client
+    class WebMockClientWrapper # < Client
       def initialize: (untyped endpoint, ?untyped protocol, ?untyped scheme, ?untyped authority, **untyped options) -> void
 
       def call: (untyped request) -> untyped
@@ -635,7 +635,7 @@ module Async
       def build_webmock_response_headers: (untyped response) -> untyped
     end
 
-    class WebMockClient < Client
+    class WebMockClient # < Client
     end
 
     class WebMockEndpoint
@@ -1104,7 +1104,7 @@ module WebMock
 end
 
 module WebMock
-  module API
+  module API : BasicObject
     extend ::WebMock::API
 
     def stub_request: (untyped method, untyped uri) -> untyped
@@ -1223,14 +1223,6 @@ module Test
     end
   end
 end
-
-RSPEC_NAMESPACE: untyped
-
-RSPEC_NAMESPACE: untyped
-
-RSPEC_CONFIGURER: untyped
-
-RSPEC_NAMESPACE: untyped
 
 RSPEC_NAMESPACE: untyped
 
@@ -1606,3 +1598,6 @@ module WebMock
   end
 end
 
+class Object
+  extend ::WebMock::API
+end
