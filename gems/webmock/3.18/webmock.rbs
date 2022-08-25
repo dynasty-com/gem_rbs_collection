@@ -1,0 +1,1608 @@
+
+module WebMock
+  class RequestStub
+    attr_accessor request_pattern: untyped
+
+    def initialize: (untyped method, untyped uri) -> void
+
+    def with: (?::Hash[untyped, untyped] params) ?{ () -> untyped } -> self
+
+    def to_return: (*untyped response_hashes) ?{ () -> untyped } -> self
+
+    alias and_return to_return
+
+    def to_return_json: (*untyped response_hashes) -> untyped
+
+    alias and_return_json to_return_json
+
+    def to_rack: (untyped app, ?::Hash[untyped, untyped] options) -> untyped
+
+    def to_raise: (*untyped exceptions) -> self
+
+    alias and_raise to_raise
+
+    def to_timeout: () -> self
+
+    alias and_timeout to_timeout
+
+    def response: () -> untyped
+
+    def has_responses?: () -> untyped
+
+    def then: () -> self
+
+    def times: (untyped number) -> self
+
+    def matches?: (untyped request_signature) -> untyped
+
+    def to_s: () -> untyped
+
+    def self.from_request_signature: (untyped signature) -> untyped
+  end
+end
+
+module WebMock
+  class RequestBodyDiff
+    def initialize: (untyped request_signature, untyped request_stub) -> void
+
+    def body_diff: () -> (::Hash[untyped, untyped] | untyped)
+
+    private
+
+    attr_reader request_signature: untyped
+
+    attr_reader request_stub: untyped
+
+    def request_signature_diffable?: () -> untyped
+
+    def request_stub_diffable?: () -> untyped
+
+    def request_signature_body_hash: () -> untyped
+
+    def request_stub_body_hash: () -> untyped
+
+    def request_stub_body: () -> untyped
+
+    def request_signature_parseable_json?: () -> untyped
+
+    def request_stub_parseable_json?: () -> untyped
+
+    def parseable_json?: (untyped body_pattern) -> untyped
+  end
+end
+
+module WebMock
+  class NetConnectNotAllowedError < Exception
+    def initialize: (untyped request_signature) -> void
+  end
+end
+
+module WebMock
+  class HttpLibAdapterRegistry
+    include Singleton
+
+    attr_accessor http_lib_adapters: untyped
+
+    def initialize: () -> void
+
+    def register: (untyped lib, untyped adapter) -> untyped
+
+    def each_adapter: () ?{ () -> untyped } -> untyped
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class PatronAdapter < ::WebMock::HttpLibAdapter
+      OriginalPatronSession: untyped
+
+      class WebMockPatronSession < ::Patron::Session
+        def handle_request: (untyped req) -> untyped
+      end
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      def self.handle_file_name: (untyped req, untyped webmock_response) -> (untyped | nil)
+
+      def self.build_request_signature: (untyped req) -> untyped
+
+      def self.build_patron_response: (untyped webmock_response, untyped default_response_charset) -> untyped
+
+      def self.build_webmock_response: (untyped patron_response) -> untyped
+    end
+  end
+end
+
+module WebMock
+  class HttpLibAdapter
+    def self.adapter_for: (untyped lib) -> untyped
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class ManticoreAdapter < HttpLibAdapter
+      OriginalManticoreClient: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      class StubbedTimeoutResponse < Manticore::StubbedResponse
+        def call: () -> untyped
+      end
+
+      class WebMockManticoreClient < Manticore::Client
+        def request: (untyped klass, untyped url, ?::Hash[untyped, untyped] options) ?{ () -> untyped } -> untyped
+
+        private
+
+        def format_options: (untyped options) -> untyped
+
+        def join_array_values: (untyped headers) -> untyped
+
+        def response_object_for: (untyped request, untyped context) ?{ () -> untyped } -> untyped
+
+        def registered_response_for: (untyped request_signature) -> untyped
+
+        def real_request_allowed?: (untyped uri) -> untyped
+
+        def generate_webmock_request_signature: (untyped request, untyped context) -> untyped
+
+        def read_body: (untyped request) -> (untyped | nil)
+
+        def split_array_values: (?untyped headers) -> untyped
+
+        def generate_manticore_response: (untyped webmock_response) -> untyped
+
+        def generate_webmock_response: (untyped manticore_response) -> untyped
+      end
+    end
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class EmHttpRequestAdapter < HttpLibAdapter
+      OriginalHttpClient: untyped
+
+      OriginalHttpConnection: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+    end
+  end
+end
+
+module EventMachine
+  # have to make the callbacks fire on the next tick in order
+  # to avoid the dreaded "double resume" exception
+  module HTTPMethods
+  end
+
+  class WebMockHttpConnection < HttpConnection
+    def activate_connection: (untyped client) -> untyped
+
+    def drop_client: () -> untyped
+  end
+
+  class WebMockHttpClient < EventMachine::HttpClient
+    include HttpEncoding
+
+    def uri: () -> untyped
+
+    def setup: (untyped response, untyped uri, ?untyped? error) -> untyped
+
+    def connection_completed: () -> untyped
+
+    def send_request: (untyped head, untyped body) -> untyped
+
+    def unbind: (?untyped? reason) -> untyped
+
+    def request_signature: () -> untyped
+
+    def stubbed_webmock_response: () -> untyped
+
+    def get_response_cookie: (untyped name) -> untyped
+
+    private
+
+    def build_webmock_response: () -> untyped
+
+    def build_request_signature: () -> untyped
+
+    def make_raw_response: (untyped response) -> untyped
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class TyphoeusAdapter < HttpLibAdapter
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      def self.disabled?: () -> untyped
+
+      def self.add_before_callback: () -> (untyped | nil)
+
+      def self.remove_before_callback: () -> untyped
+
+      def self.add_after_request_callback: () -> (untyped | nil)
+
+      def self.remove_after_request_callback: () -> untyped
+
+      def self.build_request_signature: (untyped req) -> untyped
+
+      def self.build_webmock_response: (untyped typhoeus_response) -> untyped
+
+      def self.generate_typhoeus_response: (untyped request_signature, untyped webmock_response) -> untyped
+
+      def self.request_hash: (untyped request_signature) -> untyped
+
+      AFTER_REQUEST_CALLBACK: untyped
+
+      BEFORE_CALLBACK: untyped
+    end
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class CurbAdapter < HttpLibAdapter
+      OriginalCurlEasy: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      # Borrowed from Patron:
+      # http://github.com/toland/patron/blob/master/lib/patron/response.rb
+      def self.parse_header_string: (untyped header_string) -> untyped
+    end
+  end
+end
+
+module Curl
+  class WebMockCurlEasy < Curl::Easy
+    def curb_or_webmock: () { () -> untyped } -> untyped
+
+    def build_request_signature: () -> untyped
+
+    def headers_as_hash: (untyped headers) -> untyped
+
+    def basic_auth_headers: () -> (::Hash[::String, untyped] | ::Hash[untyped, untyped])
+
+    def build_curb_response: (untyped webmock_response) -> untyped
+
+    def webmock_follow_location: (untyped location) -> untyped
+
+    def invoke_curb_callbacks: () -> untyped
+
+    def chunked_response?: () -> untyped
+
+    def build_webmock_response: () -> untyped
+
+    def http: (untyped method) -> untyped
+
+    def http_put: (?untyped? data) -> untyped
+
+    alias put http_put
+
+    def http_post: (*untyped data) -> untyped
+
+    alias post http_post
+
+    def perform: () -> untyped
+
+    def put_data=: (untyped data) -> untyped
+
+    def post_body=: (untyped data) -> untyped
+
+    def delete=: (untyped value) -> untyped
+
+    def head=: (untyped value) -> untyped
+
+    def verbose=: (untyped verbose) -> untyped
+
+    def verbose?: () -> untyped
+
+    def body_str: () -> untyped
+
+    alias body body_str
+
+    def response_code: () -> untyped
+
+    def header_str: () -> untyped
+
+    alias head header_str
+
+    def last_effective_url: () -> untyped
+
+    def content_type: () -> untyped
+
+    def reset_webmock_method: () -> untyped
+
+    def reset: () -> untyped
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class NetHttpAdapter < HttpLibAdapter
+      OriginalNetHTTP: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      def self.socket_type: () -> untyped
+
+      def self.const_defined?: (untyped name) -> untyped
+
+      def self.const_defined?: (untyped name, ?bool inherit) -> untyped
+
+      def self.const_get: (untyped name, ?bool inherit) -> untyped
+
+      def self.constants: (?bool inherit) -> untyped
+
+      def request: (untyped request, ?untyped? body) ?{ () -> untyped } -> untyped
+
+      def start_without_connect: () { (untyped) -> untyped } -> (untyped | self)
+
+      def ensure_actual_connection: () -> (untyped | nil)
+
+      alias start_with_connect start
+
+      def start: () ?{ () -> untyped } -> untyped
+
+      def build_net_http_response: (untyped webmock_response) { (untyped) -> untyped } -> untyped
+
+      def build_webmock_response: (untyped net_http_response) -> untyped
+
+      def check_right_http_connection: () -> (untyped | nil)
+    end
+  end
+end
+
+class StubSocket
+  attr_accessor read_timeout: untyped
+
+  attr_accessor continue_timeout: untyped
+
+  attr_accessor write_timeout: untyped
+
+  def initialize: (*untyped args) -> void
+
+  def closed?: () -> untyped
+
+  def close: () -> nil
+
+  def readuntil: (*untyped args) -> nil
+
+  def io: () -> untyped
+
+  class StubIO
+    def setsockopt: (*untyped args) -> nil
+
+    def peer_cert: () -> nil
+
+    def peeraddr: () -> ::Array["AF_INET" | 443 | "127.0.0.1"]
+
+    def ssl_version: () -> "TLSv1.3"
+
+    def cipher: () -> ::Array["TLS_AES_128_GCM_SHA256" | "TLSv1.3" | 128]
+  end
+end
+
+module WebMock
+  module NetHTTPUtility
+    def self.request_signature_from_request: (untyped net_http, untyped request, ?untyped? body) -> untyped
+
+    def self.get_uri: (untyped net_http, ?untyped? path) -> ::String
+
+    def self.check_right_http_connection: () -> untyped
+
+    def self.puts_warning_for_right_http_if_needed: () -> (untyped | nil)
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class HTTPClientAdapter < HttpLibAdapter
+      OriginalHttpClient: untyped
+
+      OriginalJsonClient: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+    end
+  end
+end
+
+module WebMockHTTPClients
+  REQUEST_RESPONSE_LOCK: untyped
+
+  def do_get_block: (untyped req, untyped proxy, untyped conn) ?{ () -> untyped } -> untyped
+
+  def do_get_stream: (untyped req, untyped proxy, untyped conn) ?{ () -> untyped } -> untyped
+
+  def do_get: (untyped req, untyped proxy, untyped conn, ?bool stream) ?{ () -> untyped } -> untyped
+
+  def do_request_async: (untyped method, untyped uri, untyped query, untyped body, untyped extheader) -> untyped
+
+  def build_httpclient_response: (untyped webmock_response, ?bool stream, ?untyped? req_header) ?{ () -> untyped } -> untyped
+
+  def build_webmock_response: (untyped httpclient_response, ?untyped? body) -> untyped
+
+  def build_request_signature: (untyped req, ?bool reuse_existing) -> untyped
+
+  def webmock_responses: () -> untyped
+
+  def webmock_request_signatures: () -> untyped
+
+  def previous_signature_for: (untyped signature) -> untyped
+
+  private
+
+  # some of the headers sent by HTTPClient are derived from
+  # the client session
+  def headers_from_session: (untyped uri) -> untyped
+
+  def synchronize_request_response: () { () -> untyped } -> untyped
+end
+
+class WebMockHTTPClient < HTTPClient
+  alias do_get_block_without_webmock do_get_block
+
+  alias do_get_stream_without_webmock do_get_stream
+
+  include WebMockHTTPClients
+end
+
+class WebMockJSONClient < JSONClient
+  alias do_get_block_without_webmock do_get_block
+
+  alias do_get_stream_without_webmock do_get_stream
+
+  include WebMockHTTPClients
+end
+
+# Mocks a HTTPClient HTTP::Message
+class MessageMock
+  attr_reader header: untyped
+
+  def initialize: (untyped headers) -> void
+
+  def http_version=: (untyped value) -> nil
+end
+
+module WebMock
+  module HttpLibAdapters
+    class HttpRbAdapter < HttpLibAdapter
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      def self.enabled?: () -> untyped
+    end
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class ExconAdapter < HttpLibAdapter
+      PARAMS_TO_DELETE: ::Array[:expects | :idempotent | :instrumentor_name | :instrumentor | :response_block | :__construction_args | :stack | :connection | :response]
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+
+      def self.add_excon_stub: () -> (untyped | nil)
+
+      def self.remove_excon_stub: () -> untyped
+
+      def self.handle_request: (untyped params) -> untyped
+
+      def self.new_excon_connection: (untyped params) -> untyped
+
+      def self.connection_params_from: (untyped hash) -> untyped
+
+      def self.request_params_from: (untyped hash) -> untyped
+
+      def self.to_query: (untyped hash) -> untyped
+
+      def self.build_request: (untyped params) -> untyped
+
+      def self.body_from: (untyped params) -> untyped
+
+      def self.real_response: (untyped mock) -> { body: untyped, status: untyped, reason_phrase: untyped, headers: untyped }
+
+      def self.mock_response: (untyped real) -> untyped
+
+      def self.perform_callbacks: (untyped request, untyped response, ?::Hash[untyped, untyped] options) -> (nil | untyped)
+    end
+  end
+end
+
+class Object
+  def self.new: (?::Hash[untyped, untyped] args) -> untyped
+end
+
+module Net
+  module WebMockHTTPResponse
+    def read_body: (?untyped? dest) ?{ () -> untyped } -> untyped
+  end
+end
+
+module HTTP
+  class WebMockPerform
+    def initialize: (untyped request, untyped options) ?{ () -> untyped } -> void
+
+    def exec: () -> untyped
+
+    def request_signature: () -> untyped
+
+    def response_for_request: (untyped signature) -> untyped
+
+    def register_request: (untyped signature) -> untyped
+
+    def replay: () -> (nil | untyped)
+
+    def raise_timeout_error: () -> untyped
+
+    def perform: () -> (nil | untyped)
+
+    def halt: () -> untyped
+
+    def invoke_callbacks: (untyped webmock_response, ?::Hash[untyped, untyped] options) -> untyped
+  end
+end
+
+module HTTP
+  class Response
+    def to_webmock: () -> untyped
+
+    def self.from_webmock: (untyped request, untyped webmock_response, ?untyped? request_signature) -> untyped
+
+    private
+
+    def self.normalize_uri: (untyped uri) -> (nil | untyped)
+  end
+end
+
+module HTTP
+  class Request
+    def webmock_signature: () -> untyped
+  end
+end
+
+module HTTP
+  class Client
+    alias __perform__ perform
+
+    def perform: (untyped request, untyped options) -> untyped
+
+    def webmock_enabled?: () -> untyped
+  end
+end
+
+module HTTP
+  class Response
+    class Streamer
+      def initialize: (untyped str, ?encoding: untyped) -> void
+
+      def readpartial: (?untyped? size, ?untyped? outbuf) -> untyped
+
+      def close: () -> untyped
+
+      def sequence_id: () -> -1
+    end
+  end
+end
+
+module WebMock
+  module HttpLibAdapters
+    class AsyncHttpClientAdapter < HttpLibAdapter
+      OriginalAsyncHttpClient: untyped
+
+      def self.enable!: () -> untyped
+
+      def self.disable!: () -> untyped
+    end
+  end
+end
+
+module Async
+  module HTTP
+    class WebMockClientWrapper < Client
+      def initialize: (untyped endpoint, ?untyped protocol, ?untyped scheme, ?untyped authority, **untyped options) -> void
+
+      def call: (untyped request) -> untyped
+
+      def close: () -> untyped
+
+      private
+
+      def build_request_signature: (untyped request) -> untyped
+
+      def build_webmock_response: (untyped response) -> untyped
+
+      def build_webmock_response_headers: (untyped response) -> untyped
+    end
+
+    class WebMockClient < Client
+    end
+
+    class WebMockEndpoint
+      def initialize: (untyped scheme, untyped authority, untyped protocol) -> void
+
+      def connect: () -> untyped
+
+      def inspect: () -> ::String
+
+      private
+
+      def create_connected_sockets: () -> untyped
+
+      def accept_socket: (untyped socket) -> untyped
+    end
+
+    module WebMockApplication
+      WEBMOCK_REQUEST_ID_HEADER: "x-webmock-request-id"
+
+      def self.call: (untyped request) -> untyped
+
+      def self.add_webmock_response: (untyped request, untyped webmock_response) -> untyped
+
+      def self.get_webmock_response: (untyped request) -> untyped
+
+      private
+
+      def self.webmock_responses: () -> untyped
+
+      def self.build_response: (untyped webmock_response) -> untyped
+    end
+  end
+end
+
+module WebMock
+  module Util
+    class JSON
+      class ParseError < StandardError
+      end
+
+      def self.parse: (untyped json) -> untyped
+
+      def self.unescape: (untyped str) -> untyped
+
+      # Ensure that ":" and "," are always followed by a space
+      def self.convert_json_to_yaml: (untyped json) -> untyped
+    end
+  end
+end
+
+module WebMock
+  module Util
+    class Headers
+      def self.normalize_headers: (untyped headers) -> (nil | untyped)
+
+      def self.sorted_headers_string: (untyped headers) -> untyped
+
+      def self.pp_headers_string: (untyped headers) -> untyped
+
+      def self.decode_userinfo_from_header: (untyped header) -> untyped
+
+      def self.basic_auth_header: (*untyped credentials) -> ::String
+    end
+  end
+end
+
+module WebMock::Util
+  class QueryMapper
+    #
+    # Converts the query component to a Hash value.
+    #
+    # @option [Symbol] notation
+    #   May be one of <code>:flat</code>, <code>:dot</code>, or
+    #   <code>:subscript</code>. The <code>:dot</code> notation is not
+    #   supported for assignment. Default value is <code>:subscript</code>.
+    #
+    # @return [Hash, Array] The query string parsed as a Hash or Array object.
+    #
+    # @example
+    #   WebMock::Util::QueryMapper.query_to_values("?one=1&two=2&three=3")
+    #   #=> {"one" => "1", "two" => "2", "three" => "3"}
+    #   WebMock::Util::QueryMapper("?one[two][three]=four").query_values
+    #   #=> {"one" => {"two" => {"three" => "four"}}}
+    #   WebMock::Util::QueryMapper.query_to_values("?one.two.three=four",
+    #     :notation => :dot
+    #   )
+    #   #=> {"one" => {"two" => {"three" => "four"}}}
+    #   WebMock::Util::QueryMapper.query_to_values("?one[two][three]=four",
+    #     :notation => :flat
+    #   )
+    #   #=> {"one[two][three]" => "four"}
+    #   WebMock::Util::QueryMapper.query_to_values("?one.two.three=four",
+    #     :notation => :flat
+    #   )
+    #   #=> {"one.two.three" => "four"}
+    #   WebMock::Util::QueryMapper(
+    #     "?one[two][three][]=four&one[two][three][]=five"
+    #   )
+    #   #=> {"one" => {"two" => {"three" => ["four", "five"]}}}
+    #   WebMock::Util::QueryMapper.query_to_values(
+    #     "?one=two&one=three").query_values(:notation => :flat_array)
+    #   #=> [['one', 'two'], ['one', 'three']]
+    def self.query_to_values: (untyped query, ?::Hash[untyped, untyped] options) -> (nil | untyped)
+
+    def self.normalize_query_hash: (untyped query_hash, untyped empty_accumulator, untyped options) -> untyped
+
+    def self.collect_query_parts: (untyped query) -> untyped
+
+    def self.collect_query_hash: (untyped query_array, untyped empty_accumulator, untyped options) -> untyped
+
+    def self.fill_accumulator_for_flat: (untyped accumulator, untyped key, untyped value) -> untyped
+
+    def self.fill_accumulator_for_flat_array: (untyped accumulator, untyped key, untyped value) -> untyped
+
+    def self.fill_accumulator_for_dot: (untyped accumulator, untyped key, untyped value) -> untyped
+
+    def self.fill_accumulator_for_subscript: (untyped accumulator, untyped key, untyped value) -> untyped
+
+    #
+    # Sets the query component for this URI from a Hash object.
+    # This method produces a query string using the :subscript notation.
+    # An empty Hash will result in a nil query.
+    #
+    # @param [Hash, #to_hash, Array] new_query_values The new query values.
+    def self.values_to_query: (untyped new_query_values, ?::Hash[untyped, untyped] options) -> (nil | untyped)
+
+    def self.dehash: (untyped hash) -> untyped
+
+    # new_query_values have form [['key1', 'value1'], ['key2', 'value2']]
+    def self.to_query: (untyped parent, untyped value, ?::Hash[untyped, untyped] options) -> untyped
+  end
+end
+
+module WebMock
+  module Util
+    class HashKeysStringifier
+      def self.stringify_keys!: (untyped arg, ?::Hash[untyped, untyped] options) -> untyped
+    end
+  end
+end
+
+module WebMock
+  module Util
+    class URI
+      module CharacterClasses
+        USERINFO: untyped
+      end
+
+      ADDRESSABLE_URIS: untyped
+
+      NORMALIZED_URIS: untyped
+
+      def self.heuristic_parse: (untyped uri) -> untyped
+
+      def self.normalize_uri: (untyped uri) -> untyped
+
+      def self.variations_of_uri_as_strings: (untyped uri_object, ?only_with_scheme: bool) -> untyped
+
+      def self.strip_default_port_from_uri_string: (untyped uri_string) -> untyped
+
+      def self.encode_unsafe_chars_in_userinfo: (untyped userinfo) -> untyped
+
+      def self.is_uri_localhost?: (untyped uri) -> untyped
+
+      private
+
+      def self.sort_query_values: (untyped query_values) -> untyped
+
+      def self.uris_with_inferred_port_and_without: (untyped uris) -> untyped
+
+      def self.uris_encoded_and_unencoded: (untyped uris) -> untyped
+
+      def self.uris_with_scheme_and_without: (untyped uris) -> untyped
+
+      def self.uris_with_trailing_slash_and_without: (untyped uris) -> untyped
+    end
+  end
+end
+
+module WebMock
+  class HashValidator
+    def initialize: (untyped hash) -> void
+
+    # his code is based on https://github.com/rails/rails/blob/master/activesupport/lib/active_support/core_ext/hash/keys.rb
+    def validate_keys: (*untyped valid_keys) -> untyped
+  end
+end
+
+class WebMock::Util::ValuesStringifier
+  def self.stringify_values: (untyped value) -> untyped
+end
+
+module WebMock
+  class VersionChecker
+    def initialize: (untyped library_name, untyped library_version, untyped min_patch_level, ?untyped? max_minor_version, ?untyped unsupported_versions) -> void
+
+    def check_version!: () -> untyped
+
+    private
+
+    def too_low?: () -> untyped
+
+    def too_high?: () -> untyped
+
+    def unsupported_version?: () -> untyped
+
+    def warn_about_too_low: () -> untyped
+
+    def warn_about_too_high: () -> untyped
+
+    def warn_about_unsupported_version: () -> untyped
+
+    def warn_in_red: (untyped text) -> untyped
+
+    def compare_version: () -> untyped
+
+    def version_requirement: () -> untyped
+
+    def parse_version: (untyped version) -> untyped
+
+    def colorize: (untyped text, untyped color_code) -> ::String
+  end
+end
+
+module WebMock
+  module Util
+    class HashCounter
+      attr_accessor hash: untyped
+
+      def initialize: () -> void
+
+      def put: (untyped key, ?::Integer num) -> untyped
+
+      def get: (untyped key) -> untyped
+
+      def select: () ?{ () -> untyped } -> (nil | untyped)
+
+      def each: () { (untyped, untyped) -> untyped } -> untyped
+    end
+  end
+end
+
+module WebMock
+  def self.included: (untyped clazz) -> untyped
+
+  include WebMock::API
+
+  extend WebMock::API
+
+  alias self.request self.a_request
+
+  def self.version: () -> untyped
+
+  def self.disable!: (?::Hash[untyped, untyped] options) -> untyped
+
+  def self.enable!: (?::Hash[untyped, untyped] options) -> untyped
+
+  def self.allow_net_connect!: (?::Hash[untyped, untyped] options) -> untyped
+
+  def self.disable_net_connect!: (?::Hash[untyped, untyped] options) -> untyped
+
+  alias self.enable_net_connect! self.allow_net_connect!
+
+  alias self.disallow_net_connect! self.disable_net_connect!
+
+  def self.net_connect_allowed?: (?untyped? uri) -> untyped
+
+  def self.net_http_connect_on_start?: (untyped uri) -> untyped
+
+  def self.net_connect_explicit_allowed?: (untyped allowed, ?untyped? uri) -> untyped
+
+  def self.show_body_diff!: () -> untyped
+
+  def self.hide_body_diff!: () -> untyped
+
+  def self.show_body_diff?: () -> untyped
+
+  def self.hide_stubbing_instructions!: () -> untyped
+
+  def self.show_stubbing_instructions!: () -> untyped
+
+  def self.show_stubbing_instructions?: () -> untyped
+
+  def self.reset!: () -> untyped
+
+  def self.reset_webmock: () -> untyped
+
+  def self.reset_callbacks: () -> untyped
+
+  def self.after_request: (?::Hash[untyped, untyped] options) ?{ () -> untyped } -> untyped
+
+  def self.registered_request?: (untyped request_signature) -> untyped
+
+  def self.print_executed_requests: () -> untyped
+
+  def self.globally_stub_request: (?::Symbol order) ?{ () -> untyped } -> untyped
+end
+
+module WebMock
+  module RSpecMatcherDetector
+    def rSpecHashIncludingMatcher?: (untyped matcher) -> untyped
+
+    def rSpecHashExcludingMatcher?: (untyped matcher) -> untyped
+  end
+
+  class RequestPattern
+    attr_reader method_pattern: untyped
+
+    attr_reader uri_pattern: untyped
+
+    attr_reader body_pattern: untyped
+
+    attr_reader headers_pattern: untyped
+
+    def initialize: (untyped method, untyped uri, ?::Hash[untyped, untyped] options) -> void
+
+    def with: (?::Hash[untyped, untyped] options) ?{ () -> untyped } -> self
+
+    def matches?: (untyped request_signature) -> untyped
+
+    def to_s: () -> untyped
+
+    private
+
+    def assign_options: (untyped options) -> untyped
+
+    def set_basic_auth_as_headers!: (untyped options) -> (untyped | nil)
+
+    def validate_basic_auth!: (untyped basic_auth) -> (untyped | nil)
+
+    def create_uri_pattern: (untyped uri) -> untyped
+  end
+
+  class MethodPattern
+    def initialize: (untyped pattern) -> void
+
+    def matches?: (untyped method) -> untyped
+
+    def to_s: () -> untyped
+  end
+
+  class URIPattern
+    include RSpecMatcherDetector
+
+    def initialize: (untyped pattern) -> void
+
+    def add_query_params: (untyped query_params) -> untyped
+
+    def matches?: (untyped uri) -> untyped
+
+    def to_s: () -> untyped
+
+    private
+
+    def pattern_inspect: () -> untyped
+
+    def query_params_matches?: (untyped uri) -> untyped
+  end
+
+  class URICallablePattern < URIPattern
+    private
+
+    def pattern_matches?: (untyped uri) -> untyped
+  end
+
+  class URIRegexpPattern < URIPattern
+    private
+
+    def pattern_matches?: (untyped uri) -> untyped
+  end
+
+  class URIAddressablePattern < URIPattern
+    def add_query_params: (untyped query_params) -> untyped
+
+    private
+
+    def pattern_matches?: (untyped uri) -> untyped
+
+    def pattern_inspect: () -> untyped
+
+    def matches_with_variations?: (untyped uri) -> untyped
+
+    def template_matches_uri?: (untyped template, untyped uri) -> untyped
+  end
+
+  class URIStringPattern < URIPattern
+    def add_query_params: (untyped query_params) -> untyped
+
+    private
+
+    def pattern_matches?: (untyped uri) -> (untyped | false)
+
+    def pattern_inspect: () -> untyped
+  end
+
+  class BodyPattern
+    include RSpecMatcherDetector
+
+    BODY_FORMATS: ::Hash[::String, :xml | :json | :html | :yaml | :plain]
+
+    attr_reader pattern: untyped
+
+    def initialize: (untyped pattern) -> void
+
+    def matches?: (untyped body, ?::String content_type) -> (true | untyped)
+
+    def to_s: () -> untyped
+
+    private
+
+    def body_as_hash: (untyped body, untyped content_type) -> untyped
+
+    def body_format: (untyped content_type) -> untyped
+
+    def assert_non_multipart_body: (untyped content_type) -> (untyped | nil)
+
+    # Compare two hashes for equality
+    #
+    # For two hashes to match they must have the same length and all
+    # values must match when compared using `#===`.
+    #
+    # The following hashes are examples of matches:
+    #
+    #     {a: /\d+/} and {a: '123'}
+    #
+    #     {a: '123'} and {a: '123'}
+    #
+    #     {a: {b: /\d+/}} and {a: {b: '123'}}
+    #
+    #     {a: {b: 'wow'}} and {a: {b: 'wow'}}
+    #
+    # @param [Hash] query_parameters typically the result of parsing
+    #   JSON, XML or URL encoded parameters.
+    #
+    # @param [Hash] pattern which contains keys with a string, hash or
+    #   regular expression value to use for comparison.
+    #
+    # @return [Boolean] true if the paramaters match the comparison
+    #   hash, false if not.
+    def matching_body_hashes?: (untyped query_parameters, untyped pattern, untyped content_type) -> (false | untyped)
+
+    def matching_body_array?: (untyped query_parameters, untyped pattern, untyped content_type) -> (false | true)
+
+    def matching_values: (untyped actual, untyped expected, untyped content_type) -> untyped
+
+    def empty_string?: (untyped string) -> untyped
+
+    def normalize_hash: (untyped hash) -> untyped
+
+    def url_encoded_body?: (untyped content_type) -> untyped
+  end
+
+  class HeadersPattern
+    def initialize: (untyped pattern) -> void
+
+    def matches?: (untyped headers) -> (untyped | false | true)
+
+    def to_s: () -> untyped
+
+    def pp_to_s: () -> untyped
+
+    private
+
+    def empty_headers?: (untyped headers) -> untyped
+  end
+end
+
+module WebMock
+  module API
+    extend ::WebMock::API
+
+    def stub_request: (untyped method, untyped uri) -> untyped
+
+    alias stub_http_request stub_request
+
+    def a_request: (untyped method, untyped uri) -> untyped
+
+    alias self.request self.a_request
+
+    def assert_requested: (*untyped args) ?{ () -> untyped } -> untyped
+
+    def assert_not_requested: (*untyped args) ?{ () -> untyped } -> untyped
+
+    alias refute_requested assert_not_requested
+
+    # Similar to RSpec::Mocks::ArgumentMatchers#hash_including()
+    #
+    # Matches a hash that includes the specified key(s) or key/value pairs.
+    # Ignores any additional keys.
+    #
+    # @example
+    #
+    #   object.should_receive(:message).with(hash_including(:key => val))
+    #   object.should_receive(:message).with(hash_including(:key))
+    #   object.should_receive(:message).with(hash_including(:key, :key2 => val2))
+    def hash_including: (*untyped args) -> untyped
+
+    def hash_excluding: (*untyped args) -> untyped
+
+    def remove_request_stub: (untyped stub) -> untyped
+
+    def reset_executed_requests!: () -> untyped
+
+    private
+
+    def convert_uri_method_and_options_to_request_and_options: (untyped method, untyped uri, untyped options) ?{ () -> untyped } -> ::Array[untyped]
+
+    def assert_request_requested: (untyped request, ?::Hash[untyped, untyped] options) -> untyped
+
+    def assert_request_not_requested: (untyped request, ?::Hash[untyped, untyped] options) -> untyped
+
+    # his is a based on RSpec::Mocks::ArgumentMatchers#anythingize_lonely_keys
+    def anythingize_lonely_keys: (*untyped args) -> untyped
+  end
+end
+
+module WebMock
+  class RackResponse < Response
+    def initialize: (untyped app) -> void
+
+    def evaluate: (untyped request) -> untyped
+
+    def body_from_rack_response: (untyped response) -> untyped
+
+    def build_rack_env: (untyped request) -> untyped
+
+    def session: () -> untyped
+
+    def session_options: () -> untyped
+  end
+end
+
+module WebMock
+  class RequestSignature
+    attr_accessor method: untyped
+
+    attr_accessor uri: untyped
+
+    attr_accessor body: untyped
+
+    attr_reader headers: untyped
+
+    def initialize: (untyped method, untyped uri, ?::Hash[untyped, untyped] options) -> void
+
+    def to_s: () -> untyped
+
+    def headers=: (untyped headers) -> untyped
+
+    def hash: () -> untyped
+
+    def eql?: (untyped other) -> untyped
+
+    alias == eql?
+
+    def url_encoded?: () -> untyped
+
+    def json_headers?: () -> untyped
+
+    private
+
+    def assign_options: (untyped options) -> untyped
+  end
+end
+
+module WebMock
+  class CallbackRegistry
+    def self.add_callback: (untyped options, untyped block) -> untyped
+
+    def self.callbacks: () -> untyped
+
+    def self.invoke_callbacks: (untyped options, untyped request_signature, untyped response) -> (nil | untyped)
+
+    def self.reset: () -> untyped
+
+    def self.any_callbacks?: () -> untyped
+  end
+end
+
+module Test
+  module Unit
+    class TestCase
+      include WebMock::API
+
+      def teardown_with_webmock: () -> untyped
+    end
+  end
+end
+
+RSPEC_NAMESPACE: untyped
+
+RSPEC_NAMESPACE: untyped
+
+RSPEC_CONFIGURER: untyped
+
+RSPEC_NAMESPACE: untyped
+
+RSPEC_NAMESPACE: untyped
+
+RSPEC_CONFIGURER: untyped
+
+module WebMock
+  class ResponseFactory
+    def self.response_for: (untyped options) -> untyped
+  end
+
+  class Response
+    def initialize: (?::Hash[untyped, untyped] options) -> void
+
+    def headers: () -> untyped
+
+    def headers=: (untyped headers) -> untyped
+
+    def body: () -> untyped
+
+    def body=: (untyped body) -> untyped
+
+    def status: () -> untyped
+
+    def status=: (untyped status) -> untyped
+
+    def exception: () -> untyped
+
+    def exception=: (untyped exception) -> untyped
+
+    def raise_error_if_any: () -> (untyped | nil)
+
+    def should_timeout: () -> untyped
+
+    def options=: (untyped options) -> untyped
+
+    def evaluate: (untyped request_signature) -> self
+
+    def ==: (untyped other) -> untyped
+
+    private
+
+    def stringify_body!: () -> (untyped | nil)
+
+    def assert_valid_body!: () -> (nil | untyped)
+
+    def read_raw_response: (untyped io) -> untyped
+
+    InvalidBody: untyped
+  end
+
+  class DynamicResponse < Response
+    attr_accessor responder: untyped
+
+    def initialize: (untyped responder) -> void
+
+    def evaluate: (untyped request_signature) -> untyped
+  end
+end
+
+module WebMock
+  class AssertionFailure
+    attr_accessor self.error_class: untyped
+
+    def self.failure: (untyped message) -> untyped
+  end
+end
+
+module WebMock
+  class RequestSignatureSnippet
+    attr_reader request_signature: untyped
+
+    attr_reader request_stub: untyped
+
+    def initialize: (untyped request_signature) -> void
+
+    def stubbing_instructions: () -> (nil | untyped)
+
+    def request_stubs: () -> (nil | untyped)
+
+    private
+
+    def add_body_diff: (untyped stub, untyped text) -> untyped
+
+    def signature_stub_body_diff: (untyped stub) -> untyped
+
+    def request_params: () -> untyped
+
+    def pretty_print_to_string: (untyped string_to_print) -> untyped
+  end
+end
+
+module WebMock
+  class RequestRegistry
+    include Singleton
+
+    attr_accessor requested_signatures: untyped
+
+    def initialize: () -> void
+
+    def reset!: () -> untyped
+
+    def times_executed: (untyped request_pattern) -> untyped
+
+    def to_s: () -> ("No requests were made." | untyped)
+  end
+end
+
+module WebMock
+  class RequestExecutionVerifier
+    attr_accessor request_pattern: untyped
+
+    attr_accessor expected_times_executed: untyped
+
+    attr_accessor times_executed: untyped
+
+    attr_accessor at_least_times_executed: untyped
+
+    attr_accessor at_most_times_executed: untyped
+
+    def initialize: (?untyped? request_pattern, ?untyped? expected_times_executed, ?untyped? at_least_times_executed, ?untyped? at_most_times_executed) -> void
+
+    def matches?: () -> untyped
+
+    def does_not_match?: () -> untyped
+
+    def description: () -> ::String
+
+    def failure_message: () -> untyped
+
+    def failure_message_when_negated: () -> untyped
+
+    def self.executed_requests_message: () -> untyped
+
+    private
+
+    def failure_message_phrase: (?bool is_negated) -> untyped
+
+    def quantity_phrase: (?bool is_negated) -> (::String | ::String | ::String | "" | ::String)
+
+    def times: (untyped times) -> ::String
+  end
+end
+
+module WebMock
+  class Deprecation
+    def self.warning: (untyped message) -> untyped
+  end
+end
+
+
+module WebMock
+  class Config
+    include Singleton
+
+    def initialize: () -> void
+
+    attr_accessor allow_net_connect: untyped
+
+    attr_accessor allow_localhost: untyped
+
+    attr_accessor allow: untyped
+
+    attr_accessor net_http_connect_on_start: untyped
+
+    attr_accessor show_stubbing_instructions: untyped
+
+    attr_accessor query_values_notation: untyped
+
+    attr_accessor show_body_diff: untyped
+  end
+end
+
+module WebMock
+  VERSION: "3.18.1"
+end
+
+module WebMock
+  module Matchers
+    # this is a based on RSpec::Mocks::ArgumentMatchers::HashIncludingMatcher
+    # https://github.com/rspec/rspec-mocks/blob/master/lib/rspec/mocks/argument_matchers.rb
+    class HashIncludingMatcher < HashArgumentMatcher
+      def ==: (untyped actual) -> untyped
+
+      def inspect: () -> ::String
+    end
+  end
+end
+
+module WebMock
+  module Matchers
+    # this is a based on RSpec::Mocks::ArgumentMatchers::HashExcludingMatcher
+    # https://github.com/rspec/rspec-mocks/blob/master/lib/rspec/mocks/argument_matchers.rb
+    class HashExcludingMatcher < HashArgumentMatcher
+      def ==: (untyped actual) -> untyped
+
+      def inspect: () -> ::String
+    end
+  end
+end
+
+module WebMock
+  module Matchers
+    # this is a based on RSpec::Mocks::ArgumentMatchers::AnyArgMatcher
+    class AnyArgMatcher
+      def initialize: (untyped ignore) -> void
+
+      def ==: (untyped other) -> true
+    end
+  end
+end
+
+module WebMock
+  module Matchers
+    # Base class for Hash matchers
+    # https://github.com/rspec/rspec-mocks/blob/master/lib/rspec/mocks/argument_matchers.rb
+    class HashArgumentMatcher
+      def initialize: (untyped expected) -> void
+
+      def ==: (untyped _actual) ?{ () -> untyped } -> untyped
+
+      def self.from_rspec_matcher: (untyped matcher) -> untyped
+    end
+  end
+end
+
+module WebMock
+  class ResponsesSequence
+    attr_accessor times_to_repeat: untyped
+
+    def initialize: (untyped responses) -> void
+
+    def end?: () -> untyped
+
+    def next_response: () -> untyped
+
+    private
+
+    def increase_position: () -> untyped
+  end
+end
+
+module WebMock
+  class StubRegistry
+    include Singleton
+
+    attr_accessor request_stubs: untyped
+
+    def initialize: () -> void
+
+    def global_stubs: () -> untyped
+
+    def reset!: () -> untyped
+
+    def register_global_stub: (?::Symbol order) { (untyped) -> untyped } -> untyped
+
+    def register_request_stub: (untyped stub) -> untyped
+
+    def remove_request_stub: (untyped stub) -> (untyped | nil)
+
+    def registered_request?: (untyped request_signature) -> untyped
+
+    def response_for_request: (untyped request_signature) -> untyped
+
+    private
+
+    def request_stub_for: (untyped request_signature) -> untyped
+
+    def evaluate_response_for_request: (untyped response, untyped request_signature) -> untyped
+  end
+end
+
+module WebMock
+  module Matchers
+    def have_been_made: () -> untyped
+
+    def have_been_requested: () -> untyped
+
+    def have_not_been_made: () -> untyped
+
+    def have_requested: (untyped method, untyped uri) -> untyped
+
+    def have_not_requested: (untyped method, untyped uri) -> untyped
+  end
+end
+
+module WebMock
+  class WebMockMatcher
+    def initialize: (untyped method, untyped uri) -> void
+
+    def once: () -> self
+
+    def twice: () -> self
+
+    def at_least_once: () -> self
+
+    def at_least_twice: () -> self
+
+    def at_least_times: (untyped times) -> self
+
+    def with: (?::Hash[untyped, untyped] options) ?{ () -> untyped } -> self
+
+    def times: (untyped times) -> self
+
+    def matches?: (untyped webmock) -> untyped
+
+    def does_not_match?: (untyped webmock) -> untyped
+
+    def failure_message: () -> untyped
+
+    def failure_message_when_negated: () -> untyped
+
+    def description: () -> untyped
+
+    # RSpec 2 compatibility:
+    alias negative_failure_message failure_message_when_negated
+  end
+end
+
+module WebMock
+  class RequestPatternMatcher
+    def initialize: () -> void
+
+    def once: () -> self
+
+    def twice: () -> self
+
+    def times: (untyped times) -> self
+
+    def at_least_once: () -> self
+
+    def at_least_twice: () -> self
+
+    def at_least_times: (untyped times) -> self
+
+    def at_most_once: () -> self
+
+    def at_most_twice: () -> self
+
+    def at_most_times: (untyped times) -> self
+
+    def matches?: (untyped request_pattern) -> untyped
+
+    def does_not_match?: (untyped request_pattern) -> untyped
+
+    def failure_message: () -> untyped
+
+    def failure_message_when_negated: () -> untyped
+
+    def description: () -> untyped
+
+    # RSpec 2 compatibility:
+    alias negative_failure_message failure_message_when_negated
+  end
+end
+
+class Object
+  include WebMock::API
+
+  alias teardown_without_webmock teardown
+
+  def teardown_with_webmock: () -> untyped
+
+  alias teardown teardown_with_webmock
+end
+
+module WebMock
+  class StubRequestSnippet
+    def initialize: (untyped request_stub) -> void
+
+    def body_pattern: () -> untyped
+
+    def to_s: (?bool with_response) -> untyped
+  end
+end
+

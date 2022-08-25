@@ -118,3 +118,6 @@
 [submodule "gems/paper_trail/12.3/_src"]
 	path = gems/paper_trail/12.3/_src
 	url = https://github.com/paper-trail-gem/paper_trail.git
+[submodule "gems/webmock/3.18/_src"]
+	path = gems/webmock/3.18/_src
+	url = https://github.com/bblimke/webmock.git
