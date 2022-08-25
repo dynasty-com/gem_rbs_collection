@@ -343,7 +343,7 @@ module WebMock
 
       def self.const_defined?: (untyped name) -> untyped
 
-      def self.const_defined?: (untyped name, ?bool inherit) -> untyped
+      # def self.const_defined?: (untyped name, ?bool inherit) -> untyped
 
       def self.const_get: (untyped name, ?bool inherit) -> untyped
 
