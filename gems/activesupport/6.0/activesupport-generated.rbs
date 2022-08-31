@@ -4826,13 +4826,13 @@ class Object
 end
 
 module ActiveSupport
-  module ToJsonWithActiveSupportEncoder
+  module ToJsonWithActiveSupportEncoder : BasicObject
     # :nodoc:
     def to_json: (?untyped? options) -> untyped
   end
 end
 
-module Enumerable
+module Enumerable[unchecked out Elem]
   prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
@@ -4840,7 +4840,7 @@ class Object
   prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
-class Array
+class Array[unchecked out Elem]
   prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
@@ -4852,7 +4852,7 @@ class Float
   prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
-class Hash
+class Hash[unchecked out K, unchecked out V]
   prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
