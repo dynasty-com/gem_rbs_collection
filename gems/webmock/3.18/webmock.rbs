@@ -530,7 +530,7 @@ module WebMock
 end
 
 class Object
-  def self.new: (?::Hash[untyped, untyped] args) -> untyped
+  # def self.new: (?::Hash[untyped, untyped] args) -> untyped
 end
 
 module Net
