@@ -4832,6 +4832,46 @@ module ActiveSupport
   end
 end
 
+class Enumerable
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class Object
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class Array
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class FalseClass
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class Float
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class Hash
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class Integer
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class NilClass
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class String
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
+class TrueClass
+  include ActiveSupport::ToJsonWithActiveSupportEncoder
+end
+
 class Object
   def as_json: (?untyped? options) -> untyped
 end
