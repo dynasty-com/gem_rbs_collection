@@ -4832,44 +4832,44 @@ module ActiveSupport
   end
 end
 
-class Enumerable
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+module Enumerable
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Object
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Array
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class FalseClass
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Float
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Hash
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Integer
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class NilClass
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class String
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class TrueClass
-  include ActiveSupport::ToJsonWithActiveSupportEncoder
+  prepend ActiveSupport::ToJsonWithActiveSupportEncoder
 end
 
 class Object
