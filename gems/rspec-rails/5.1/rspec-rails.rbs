@@ -869,6 +869,13 @@ module RSpec
   end
 end
 
+class Object
+  include RSpec::Rails::Matchers::RoutingMatchers::RouteHelpers
+
+  # Response object from ActiveController is magically injected.
+  def response: () -> untyped
+end
+
 module RSpec
   module Rails
     # @private
@@ -1844,7 +1851,21 @@ module RSpec
         def be_routable: () -> untyped
 
         # Helpers for matching different route types.
-        module RouteHelpers
+        module RouteHelpers : BasicObject
+          # Shorthand method for matching this type of route.
+          def get: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def post: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def put: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def patch: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def delete: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def options: ((Symbol | String) path, **untyped kwargs) -> void
+          # Shorthand method for matching this type of route.
+          def head: ((Symbol | String) path, **untyped kwargs) -> void
         end
       end
     end
