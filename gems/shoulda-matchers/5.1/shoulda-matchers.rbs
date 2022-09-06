@@ -950,9 +950,9 @@ module Shoulda
       class SetFlashMatcher
         # extend Forwardable
 
-        alias failure_message_for_should failure_message
+        # alias failure_message_for_should failure_message
 
-        alias failure_message_for_should_not failure_message_when_negated
+        # alias failure_message_for_should_not failure_message_when_negated
 
         def initialize: () -> void
 
@@ -1199,9 +1199,9 @@ module Shoulda
       class SetSessionMatcher
         # extend Forwardable
 
-        alias failure_message_for_should failure_message
+        # alias failure_message_for_should failure_message
 
-        alias failure_message_for_should_not failure_message_when_negated
+        # alias failure_message_for_should_not failure_message_when_negated
 
         def initialize: () -> void
 
@@ -2831,7 +2831,7 @@ module Shoulda
       class AllowValueMatcher
         # @private
         class AttributeSetters
-          include Enumerable
+          include Enumerable[untyped]
 
           def initialize: (untyped allow_value_matcher, untyped values) -> void
 
@@ -2908,7 +2908,7 @@ module Shoulda
       class AllowValueMatcher
         # @private
         class AttributeSettersAndValidators
-          include Enumerable
+          include Enumerable[untyped]
 
           def initialize: (untyped allow_value_matcher, untyped values) -> void
 
@@ -5262,7 +5262,7 @@ module Shoulda
 
         # @private
         class AttributeSetters
-          include Enumerable
+          include Enumerable[untyped]
 
           def initialize: () -> void
 
