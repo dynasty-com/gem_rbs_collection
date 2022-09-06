@@ -871,6 +871,7 @@ end
 
 class Object
   include RSpec::Rails::Matchers::RoutingMatchers::RouteHelpers
+  include RSpec::Rails::Matchers
 
   # Response object from ActiveController is magically injected.
   def response: () -> untyped
@@ -1990,7 +1991,7 @@ end
 
 module RSpec
   module Rails
-    module Matchers
+    module Matchers : BasicObject
       # @private
       class BeValid < RSpec::Matchers::BuiltIn::Be
         def initialize: (*untyped args) -> void
