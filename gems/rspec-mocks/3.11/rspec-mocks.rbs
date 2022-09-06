@@ -1204,7 +1204,7 @@ module RSpec
       # @return [MessageExpectation] self, to support further chaining.
       # @example
       #   expect(car).to receive(:go).twice
-      def twice: () { () -> untyped } -> untyped
+      def twice: () ?{ () -> untyped } -> untyped
 
       # Expect a message to be received exactly three times.
       #
