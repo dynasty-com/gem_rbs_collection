@@ -121,3 +121,6 @@
 [submodule "gems/webmock/3.18/_src"]
 	path = gems/webmock/3.18/_src
 	url = https://github.com/bblimke/webmock.git
+[submodule "gems/shoulda-matchers/5.1/_src"]
+	path = gems/shoulda-matchers/5.1/_src
+	url = https://github.com/thoughtbot/shoulda-matchers.git
