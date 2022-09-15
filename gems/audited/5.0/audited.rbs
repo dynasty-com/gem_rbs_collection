@@ -1,0 +1,467 @@
+module Audited
+  module RspecMatchers : BasicObject
+    # Ensure that the model is audited.
+    #
+    # Options:
+    # * <tt>associated_with</tt> - tests that the audit makes use of the associated_with option
+    # * <tt>only</tt> - tests that the audit makes use of the only option *Overrides <tt>except</tt> option*
+    # * <tt>except</tt> - tests that the audit makes use of the except option
+    # * <tt>requires_comment</tt> - if specified, then the audit must require comments through the <tt>audit_comment</tt> attribute
+    # * <tt>on</tt> - tests that the audit makes use of the on option with specified parameters
+    #
+    # Example:
+    #   it { should be_audited }
+    #   it { should be_audited.associated_with(:user) }
+    #   it { should be_audited.only(:field_name) }
+    #   it { should be_audited.except(:password) }
+    #   it { should be_audited.requires_comment }
+    #   it { should be_audited.on(:create).associated_with(:user).except(:password) }
+    #
+    def be_audited: () -> untyped
+
+    # Ensure that the model has associated audits
+    #
+    # Example:
+    #   it { should have_associated_audits }
+    #
+    def have_associated_audits: () -> untyped
+
+    class AuditMatcher
+      def initialize: () -> void
+
+      def associated_with: (untyped model) -> self
+
+      def only: (*untyped fields) -> self
+
+      def except: (*untyped fields) -> self
+
+      def requires_comment: () -> self
+
+      def on: (*untyped actions) -> self
+
+      def matches?: (untyped subject) -> untyped
+
+      def failure_message: () -> ::String
+
+      def negative_failure_message: () -> ::String
+
+      alias failure_message_when_negated negative_failure_message
+
+      def description: () -> untyped
+
+      def expects: (untyped message) -> untyped
+
+      def auditing_enabled?: () -> untyped
+
+      def model_class: () -> untyped
+
+      def associated_with_model?: () -> untyped
+
+      def records_changes_to_specified_fields?: () -> untyped
+
+      def comment_required_valid?: () -> untyped
+
+      def only_audit_on_designated_callbacks?: () -> untyped
+
+      def validate_callbacks_include_presence_of_comment?: () -> (untyped | true)
+
+      def audited_on_create_or_update?: () -> untyped
+
+      def destroy_callbacks_include_comment_required?: () -> (untyped | true)
+
+      def requires_comment_before_callbacks?: () -> untyped
+
+      def callbacks_for: (untyped action, ?kind: ::Symbol) -> untyped
+
+      def build_ignored_fields_from_options: () -> untyped
+
+      def required_checks_for_options_satisfied?: () -> untyped
+    end
+
+    class AssociatedAuditMatcher
+      def matches?: (untyped subject) -> untyped
+
+      def failure_message: () -> ::String
+
+      def negative_failure_message: () -> ::String
+
+      alias failure_message_when_negated negative_failure_message
+
+      def description: () -> "has associated audits"
+
+      def model_class: () -> untyped
+
+      def reflection: () -> untyped
+
+      def association_exists?: () -> untyped
+    end
+  end
+end
+
+module Audited
+  # Specify this act if you want changes to your model to be saved in an
+  # audit table.  This assumes there is an audits table ready.
+  #
+  #   class User < ActiveRecord::Base
+  #     audited
+  #   end
+  #
+  # To store an audit comment set model.audit_comment to your comment before
+  # a create, update or destroy operation.
+  #
+  # See <tt>Audited::Auditor::ClassMethods#audited</tt>
+  # for configuration options
+  module Auditor : BasicObject
+    extend ActiveSupport::Concern
+
+    CALLBACKS: ::Array[:audit_create | :audit_update | :audit_destroy]
+
+    module ClassMethods
+      # * +redacted+ - Changes to these fields will be logged, but the values
+      #   will not. This is useful, for example, if you wish to audit when a
+      #   password is changed, without saving the actual password in the log.
+      #   To store values as something other than '[REDACTED]', pass an argument
+      #   to the redaction_value option.
+      #
+      #     class User < ActiveRecord::Base
+      #       audited redacted: :password, redaction_value: SecureRandom.uuid
+      #     end
+      #
+      # * +if+ - Only audit the model when the given function returns true
+      # * +unless+ - Only audit the model when the given function returns false
+      #
+      #     class User < ActiveRecord::Base
+      #       audited :if => :active?
+      #
+      #       def active?
+      #         self.status == 'active'
+      #       end
+      #     end
+      #
+      def audited: (?::Hash[untyped, untyped] options) -> (nil | untyped)
+
+      def has_associated_audits: () -> untyped
+    end
+
+    module AuditedInstanceMethods
+      REDACTED: "[REDACTED]"
+
+      # Temporarily turns off auditing while saving.
+      def save_without_auditing: () -> untyped
+
+      # Executes the block with the auditing callbacks disabled.
+      #
+      #   @foo.without_auditing do
+      #     @foo.save
+      #   end
+      #
+      def without_auditing: () ?{ () -> untyped } -> untyped
+
+      # Temporarily turns on auditing while saving.
+      def save_with_auditing: () -> untyped
+
+      # Executes the block with the auditing callbacks enabled.
+      #
+      #   @foo.with_auditing do
+      #     @foo.save
+      #   end
+      #
+      def with_auditing: () ?{ () -> untyped } -> untyped
+
+      # Gets an array of the revisions available
+      #
+      #   user.revisions.each do |revision|
+      #     user.name
+      #     user.version
+      #   end
+      #
+      def revisions: (?::Integer from_version) -> (::Array[untyped] | untyped)
+
+      # Get a specific revision specified by the version number, or +:previous+
+      # Returns nil for versions greater than revisions count
+      def revision: (untyped version) -> (untyped | nil)
+
+      # Find the oldest revision recorded prior to the date/time provided.
+      def revision_at: (untyped date_or_time) -> untyped
+
+      # List of attributes that are audited.
+      def audited_attributes: () -> untyped
+
+      # Returns a list combined of record audits and associated audits.
+      def own_and_associated_audits: () -> untyped
+
+      # Combine multiple audits into one.
+      def combine_audits: (untyped audits_to_combine) -> untyped
+
+      def revision_with: (untyped attributes) -> untyped
+
+      private
+
+      def audited_changes: () -> untyped
+
+      def normalize_enum_changes: (untyped changes) -> untyped
+
+      def redact_values: (untyped filtered_changes) -> untyped
+
+      def rails_below?: (untyped rails_version) -> untyped
+
+      def audits_to: (?untyped? version) -> untyped
+
+      def audit_create: () -> untyped
+
+      def audit_update: () -> (untyped | nil)
+
+      def audit_destroy: () -> (untyped | nil)
+
+      def write_audit: (untyped attrs) -> untyped
+
+      def presence_of_audit_comment: () -> (untyped | nil | nil)
+
+      def comment_required_state?: () -> untyped
+
+      def combine_audits_if_needed: () -> untyped
+
+      def require_comment: () -> (untyped | nil)
+
+      def auditing_enabled: () -> untyped
+
+      def run_conditional_check: (untyped condition, ?matching: bool) -> (true | untyped)
+
+      def reconstruct_attributes: (untyped audits) -> untyped
+    end
+
+    module AuditedClassMethods
+      # Returns an array of columns that are audited. See non_audited_columns
+      def audited_columns: () -> untyped
+
+      # We have to calculate this here since column_names may not be available when `audited` is called
+      def non_audited_columns: () -> untyped
+
+      def non_audited_columns=: (untyped columns) -> untyped
+
+      # Executes the block with auditing disabled.
+      #
+      #   Foo.without_auditing do
+      #     @foo.save
+      #   end
+      #
+      def without_auditing: () { () -> untyped } -> untyped
+
+      # Executes the block with auditing enabled.
+      #
+      #   Foo.with_auditing do
+      #     @foo.save
+      #   end
+      #
+      def with_auditing: () { () -> untyped } -> untyped
+
+      def disable_auditing: () -> untyped
+
+      def enable_auditing: () -> untyped
+
+      # All audit operations during the block are recorded as being
+      # made by +user+. This is not model specific, the method is a
+      # convenience wrapper around
+      # @see Audit#as_user.
+      def audit_as: (untyped user) ?{ () -> untyped } -> untyped
+
+      def auditing_enabled: () -> untyped
+
+      def auditing_enabled=: (untyped val) -> untyped
+
+      def default_ignored_attributes: () -> untyped
+
+      def normalize_audited_options: () -> untyped
+
+      def calculate_non_audited_columns: () -> untyped
+    end
+  end
+end
+
+module Audited
+  class Sweeper
+    STORED_DATA: { current_remote_address: :remote_ip, current_request_uuid: :request_uuid, current_user: :current_user }
+
+    def around: (untyped controller) { () -> untyped } -> untyped
+
+    def current_user: () -> untyped
+
+    def remote_ip: () -> untyped
+
+    def request_uuid: () -> untyped
+
+    def controller: () -> untyped
+
+    def controller=: (untyped value) -> untyped
+  end
+end
+
+module Audited
+  class Railtie < Rails::Railtie
+  end
+end
+
+module Audited
+  VERSION: "5.0.2"
+end
+
+module Audited
+  class YAMLIfTextColumnType
+    def self.load: (untyped obj) -> untyped
+
+    def self.dump: (untyped obj) -> untyped
+
+    def self.text_column?: () -> untyped
+  end
+
+  class Audit < ::ActiveRecord::Base
+    # Return all audits older than the current one.
+    def ancestors: () -> untyped
+
+    # Return an instance of what the object looked like at this revision. If
+    # the object has been destroyed, this will be a new record.
+    def revision: () -> untyped
+
+    # Returns a hash of the changed attributes with the new values
+    def new_attributes: () -> untyped
+
+    # Returns a hash of the changed attributes with the old values
+    def old_attributes: () -> untyped
+
+    # Allows user to undo changes
+    def undo: () -> untyped
+
+    # Allows user to be set to either a string or an ActiveRecord object
+    # @private
+    def user_as_string=: (untyped user) -> untyped
+
+    alias user_as_model= user=
+
+    alias user= user_as_string=
+
+    # @private
+    def user_as_string: () -> untyped
+
+    alias user_as_model user
+
+    alias user user_as_string
+
+    # Returns the list of classes that are being audited
+    def self.audited_classes: () -> untyped
+
+    # All audits made during the block called will be recorded as made
+    # by +user+. This method is hopefully threadsafe, making it ideal
+    # for background operations that require audit information.
+    def self.as_user: (untyped user) { () -> untyped } -> untyped
+
+    # @private
+    def self.reconstruct_attributes: (untyped audits) -> untyped
+
+    # @private
+    def self.assign_revision_attributes: (untyped record, untyped attributes) -> untyped
+
+    # use created_at as timestamp cache key
+    def self.collection_cache_key: (?untyped collection) -> untyped
+
+    private
+
+    def set_version_number: () -> untyped
+
+    def set_audit_user: () -> nil
+
+    def set_request_uuid: () -> untyped
+
+    def set_remote_address: () -> untyped
+  end
+end
+
+module Audited
+  module Generators
+    module Migration
+      # Implement the required interface for Rails::Generators::Migration.
+      def next_migration_number: (untyped dirname) -> untyped
+    end
+  end
+end
+
+module Audited
+  module Generators
+    class UpgradeGenerator < Rails::Generators::Base
+      include Rails::Generators::Migration
+
+      include Audited::Generators::MigrationHelper
+
+      extend Audited::Generators::Migration
+
+      def copy_templates: () -> untyped
+
+      private
+
+      def migrations_to_be_applied: () { (untyped) -> untyped } -> untyped
+    end
+  end
+end
+
+module Audited
+  module Generators
+    class InstallGenerator < Rails::Generators::Base
+      include Rails::Generators::Migration
+
+      include Audited::Generators::MigrationHelper
+
+      extend Audited::Generators::Migration
+
+      def copy_migration: () -> untyped
+    end
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+module Audited
+  module Generators
+    module MigrationHelper
+      def migration_parent: () -> ::String
+    end
+  end
+end
+
+module RSpec::Matchers
+  include Audited::RspecMatchers
+end
+
+module Audited
+  attr_accessor self.auditing_enabled: untyped
+
+  attr_accessor self.current_user_method: untyped
+
+  attr_accessor self.ignored_attributes: untyped
+
+  attr_accessor self.max_audits: untyped
+
+  attr_accessor self.store_synthesized_enums: untyped
+
+  attr_writer self.audit_class: untyped
+
+  def self.audit_class: () -> untyped
+
+  def self.store: () -> untyped
+
+  def self.config: () { (untyped) -> untyped } -> untyped
+end
+
+class Object
+  include Audited::Auditor
+end
+
+class ActiveRecord::Base
+  extend Audited::Auditor::ClassMethods
+end

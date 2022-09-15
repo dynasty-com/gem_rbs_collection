@@ -124,3 +124,6 @@
 [submodule "gems/shoulda-matchers/5.1/_src"]
 	path = gems/shoulda-matchers/5.1/_src
 	url = https://github.com/thoughtbot/shoulda-matchers.git
+[submodule "gems/audited/5.0/_src"]
+	path = gems/audited/5.0/_src
+	url = https://github.com/collectiveidea/audited.git
