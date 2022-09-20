@@ -315,6 +315,35 @@ module Audited
   end
 
   class Audit < ::ActiveRecord::Base
+    def auditable_id: () -> Integer
+    def auditable_id=: (Integer) -> void
+    def auditable_type: () -> String
+    def auditable_type=: (String) -> void
+    def associated_id: () -> Integer
+    def associated_id=: (Integer) -> void
+    def associated_type: () -> String
+    def associated_type=: (String) -> void
+    def user_id: () -> Integer?
+    def user_id=: (?Integer) -> void
+    def user_type: () -> String?
+    def user_type=: (?String) -> void
+    def username: () -> String?
+    def username=: (?String) -> void
+    def action: () -> String
+    def action=: (String) -> void
+    def audited_changes: () -> Hash[String, untyped]
+    def audited_changes=: (Hash[String, untyped]) -> void
+    def version: () -> Integer
+    def version=: (Integer) -> void
+    def comment: () -> String?
+    def comment=: (?String) -> void
+    def remote_address: () -> String?
+    def remote_address=: (?String) -> void 
+    def request_uuid: () -> String?
+    def request_uuid=: (?String) -> void 
+    def created_at: () -> DateTime
+    def created_at=: (DateTime) -> void
+
     # Return all audits older than the current one.
     def ancestors: () -> untyped
 
