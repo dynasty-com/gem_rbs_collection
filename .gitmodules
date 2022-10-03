@@ -127,3 +127,6 @@
 [submodule "gems/audited/5.0/_src"]
 	path = gems/audited/5.0/_src
 	url = https://github.com/collectiveidea/audited.git
+[submodule "gems/aws-sdk-lambda/1.85/_src"]
+	path = gems/aws-sdk-lambda/1.85/_src
+	url = https://github.com/aws/aws-sdk-ruby.git
