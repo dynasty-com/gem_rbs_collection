@@ -5213,7 +5213,7 @@ module SecureRandom
   # p SecureRandom.uuid #=> "62936e70-1815-439b-bf89-8492855a7e6b"
   # 
   # The version 4 UUID is purely random (except the version). It doesn’t contain meaningful information such as MAC address, time, etc.
-  def self.uuid: () -> String
+  # def self.uuid: () -> String
 end
 
 class String
