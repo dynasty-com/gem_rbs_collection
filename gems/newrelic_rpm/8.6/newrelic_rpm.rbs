@@ -10574,132 +10574,132 @@ end
 
 module NewRelic
   module Agent
-    # module MethodTracer
-    #   def self.included: (untyped klass) -> untyped
+    module MethodTracer
+      def self.included: (untyped klass) -> untyped
 
-    #   def self.extended: (untyped klass) -> untyped
+      def self.extended: (untyped klass) -> untyped
 
-    #   def trace_execution_scoped: (untyped metric_names, ?untyped options) { () -> untyped } -> untyped
+      def trace_execution_scoped: (untyped metric_names, ?untyped options) { () -> untyped } -> untyped
 
-    #   def trace_execution_unscoped: (untyped metric_names, ?untyped options) { () -> untyped } -> untyped
+      def trace_execution_unscoped: (untyped metric_names, ?untyped options) { () -> untyped } -> untyped
 
-    #   # Defines methods used at the class level, for adding instrumentation
-    #   # @api public
-    #   module ClassMethods
-    #     # contains methods refactored out of the #add_method_tracer method
-    #     module AddMethodTracer
-    #       ALLOWED_KEYS: ::Array[:metric | :push_scope | :code_header | :code_footer]
+      # Defines methods used at the class level, for adding instrumentation
+      # @api public
+      module ClassMethods
+        # contains methods refactored out of the #add_method_tracer method
+        module AddMethodTracer
+          ALLOWED_KEYS: ::Array[:metric | :push_scope | :code_header | :code_footer]
 
-    #       DEFAULT_SETTINGS: { push_scope: true, metric: true, code_header: ::String, code_footer: ::String }
+          DEFAULT_SETTINGS: { push_scope: true, metric: true, code_header: ::String, code_footer: ::String }
 
-    #       # Checks the provided options to make sure that they make
-    #       # sense. Raises an error if the options are incorrect to
-    #       # assist with debugging, so that errors occur at class
-    #       # construction time rather than instrumentation run time
-    #       def _nr_validate_method_tracer_options: (untyped method_name, untyped options) -> untyped
+          # Checks the provided options to make sure that they make
+          # sense. Raises an error if the options are incorrect to
+          # assist with debugging, so that errors occur at class
+          # construction time rather than instrumentation run time
+          def _nr_validate_method_tracer_options: (untyped method_name, untyped options) -> untyped
 
-    #       # Default to the class where the method is defined.
-    #       #
-    #       # Example:
-    #       #  Foo._nr_default_metric_name_code('bar') #=> "Custom/#{Foo.name}/bar"
-    #       def _nr_default_metric_name: (untyped method_name) -> untyped
+          # Default to the class where the method is defined.
+          #
+          # Example:
+          #  Foo._nr_default_metric_name_code('bar') #=> "Custom/#{Foo.name}/bar"
+          def _nr_default_metric_name: (untyped method_name) -> untyped
 
-    #       # Checks to see if the method we are attempting to trace
-    #       # actually exists or not. #add_method_tracer can't do
-    #       # anything if the method doesn't exist.
-    #       def newrelic_method_exists?: (untyped method_name) -> untyped
+          # Checks to see if the method we are attempting to trace
+          # actually exists or not. #add_method_tracer can't do
+          # anything if the method doesn't exist.
+          def newrelic_method_exists?: (untyped method_name) -> untyped
 
-    #       # Checks to see if we have already traced a method with a
-    #       # given metric by checking to see if the traced method
-    #       # exists. Warns the user if methods are being double-traced
-    #       # to help with debugging custom instrumentation.
-    #       def method_traced?: (untyped method_name) -> untyped
+          # Checks to see if we have already traced a method with a
+          # given metric by checking to see if the traced method
+          # exists. Warns the user if methods are being double-traced
+          # to help with debugging custom instrumentation.
+          def method_traced?: (untyped method_name) -> untyped
 
-    #       # Returns an anonymous module that stores prepended trace methods.
-    #       def _nr_traced_method_module: () -> untyped
+          # Returns an anonymous module that stores prepended trace methods.
+          def _nr_traced_method_module: () -> untyped
 
-    #       # for testing only
-    #       def _nr_clear_traced_methods!: () -> untyped
+          # for testing only
+          def _nr_clear_traced_methods!: () -> untyped
 
-    #       def _nr_derived_class_name: () -> (untyped | "AnonymousModule")
-    #     end
+          def _nr_derived_class_name: () -> (untyped | "AnonymousModule")
+        end
 
-    #     include AddMethodTracer
+        include AddMethodTracer
 
-    #     # Add a method tracer to the specified method.
-    #     #
-    #     # By default, this will cause invocations of the traced method to be
-    #     # recorded in transaction traces, and in a metric named after the class
-    #     # and method. It will also make the method show up in transaction-level
-    #     # breakdown charts and tables.
-    #     #
-    #     # === Overriding the metric name
-    #     #
-    #     # +metric_name+ is a String or Proc. If a Proc is given, it is bound to
-    #     # the object that called the traced method. For example:
-    #     #
-    #     #     add_method_tracer :foo, -> { "Custom/#{self.class.name}/foo" }
-    #     #
-    #     # This would name the metric according to the class of the runtime
-    #     # instance, as opposed to the class where +foo+ is defined.
-    #     #
-    #     # If not provided, the metric name will be <tt>Custom/ClassName/method_name</tt>.
-    #     #
-    #     # @param method_name [Symbol] the name of the method to trace
-    #     # @param metric_name [String,Proc,Array] the metric name to record calls to
-    #     #   the traced method under. This may be either a String, or a Proc
-    #     #   to be evaluated at call-time in order to determine the metric
-    #     #   name dynamically.
-    #     #   This method also accepts an array of Strings/Procs, in which case the
-    #     #   first metric given will be scoped, while the remaining metrics will be
-    #     #   recorded as though passed with :push_scope => false. If an Array of
-    #     #   metric names is given with :push_scope => false, all metrics will be
-    #     #   unscoped.
-    #     # @param [Hash] options additional options controlling how the method is
-    #     #   traced.
-    #     # @option options [Boolean] :push_scope (true) If false, the traced method will
-    #     #   not appear in transaction traces or breakdown charts, and it will
-    #     #   only be visible in custom dashboards.
-    #     # @option options [Boolean] :metric (true) If false, the traced method will
-    #     #   only appear in transaction traces, but no metrics will be recorded
-    #     #   for it.
-    #     # @option options [Proc] :code_header ('') Ruby code to be inserted and run
-    #     #   before the tracer begins timing.
-    #     # @option options [Proc] :code_footer ('') Ruby code to be inserted and run
-    #     #   after the tracer stops timing.
-    #     #
-    #     # @example
-    #     #   add_method_tracer :foo
-    #     #
-    #     #   # With a custom metric name
-    #     #   add_method_tracer :foo, "Custom/MyClass/foo"
-    #     #   add_method_tracer :bar, -> { "Custom/#{self.class.name}/bar" }
-    #     #
-    #     #   # Instrument foo only for custom dashboards (not in transaction
-    #     #   # traces or breakdown charts)
-    #     #   add_method_tracer :foo, 'Custom/foo', :push_scope => false
-    #     #
-    #     #   # Instrument foo in transaction traces only
-    #     #   add_method_tracer :foo, 'Custom/foo', :metric => false
-    #     #
-    #     # @api public
-    #     #
-    #     def add_method_tracer: (untyped method_name, ?untyped? metric_name, ?::Hash[untyped, untyped] options) -> untyped
+        # Add a method tracer to the specified method.
+        #
+        # By default, this will cause invocations of the traced method to be
+        # recorded in transaction traces, and in a metric named after the class
+        # and method. It will also make the method show up in transaction-level
+        # breakdown charts and tables.
+        #
+        # === Overriding the metric name
+        #
+        # +metric_name+ is a String or Proc. If a Proc is given, it is bound to
+        # the object that called the traced method. For example:
+        #
+        #     add_method_tracer :foo, -> { "Custom/#{self.class.name}/foo" }
+        #
+        # This would name the metric according to the class of the runtime
+        # instance, as opposed to the class where +foo+ is defined.
+        #
+        # If not provided, the metric name will be <tt>Custom/ClassName/method_name</tt>.
+        #
+        # @param method_name [Symbol] the name of the method to trace
+        # @param metric_name [String,Proc,Array] the metric name to record calls to
+        #   the traced method under. This may be either a String, or a Proc
+        #   to be evaluated at call-time in order to determine the metric
+        #   name dynamically.
+        #   This method also accepts an array of Strings/Procs, in which case the
+        #   first metric given will be scoped, while the remaining metrics will be
+        #   recorded as though passed with :push_scope => false. If an Array of
+        #   metric names is given with :push_scope => false, all metrics will be
+        #   unscoped.
+        # @param [Hash] options additional options controlling how the method is
+        #   traced.
+        # @option options [Boolean] :push_scope (true) If false, the traced method will
+        #   not appear in transaction traces or breakdown charts, and it will
+        #   only be visible in custom dashboards.
+        # @option options [Boolean] :metric (true) If false, the traced method will
+        #   only appear in transaction traces, but no metrics will be recorded
+        #   for it.
+        # @option options [Proc] :code_header ('') Ruby code to be inserted and run
+        #   before the tracer begins timing.
+        # @option options [Proc] :code_footer ('') Ruby code to be inserted and run
+        #   after the tracer stops timing.
+        #
+        # @example
+        #   add_method_tracer :foo
+        #
+        #   # With a custom metric name
+        #   add_method_tracer :foo, "Custom/MyClass/foo"
+        #   add_method_tracer :bar, -> { "Custom/#{self.class.name}/bar" }
+        #
+        #   # Instrument foo only for custom dashboards (not in transaction
+        #   # traces or breakdown charts)
+        #   add_method_tracer :foo, 'Custom/foo', :push_scope => false
+        #
+        #   # Instrument foo in transaction traces only
+        #   add_method_tracer :foo, 'Custom/foo', :metric => false
+        #
+        # @api public
+        #
+        def add_method_tracer: (untyped method_name, ?untyped? metric_name, ?::Hash[untyped, untyped] options) -> untyped
 
-    #     def remove_method_tracer: (untyped method_name) -> (nil | untyped)
+        def remove_method_tracer: (untyped method_name) -> (nil | untyped)
 
-    #     private
+        private
 
-    #     def _nr_add_method_tracer_now: (untyped method_name, untyped metric_name, untyped options) -> (nil | untyped)
+        def _nr_add_method_tracer_now: (untyped method_name, untyped metric_name, untyped options) -> (nil | untyped)
 
-    #     # See #add_method_tracer; if multiple metric names are given, the first is
-    #     # treated as scoped, the rest unscoped. If options[:push_scope] is false,
-    #     # all given metrics are unscoped.
-    #     def _nr_scoped_unscoped_metrics: (untyped metric_name, untyped method_name, ?push_scope: bool push_scope) -> untyped
+        # See #add_method_tracer; if multiple metric names are given, the first is
+        # treated as scoped, the rest unscoped. If options[:push_scope] is false,
+        # all given metrics are unscoped.
+        def _nr_scoped_unscoped_metrics: (untyped metric_name, untyped method_name, ?push_scope: bool push_scope) -> untyped
 
-    #     def _nr_define_traced_method: (untyped method_name, ?scoped_metric: untyped? scoped_metric, ?unscoped_metrics: untyped unscoped_metrics, ?code_header: untyped? code_header, ?code_footer: untyped? code_footer, ?record_metrics: bool record_metrics, ?visibility: ::Symbol visibility) -> untyped
-    #   end
-    # end
+        def _nr_define_traced_method: (untyped method_name, ?scoped_metric: untyped? scoped_metric, ?unscoped_metrics: untyped unscoped_metrics, ?code_header: untyped? code_header, ?code_footer: untyped? code_footer, ?record_metrics: bool record_metrics, ?visibility: ::Symbol visibility) -> untyped
+      end
+    end
   end
 end
 
